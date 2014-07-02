@@ -7,10 +7,6 @@ find out what makes battery usage increase.
 
 TODO
 ----
-* Make sure we can push to googledrive.
-
-* Make sure we can show a graph with holes in it.
-
 * Make sure we can put markers in the graph.
 
 * Make sure the graph is zoomable (by dragging vertically) and
@@ -36,3 +32,7 @@ copy in /libs
 
 * Implement the Androidplot quickstart tutorial:
 http://androidplot.com/docs/quickstart/
+
+* Make sure we can push to googledrive.
+
+* Make sure we can show a graph with holes in it.

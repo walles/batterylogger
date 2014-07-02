@@ -7,6 +7,8 @@ find out what makes battery usage increase.
 
 TODO
 ----
+* Make sure we can push to googledrive.
+
 * Implement the Androidplot quickstart tutorial:
 http://androidplot.com/docs/quickstart/
 
@@ -14,8 +16,8 @@ http://androidplot.com/docs/quickstart/
 
 * Make sure we can put markers in the graph.
 
-* Make sure the graph is zoomable (by swiping vertically) and pannable
-(by swiping sideways).
+* Make sure the graph is zoomable (by dragging vertically) and
+pannable (by dragging sideways).
 
 * Make a data holder class that supports both receiving data,
 persisting it and presenting it to AndroidPlot.
@@ -29,3 +31,8 @@ reboots.
 
 * Make sure the service notifies the data holder about charger plugins
 and disconnects.
+
+DONE
+----
+* Make Gradle download Androidplot itself rather than having a static
+copy in /libs

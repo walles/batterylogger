@@ -10,8 +10,8 @@ apply plugin: 'android'
 
 repositories {
     mavenCentral()
-    flatDir {
-        dirs 'libs'
+    maven {
+        url 'https://oss.sonatype.org/content/groups/public/'
     }
 }
 
@@ -36,5 +36,5 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:19.+'
-    compile(name:'androidplot-core-0.6.2-SNAPSHOT', ext:'aar')
+    compile(group:'com.androidplot', name:'androidplot-core', version:'0.6.2-SNAPSHOT')
 }

@@ -9,9 +9,6 @@ TODO
 ----
 * Make sure we can push to googledrive.
 
-* Implement the Androidplot quickstart tutorial:
-http://androidplot.com/docs/quickstart/
-
 * Make sure we can show a graph with holes in it.
 
 * Make sure we can put markers in the graph.
@@ -36,3 +33,6 @@ DONE
 ----
 * Make Gradle download Androidplot itself rather than having a static
 copy in /libs
+
+* Implement the Androidplot quickstart tutorial:
+http://androidplot.com/docs/quickstart/

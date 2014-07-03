@@ -1,5 +1,7 @@
 package com.gmail.walles.johan.batterylogger;
 
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
@@ -100,12 +102,15 @@ public class MainActivity extends ActionBarActivity {
                     SimpleXYSeries.ArrayFormat.XY_VALS_INTERLEAVED,
                     "Series2");
 
+            EventSeries eventSeries = new EventSeries();
+            eventSeries.add(7, "Sju sju sju");
+            eventSeries.add(8, "Åtta åtta åtta");
+
             // Create a formatter to use for drawing a series using LineAndPointRenderer
             // and configure it from xml:
             LineAndPointFormatter lineAndPointFormatter = new LineAndPointFormatter();
             lineAndPointFormatter.setPointLabelFormatter(new PointLabelFormatter());
-            lineAndPointFormatter.configure(getActivity(),
-                    R.xml.line_point_formatter_with_plf1);
+            lineAndPointFormatter.configure(getActivity(), R.xml.line_point_formatter_with_plf1);
 
             // add a new series' to the xyplot:
             plot.addSeries(series1, lineAndPointFormatter);
@@ -113,9 +118,13 @@ public class MainActivity extends ActionBarActivity {
             // same as above:
             plot.addSeries(series2, lineAndPointFormatter);
 
+            Paint labelPaint = new Paint();
+            labelPaint.setAntiAlias(true);
+            labelPaint.setColor(Color.WHITE);
+            plot.addSeries(eventSeries, new EventFormatter(labelPaint));
+
             // reduce the number of range labels
             plot.setTicksPerRangeLabel(3);
-            plot.getGraphWidget().setDomainLabelOrientation(-45);
 
             return rootView;
         }

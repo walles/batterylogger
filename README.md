@@ -7,7 +7,10 @@ find out what makes battery usage increase.
 
 TODO
 ----
-* Make sure we can put markers in the graph.
+* Find out how to find model X-coordinate for an in-graph click. This
+would be used for showing event details when we click them. Try using
+ValPixConverter:
+http://androidplot.com/javadoc/0.6.0/com/androidplot/util/ValPixConverter.html
 
 * Make sure the graph is zoomable (by dragging vertically) and
 pannable (by dragging sideways).
@@ -36,3 +39,7 @@ http://androidplot.com/docs/quickstart/
 * Make sure we can push to googledrive.
 
 * Make sure we can show a graph with holes in it.
+
+* Make sure we can label individual points. This would be used for
+showing events in the graph. Try the PointLabeler as described here:
+http://androidplot.com/point-labeling-tools-in-0-5-1/

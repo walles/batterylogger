@@ -7,14 +7,6 @@ find out what makes battery usage increase.
 
 TODO
 ----
-* Find out how to find model X-coordinate for an in-graph click. This
-would be used for showing event details when we click them. Try using
-ValPixConverter:
-http://androidplot.com/javadoc/0.6.0/com/androidplot/util/ValPixConverter.html
-
-* Make sure the graph is zoomable (by dragging vertically) and
-pannable (by dragging sideways).
-
 * Make a data holder class that supports both receiving data,
 persisting it and presenting it to AndroidPlot.
 
@@ -25,8 +17,13 @@ persisting it and presenting it to AndroidPlot.
 * Make sure the service notifies the data holder about shutdowns and
 reboots.
 
-* Make sure the service notifies the data holder about charger plugins
+* Make sure the service notifies the data holder about charger connects
 and disconnects.
+
+* Find out how to find model X-coordinate for an in-graph click. This
+would be used for showing event details when we click them. Try using
+ValPixConverter:
+http://androidplot.com/javadoc/0.6.0/com/androidplot/util/ValPixConverter.html
 
 DONE
 ----
@@ -43,3 +40,8 @@ http://androidplot.com/docs/quickstart/
 * Make sure we can label individual points. This would be used for
 showing events in the graph. Try the PointLabeler as described here:
 http://androidplot.com/point-labeling-tools-in-0-5-1/
+
+* Make sure the graph is zoomable (by dragging vertically) and
+pannable (by dragging sideways). Have a look at
+http://androidplot.com/docs/how-to-pan-zoom-and-scale/ but use the
+system GestureDetector instead of rolling our own.

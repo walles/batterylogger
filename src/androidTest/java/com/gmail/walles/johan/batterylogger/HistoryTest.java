@@ -91,6 +91,26 @@ public class HistoryTest extends TestCase {
         assertDescriptions(testMe.getEvents(), "Start charging", "Stop charging");
     }
 
+    public void testMissingStartChargingEvent() {
+        History testMe = new History();
+        testMe.addBatteryLevelEvent(51, new Date(1 * HOUR_MS));
+        testMe.addBatteryLevelEvent(50, new Date(3 * HOUR_MS));
+
+        testMe.addBatteryLevelEvent(51, new Date(7 * HOUR_MS));
+        testMe.addStopChargingEvent(new Date(9 * HOUR_MS));
+
+        testMe.addBatteryLevelEvent(50, new Date(11 * HOUR_MS));
+        testMe.addBatteryLevelEvent(47, new Date(13 * HOUR_MS));
+
+        // Everything before the stop charging event should be ignored
+        assertEquals(1, testMe.getBatteryDrain().size());
+        assertValues(testMe.getBatteryDrain().get(0), 1.5);
+        assertTimestamps(testMe.getBatteryDrain().get(0), new Date(12 * HOUR_MS));
+
+        assertTimestamps(testMe.getEvents(), new Date(9 * HOUR_MS));
+        assertDescriptions(testMe.getEvents(), "Stop charging");
+    }
+
     public void testRebootEvents() {
         History testMe = new History();
         testMe.addBatteryLevelEvent(51, new Date(1 * HOUR_MS));
@@ -111,5 +131,25 @@ public class HistoryTest extends TestCase {
 
         assertTimestamps(testMe.getEvents(), new Date(5 * HOUR_MS), new Date(9 * HOUR_MS));
         assertDescriptions(testMe.getEvents(), "System shutting down", "System starting up");
+    }
+
+    public void testMissingShutdownEvent() {
+        History testMe = new History();
+        testMe.addBatteryLevelEvent(51, new Date(1 * HOUR_MS));
+        testMe.addBatteryLevelEvent(50, new Date(3 * HOUR_MS));
+
+        testMe.addBatteryLevelEvent(51, new Date(7 * HOUR_MS));
+        testMe.addSystemBootingEvent(new Date(9 * HOUR_MS));
+
+        testMe.addBatteryLevelEvent(50, new Date(11 * HOUR_MS));
+        testMe.addBatteryLevelEvent(47, new Date(13 * HOUR_MS));
+
+        // Everything before the system booting event should be ignored
+        assertEquals(1, testMe.getBatteryDrain().size());
+        assertValues(testMe.getBatteryDrain().get(0), 1.5);
+        assertTimestamps(testMe.getBatteryDrain().get(0), new Date(12 * HOUR_MS));
+
+        assertTimestamps(testMe.getEvents(), new Date(9 * HOUR_MS));
+        assertDescriptions(testMe.getEvents(), "System starting up");
     }
 }

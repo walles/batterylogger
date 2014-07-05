@@ -101,6 +101,12 @@ public class History {
                     xySeries = null;
                     continue;
                 case CHARGING_STOP:
+                    if (!charging) {
+                        // Missing start event; everything before this point is untrustworthy
+                        lastLevelEvent = null;
+                        xySeries = null;
+                        returnMe = new LinkedList<XYSeries>();
+                    }
                     charging = false;
                     continue;
                 case SYSTEM_SHUTDOWN:
@@ -109,6 +115,12 @@ public class History {
                     xySeries = null;
                     continue;
                 case SYSTEM_BOOT:
+                    if (!systemDown) {
+                        // Missing start event; everything before this point is untrustworthy
+                        lastLevelEvent = null;
+                        xySeries = null;
+                        returnMe = new LinkedList<XYSeries>();
+                    }
                     systemDown = false;
                     continue;
                 case BATTERY_LEVEL:

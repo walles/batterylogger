@@ -33,6 +33,15 @@ public class HistoryTest extends TestCase {
         assertEquals(Arrays.toString(expectedTimestamps), Arrays.toString(actualTimestamps));
     }
 
+    private void assertDescriptions(EventSeries events, String ... expectedDescriptions) {
+        // FIXME: This method should go via persistent storage to verify that as well
+        String actualDescriptions[] = new String[events.size()];
+        for (int i = 0; i < events.size(); i++) {
+            actualDescriptions[i] = events.getDescription(i);
+        }
+        assertEquals(Arrays.toString(expectedDescriptions), Arrays.toString(actualDescriptions));
+    }
+
     public void testOnlyBatteryEvents() {
         History testMe = new History();
         testMe.addBatteryLevelEvent(100, new Date(1 * HOUR_MS));
@@ -61,10 +70,46 @@ public class HistoryTest extends TestCase {
     }
 
     public void testChargingEvents() {
-        fail("Test not implemented");
+        History testMe = new History();
+        testMe.addBatteryLevelEvent(51, new Date(1 * HOUR_MS));
+        testMe.addBatteryLevelEvent(50, new Date(3 * HOUR_MS));
+
+        testMe.addStartChargingEvent(new Date(5 * HOUR_MS));
+        testMe.addBatteryLevelEvent(51, new Date(7 * HOUR_MS));
+        testMe.addStopChargingEvent(new Date(9 * HOUR_MS));
+
+        testMe.addBatteryLevelEvent(50, new Date(11 * HOUR_MS));
+        testMe.addBatteryLevelEvent(47, new Date(13 * HOUR_MS));
+
+        assertEquals(2, testMe.getBatteryDrain().size());
+        assertValues(testMe.getBatteryDrain().get(0), 0.5);
+        assertTimestamps(testMe.getBatteryDrain().get(0), new Date(2 * HOUR_MS));
+        assertValues(testMe.getBatteryDrain().get(1), 1.5);
+        assertTimestamps(testMe.getBatteryDrain().get(1), new Date(12 * HOUR_MS));
+
+        assertTimestamps(testMe.getEvents(), new Date(5 * HOUR_MS), new Date(9 * HOUR_MS));
+        assertDescriptions(testMe.getEvents(), "Start charging", "Stop charging");
     }
 
     public void testRebootEvents() {
-        fail("Test not implemented");
+        History testMe = new History();
+        testMe.addBatteryLevelEvent(51, new Date(1 * HOUR_MS));
+        testMe.addBatteryLevelEvent(50, new Date(3 * HOUR_MS));
+
+        testMe.addSystemHaltingEvent(new Date(5 * HOUR_MS));
+        testMe.addBatteryLevelEvent(51, new Date(7 * HOUR_MS));
+        testMe.addSystemBootingEvent(new Date(9 * HOUR_MS));
+
+        testMe.addBatteryLevelEvent(50, new Date(11 * HOUR_MS));
+        testMe.addBatteryLevelEvent(47, new Date(13 * HOUR_MS));
+
+        assertEquals(2, testMe.getBatteryDrain().size());
+        assertValues(testMe.getBatteryDrain().get(0), 0.5);
+        assertTimestamps(testMe.getBatteryDrain().get(0), new Date(2 * HOUR_MS));
+        assertValues(testMe.getBatteryDrain().get(1), 1.5);
+        assertTimestamps(testMe.getBatteryDrain().get(1), new Date(12 * HOUR_MS));
+
+        assertTimestamps(testMe.getEvents(), new Date(5 * HOUR_MS), new Date(9 * HOUR_MS));
+        assertDescriptions(testMe.getEvents(), "System shutting down", "System starting up");
     }
 }

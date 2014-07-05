@@ -21,14 +21,14 @@ public class History {
     /**
      * System halting.
      */
-    public void addSystemHaltEvent(Date timestamp) {
+    public void addSystemHaltingEvent(Date timestamp) {
 
     }
 
     /**
      * System starting up.
      */
-    public void addSystemBootEvent(Date timestamp) {
+    public void addSystemBootingEvent(Date timestamp) {
 
     }
 

@@ -1,13 +1,15 @@
 package com.gmail.walles.johan.batterylogger;
 
+import android.util.Log;
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeries;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+
+import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 
 public class History {
     public final static long HOUR_MS = 1000 * 3600;
@@ -85,10 +87,32 @@ public class History {
      * Add these series to a plot and you'll see how battery drain speed has changed over time.
      */
     public List<XYSeries> getBatteryDrain() {
-        SimpleXYSeries xySeries = new SimpleXYSeries("Battery Drain");
+        List<XYSeries> returnMe = new LinkedList<XYSeries>();
+        SimpleXYSeries xySeries = null;
 
+        boolean charging = false;
         Event lastLevelEvent = null;
         for (Event event : events) {
+            switch (event.type) {
+                case CHARGING_START:
+                    charging = true;
+                    lastLevelEvent = null;
+                    xySeries = null;
+                    continue;
+                case CHARGING_STOP:
+                    charging = false;
+                    continue;
+                case BATTERY_LEVEL:
+                    // Handled below
+                    break;
+                default:
+                    Log.w(TAG, "Drain: Unsupported event type " + event.type);
+                    continue;
+            }
+            if (charging) {
+                continue;
+            }
+
             if (event.type != Event.Type.BATTERY_LEVEL) {
                 continue;
             }
@@ -102,16 +126,17 @@ public class History {
                     (event.timestamp.getTime() - lastLevelEvent.timestamp.getTime()) / (double)HOUR_MS;
             double drain = (lastLevelEvent.percentage - event.percentage) / deltaHours;
             Date drainTimestamp = new Date((event.timestamp.getTime() + lastLevelEvent.timestamp.getTime()) / 2);
+
+            if (xySeries == null) {
+                xySeries = new SimpleXYSeries("Battery drain");
+                returnMe.add(xySeries);
+            }
             xySeries.addLast(toDouble(drainTimestamp), drain);
 
             lastLevelEvent = event;
         }
 
-        if (xySeries.size() == 0) {
-            return new LinkedList<XYSeries>();
-        }
-
-        return new LinkedList<XYSeries>(Arrays.asList(xySeries));
+        return returnMe;
     }
 
     /**

@@ -10,15 +10,22 @@ TODO
 * Make a data holder class that supports both receiving data,
 persisting it and presenting it to AndroidPlot.
 
-* Make a service that updates the data holder class.
+* Make a service that updates the data holder class with battery level
+change events.
 
 * Make sure the service starts on reboot.
+
+* Make sure the service notifies the data holder about charger connects
+and disconnects.
 
 * Make sure the service notifies the data holder about shutdowns and
 reboots.
 
-* Make sure the service notifies the data holder about charger connects
-and disconnects.
+* Make sure the service notifies the data holder about app upgrades,
+installs and uninstalls.
+
+* Make sure the service notifies the data holder about OS / kernel
+upgrades.
 
 * Find out how to find model X-coordinate for an in-graph click. This
 would be used for showing event details when we click them. Try using

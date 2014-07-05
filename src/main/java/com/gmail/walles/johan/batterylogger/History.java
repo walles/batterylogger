@@ -91,6 +91,7 @@ public class History {
         SimpleXYSeries xySeries = null;
 
         boolean charging = false;
+        boolean systemDown = false;
         Event lastLevelEvent = null;
         for (Event event : events) {
             switch (event.type) {
@@ -102,6 +103,14 @@ public class History {
                 case CHARGING_STOP:
                     charging = false;
                     continue;
+                case SYSTEM_SHUTDOWN:
+                    systemDown = true;
+                    lastLevelEvent = null;
+                    xySeries = null;
+                    continue;
+                case SYSTEM_BOOT:
+                    systemDown = false;
+                    continue;
                 case BATTERY_LEVEL:
                     // Handled below
                     break;
@@ -109,11 +118,7 @@ public class History {
                     Log.w(TAG, "Drain: Unsupported event type " + event.type);
                     continue;
             }
-            if (charging) {
-                continue;
-            }
-
-            if (event.type != Event.Type.BATTERY_LEVEL) {
+            if (charging || systemDown) {
                 continue;
             }
 

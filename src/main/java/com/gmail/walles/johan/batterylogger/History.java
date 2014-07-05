@@ -14,73 +14,32 @@ import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 public class History {
     public final static long HOUR_MS = 1000 * 3600;
 
-    private static class Event {
-        enum Type {
-            BATTERY_LEVEL,
-            CHARGING_START,
-            CHARGING_STOP,
-            SYSTEM_SHUTDOWN,
-            SYSTEM_BOOT
-        }
-
-        private final Date timestamp;
-        private final Type type;
-        private int percentage;
-
-        private Event(Date timestamp, Type type) {
-            this.timestamp = timestamp;
-            this.type = type;
-        }
-
-        public static Event createBatteryLevelEvent(int percentage, Date timestamp) {
-            Event event = new Event(timestamp, Type.BATTERY_LEVEL);
-            event.percentage = percentage;
-            return event;
-        }
-
-        public static Event createStartChargingEvent(Date timestamp) {
-            return new Event(timestamp, Type.CHARGING_START);
-        }
-
-        public static Event createStopChargingEvent(Date timestamp) {
-            return new Event(timestamp, Type.CHARGING_STOP);
-        }
-
-        public static Event createSystemHaltingEvent(Date timestamp) {
-            return new Event(timestamp, Type.SYSTEM_SHUTDOWN);
-        }
-
-        public static Event createSystemBootingEvent(Date timestamp) {
-            return new Event(timestamp, Type.SYSTEM_BOOT);
-        }
-    }
-
-    private final ArrayList<Event> events = new ArrayList<Event>();
+    private final ArrayList<HistoryEvent> events = new ArrayList<HistoryEvent>();
 
     public void addBatteryLevelEvent(int percentage, Date timestamp) {
-        events.add(Event.createBatteryLevelEvent(percentage, timestamp));
+        events.add(HistoryEvent.createBatteryLevelEvent(percentage, timestamp));
     }
 
     public void addStartChargingEvent(Date timestamp) {
-        events.add(Event.createStartChargingEvent(timestamp));
+        events.add(HistoryEvent.createStartChargingEvent(timestamp));
     }
 
     public void addStopChargingEvent(Date timestamp) {
-        events.add(Event.createStopChargingEvent(timestamp));
+        events.add(HistoryEvent.createStopChargingEvent(timestamp));
     }
 
     /**
      * System halting.
      */
     public void addSystemHaltingEvent(Date timestamp) {
-        events.add(Event.createSystemHaltingEvent(timestamp));
+        events.add(HistoryEvent.createSystemHaltingEvent(timestamp));
     }
 
     /**
      * System starting up.
      */
     public void addSystemBootingEvent(Date timestamp) {
-        events.add(Event.createSystemBootingEvent(timestamp));
+        events.add(HistoryEvent.createSystemBootingEvent(timestamp));
     }
 
     /**
@@ -92,9 +51,9 @@ public class History {
 
         boolean charging = false;
         boolean systemDown = false;
-        Event lastLevelEvent = null;
-        for (Event event : events) {
-            switch (event.type) {
+        HistoryEvent lastLevelEvent = null;
+        for (HistoryEvent event : events) {
+            switch (event.getType()) {
                 case CHARGING_START:
                     charging = true;
                     lastLevelEvent = null;
@@ -127,7 +86,7 @@ public class History {
                     // Handled below
                     break;
                 default:
-                    Log.w(TAG, "Drain: Unsupported event type " + event.type);
+                    Log.w(TAG, "Drain: Unsupported event type " + event.getType());
                     continue;
             }
             if (charging || systemDown) {
@@ -140,9 +99,9 @@ public class History {
             }
 
             double deltaHours =
-                    (event.timestamp.getTime() - lastLevelEvent.timestamp.getTime()) / (double)HOUR_MS;
-            double drain = (lastLevelEvent.percentage - event.percentage) / deltaHours;
-            Date drainTimestamp = new Date((event.timestamp.getTime() + lastLevelEvent.timestamp.getTime()) / 2);
+                    (event.getTimestamp().getTime() - lastLevelEvent.getTimestamp().getTime()) / (double)HOUR_MS;
+            double drain = (lastLevelEvent.getPercentage() - event.getPercentage()) / deltaHours;
+            Date drainTimestamp = new Date((event.getTimestamp().getTime() + lastLevelEvent.getTimestamp().getTime()) / 2);
 
             if (xySeries == null) {
                 xySeries = new SimpleXYSeries("Battery drain");
@@ -161,13 +120,13 @@ public class History {
      */
     public EventSeries getEvents() {
         EventSeries returnMe = new EventSeries();
-        for (Event event : events) {
-            if (event.type == Event.Type.BATTERY_LEVEL) {
+        for (HistoryEvent event : events) {
+            if (event.getType() == HistoryEvent.Type.BATTERY_LEVEL) {
                 continue;
             }
 
             String description;
-            switch (event.type) {
+            switch (event.getType()) {
                 case CHARGING_START:
                     description = "Start charging";
                     break;
@@ -181,9 +140,9 @@ public class History {
                     description = "System shutting down";
                     break;
                 default:
-                    description = "Unknown event type " + event.type;
+                    description = "Unknown event type " + event.getType();
             }
-            returnMe.add(toDouble(event.timestamp), description);
+            returnMe.add(toDouble(event.getTimestamp()), description);
         }
         return returnMe;
     }

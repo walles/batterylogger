@@ -21,6 +21,10 @@ and disconnects.
 * Make sure the service notifies the data holder about shutdowns and
 reboots.
 
+* Manually test cross-reboot statistics gathering to see that we can
+handle starting, stopping, continuing charging or not-charging while
+down.
+
 * Make sure the service notifies the data holder about app upgrades,
 installs and uninstalls.
 

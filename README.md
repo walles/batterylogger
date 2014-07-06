@@ -7,8 +7,8 @@ find out what makes battery usage increase.
 
 TODO
 ----
-* Make a data holder class that supports both receiving data,
-persisting it and presenting it to AndroidPlot.
+* Make sure we can handle the case when the battery gets pulled on us
+followed by a restart.
 
 * Make a service that updates the data holder class with battery level
 change events.
@@ -21,9 +21,6 @@ and disconnects.
 * Make sure the service notifies the data holder about shutdowns and
 reboots.
 
-* Make sure we can handle the case when the battery gets pulled on us
-followed by a restart.
-
 * Manually test cross-reboot statistics gathering to see that we can
 handle starting, stopping, continuing charging or not-charging while
 down.
@@ -33,6 +30,8 @@ installs and uninstalls.
 
 * Make sure the service notifies the data holder about OS / kernel
 upgrades.
+
+* See if we can detect enabling / disabling of Google Now.
 
 * Find out how to find model X-coordinate for an in-graph click. This
 would be used for showing event details when we click them. Try using
@@ -59,3 +58,6 @@ http://androidplot.com/point-labeling-tools-in-0-5-1/
 pannable (by dragging sideways). Have a look at
 http://androidplot.com/docs/how-to-pan-zoom-and-scale/ but use the
 system GestureDetector instead of rolling our own.
+
+* Make a data holder class that supports both receiving data,
+persisting it and presenting it to AndroidPlot.

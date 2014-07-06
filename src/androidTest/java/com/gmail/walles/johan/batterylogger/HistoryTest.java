@@ -24,7 +24,7 @@ public class HistoryTest extends AndroidTestCase {
         assertTrue(testStorage.delete());
     }
 
-    private void assertValues(int index, double ... expectedValues) {
+    private void assertValues(int index, double ... expectedValues) throws Exception {
         XYSeries batteryDrain = new History(testStorage).getBatteryDrain().get(index);
         double actualValues[] = new double[batteryDrain.size()];
         for (int i = 0; i < batteryDrain.size(); i++) {
@@ -33,7 +33,7 @@ public class HistoryTest extends AndroidTestCase {
         assertEquals(Arrays.toString(expectedValues), Arrays.toString(actualValues));
     }
 
-    private void assertDrainTimestamps(int index, Date ... expectedTimestamps) {
+    private void assertDrainTimestamps(int index, Date ... expectedTimestamps) throws Exception {
         XYSeries series = new History(testStorage).getBatteryDrain().get(index);
         Date actualTimestamps[] = new Date[series.size()];
         for (int i = 0; i < series.size(); i++) {
@@ -42,7 +42,7 @@ public class HistoryTest extends AndroidTestCase {
         assertEquals(Arrays.toString(expectedTimestamps), Arrays.toString(actualTimestamps));
     }
 
-    private void assertEventTimestamps(Date ... expectedTimestamps) {
+    private void assertEventTimestamps(Date ... expectedTimestamps) throws Exception {
         XYSeries series = new History(testStorage).getEvents();
         Date actualTimestamps[] = new Date[series.size()];
         for (int i = 0; i < series.size(); i++) {
@@ -51,7 +51,7 @@ public class HistoryTest extends AndroidTestCase {
         assertEquals(Arrays.toString(expectedTimestamps), Arrays.toString(actualTimestamps));
     }
 
-    private void assertEventDescriptions(String... expectedDescriptions) {
+    private void assertEventDescriptions(String... expectedDescriptions) throws Exception {
         EventSeries events = new History(testStorage).getEvents();
         String actualDescriptions[] = new String[events.size()];
         for (int i = 0; i < events.size(); i++) {
@@ -60,21 +60,21 @@ public class HistoryTest extends AndroidTestCase {
         assertEquals(Arrays.toString(expectedDescriptions), Arrays.toString(actualDescriptions));
     }
 
-    private void assertNoEvents() {
+    private void assertNoEvents() throws Exception {
         assertEventTimestamps(/* Empty */);
         assertEventDescriptions(/* Empty */);
     }
 
-    private void assertBatteryDrainSize(int expectedSize) {
+    private void assertBatteryDrainSize(int expectedSize) throws Exception {
         assertEquals(expectedSize, new History(testStorage).getBatteryDrain().size());
     }
 
-    public void testBlank() {
+    public void testBlank() throws Exception {
         assertBatteryDrainSize(0);
         assertNoEvents();
     }
 
-    public void testOnlyBatteryEvents() {
+    public void testOnlyBatteryEvents() throws Exception {
         History testMe = new History(testStorage);
         testMe.addBatteryLevelEvent(100, new Date(1 * History.HOUR_MS));
         assertBatteryDrainSize(0);
@@ -99,7 +99,7 @@ public class HistoryTest extends AndroidTestCase {
         assertValues(0, 1.0, 2.0);
     }
 
-    public void testChargingEvents() {
+    public void testChargingEvents() throws Exception {
         History testMe = new History(testStorage);
         testMe.addBatteryLevelEvent(51, new Date(1 * History.HOUR_MS));
         testMe.addBatteryLevelEvent(50, new Date(3 * History.HOUR_MS));
@@ -121,7 +121,7 @@ public class HistoryTest extends AndroidTestCase {
         assertEventDescriptions("Start charging", "Stop charging");
     }
 
-    public void testMissingStartChargingEvent() {
+    public void testMissingStartChargingEvent() throws Exception {
         History testMe = new History(testStorage);
         testMe.addBatteryLevelEvent(51, new Date(1 * History.HOUR_MS));
         testMe.addBatteryLevelEvent(50, new Date(3 * History.HOUR_MS));
@@ -141,7 +141,7 @@ public class HistoryTest extends AndroidTestCase {
         assertEventDescriptions("Stop charging");
     }
 
-    public void testRebootEvents() {
+    public void testRebootEvents() throws Exception {
         History testMe = new History(testStorage);
         testMe.addBatteryLevelEvent(51, new Date(1 * History.HOUR_MS));
         testMe.addBatteryLevelEvent(50, new Date(3 * History.HOUR_MS));
@@ -163,7 +163,7 @@ public class HistoryTest extends AndroidTestCase {
         assertEventDescriptions("System shutting down", "System starting up");
     }
 
-    public void testMissingShutdownEvent() {
+    public void testMissingShutdownEvent() throws Exception {
         History testMe = new History(testStorage);
         testMe.addBatteryLevelEvent(51, new Date(1 * History.HOUR_MS));
         testMe.addBatteryLevelEvent(50, new Date(3 * History.HOUR_MS));

@@ -1,11 +1,17 @@
 package com.gmail.walles.johan.batterylogger;
 
-import android.provider.ContactsContract;
 import android.util.Log;
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeries;
+import org.jetbrains.annotations.Nullable;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
@@ -16,52 +22,72 @@ import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 public class History {
     public final static long HOUR_MS = 1000 * 3600;
 
-    private final ArrayList<HistoryEvent> events = new ArrayList<HistoryEvent>();
+    @Nullable
+    private ArrayList<HistoryEvent> eventsFromStorage;
+
+    private final File storage;
 
     public History(File storage) {
+        this.storage = storage;
     }
 
-    private void addEvent(HistoryEvent event) {
-        events.add(event);
+    private void addEvent(HistoryEvent event) throws IOException {
+        if (eventsFromStorage != null) {
+            // Add in memory
+            eventsFromStorage.add(event);
+        }
+
+        PrintWriter printWriter = null;
+        try {
+            printWriter = new PrintWriter(new FileWriter(storage, true));
+            printWriter.println(event.serializeToString());
+        } finally {
+            if (printWriter != null) {
+                printWriter.close();
+            }
+        }
     }
 
-    public void addBatteryLevelEvent(int percentage, Date timestamp) {
+    public void addBatteryLevelEvent(int percentage, Date timestamp) throws IOException {
         addEvent(HistoryEvent.createBatteryLevelEvent(percentage, timestamp));
     }
 
-    public void addStartChargingEvent(Date timestamp) {
+    public void addStartChargingEvent(Date timestamp) throws IOException {
         addEvent(HistoryEvent.createStartChargingEvent(timestamp));
     }
 
-    public void addStopChargingEvent(Date timestamp) {
+    public void addStopChargingEvent(Date timestamp) throws IOException {
         addEvent(HistoryEvent.createStopChargingEvent(timestamp));
     }
 
     /**
      * System halting.
      */
-    public void addSystemHaltingEvent(Date timestamp) {
+    public void addSystemHaltingEvent(Date timestamp) throws IOException {
         addEvent(HistoryEvent.createSystemHaltingEvent(timestamp));
     }
 
     /**
      * System starting up.
      */
-    public void addSystemBootingEvent(Date timestamp) {
+    public void addSystemBootingEvent(Date timestamp) throws IOException {
         addEvent(HistoryEvent.createSystemBootingEvent(timestamp));
     }
 
     /**
      * Add these series to a plot and you'll see how battery drain speed has changed over time.
      */
-    public List<XYSeries> getBatteryDrain() {
+    public List<XYSeries> getBatteryDrain() throws IOException {
         List<XYSeries> returnMe = new LinkedList<XYSeries>();
         SimpleXYSeries xySeries = null;
 
         boolean charging = false;
         boolean systemDown = false;
         HistoryEvent lastLevelEvent = null;
-        for (HistoryEvent event : events) {
+        if (eventsFromStorage == null) {
+            eventsFromStorage = readEventsFromStorage();
+        }
+        for (HistoryEvent event : eventsFromStorage) {
             switch (event.getType()) {
                 case CHARGING_START:
                     charging = true;
@@ -124,12 +150,41 @@ public class History {
         return returnMe;
     }
 
+    private ArrayList<HistoryEvent> readEventsFromStorage() throws IOException {
+        ArrayList<HistoryEvent> returnMe = new ArrayList<HistoryEvent>();
+
+        BufferedReader reader = null;
+        int lineNumber = 1;
+        try {
+            reader = new BufferedReader(new FileReader(storage));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                try {
+                    returnMe.add(HistoryEvent.deserializeFromString(line));
+                } catch (ParseException e) {
+                    // Log this but keep going and hope we get the gist of it
+                    Log.w(TAG, "Reading storage file failed at line " + lineNumber + ": " + storage.getAbsolutePath(), e);
+                }
+                lineNumber++;
+            }
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
+        }
+
+        return returnMe;
+    }
+
     /**
      * Add this to a plot and you'll hopefully see what events affect your battery usage.
      */
-    public EventSeries getEvents() {
+    public EventSeries getEvents() throws IOException {
         EventSeries returnMe = new EventSeries();
-        for (HistoryEvent event : events) {
+        if (eventsFromStorage == null) {
+            eventsFromStorage = readEventsFromStorage();
+        }
+        for (HistoryEvent event : eventsFromStorage) {
             if (event.getType() == HistoryEvent.Type.BATTERY_LEVEL) {
                 continue;
             }

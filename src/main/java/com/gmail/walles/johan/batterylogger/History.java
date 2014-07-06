@@ -1,9 +1,11 @@
 package com.gmail.walles.johan.batterylogger;
 
+import android.provider.ContactsContract;
 import android.util.Log;
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeries;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedList;
@@ -16,30 +18,37 @@ public class History {
 
     private final ArrayList<HistoryEvent> events = new ArrayList<HistoryEvent>();
 
+    public History(File storage) {
+    }
+
+    private void addEvent(HistoryEvent event) {
+        events.add(event);
+    }
+
     public void addBatteryLevelEvent(int percentage, Date timestamp) {
-        events.add(HistoryEvent.createBatteryLevelEvent(percentage, timestamp));
+        addEvent(HistoryEvent.createBatteryLevelEvent(percentage, timestamp));
     }
 
     public void addStartChargingEvent(Date timestamp) {
-        events.add(HistoryEvent.createStartChargingEvent(timestamp));
+        addEvent(HistoryEvent.createStartChargingEvent(timestamp));
     }
 
     public void addStopChargingEvent(Date timestamp) {
-        events.add(HistoryEvent.createStopChargingEvent(timestamp));
+        addEvent(HistoryEvent.createStopChargingEvent(timestamp));
     }
 
     /**
      * System halting.
      */
     public void addSystemHaltingEvent(Date timestamp) {
-        events.add(HistoryEvent.createSystemHaltingEvent(timestamp));
+        addEvent(HistoryEvent.createSystemHaltingEvent(timestamp));
     }
 
     /**
      * System starting up.
      */
     public void addSystemBootingEvent(Date timestamp) {
-        events.add(HistoryEvent.createSystemBootingEvent(timestamp));
+        addEvent(HistoryEvent.createSystemBootingEvent(timestamp));
     }
 
     /**

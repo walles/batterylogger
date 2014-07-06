@@ -21,6 +21,9 @@ and disconnects.
 * Make sure the service notifies the data holder about shutdowns and
 reboots.
 
+* Make sure we can handle the case when the battery gets pulled on us
+followed by a restart.
+
 * Manually test cross-reboot statistics gathering to see that we can
 handle starting, stopping, continuing charging or not-charging while
 down.

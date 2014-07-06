@@ -1,14 +1,31 @@
 package com.gmail.walles.johan.batterylogger;
 
+import android.test.AndroidTestCase;
 import com.androidplot.xy.XYSeries;
-import junit.framework.TestCase;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Date;
 
-public class HistoryTest extends TestCase {
-    private void assertValues(XYSeries batteryDrain, double ... expectedValues) {
-        // FIXME: This method should go via persistent storage to verify that as well
+public class HistoryTest extends AndroidTestCase {
+    private File testStorage;
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+
+        testStorage = File.createTempFile("historytest", ".txt");
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+
+        assertTrue(testStorage.delete());
+    }
+
+    private void assertValues(int index, double ... expectedValues) {
+        XYSeries batteryDrain = new History(testStorage).getBatteryDrain().get(index);
         double actualValues[] = new double[batteryDrain.size()];
         for (int i = 0; i < batteryDrain.size(); i++) {
             actualValues[i] = batteryDrain.getY(i).doubleValue();
@@ -16,8 +33,8 @@ public class HistoryTest extends TestCase {
         assertEquals(Arrays.toString(expectedValues), Arrays.toString(actualValues));
     }
 
-    private void assertTimestamps(XYSeries series, Date ... expectedTimestamps) {
-        // FIXME: This method should go via persistent storage to verify that as well
+    private void assertDrainTimestamps(int index, Date ... expectedTimestamps) {
+        XYSeries series = new History(testStorage).getBatteryDrain().get(index);
         Date actualTimestamps[] = new Date[series.size()];
         for (int i = 0; i < series.size(); i++) {
             actualTimestamps[i] = History.toDate(series.getX(i));
@@ -25,8 +42,17 @@ public class HistoryTest extends TestCase {
         assertEquals(Arrays.toString(expectedTimestamps), Arrays.toString(actualTimestamps));
     }
 
-    private void assertDescriptions(EventSeries events, String ... expectedDescriptions) {
-        // FIXME: This method should go via persistent storage to verify that as well
+    private void assertEventTimestamps(Date ... expectedTimestamps) {
+        XYSeries series = new History(testStorage).getEvents();
+        Date actualTimestamps[] = new Date[series.size()];
+        for (int i = 0; i < series.size(); i++) {
+            actualTimestamps[i] = History.toDate(series.getX(i));
+        }
+        assertEquals(Arrays.toString(expectedTimestamps), Arrays.toString(actualTimestamps));
+    }
+
+    private void assertEventDescriptions(String... expectedDescriptions) {
+        EventSeries events = new History(testStorage).getEvents();
         String actualDescriptions[] = new String[events.size()];
         for (int i = 0; i < events.size(); i++) {
             actualDescriptions[i] = events.getDescription(i);
@@ -34,41 +60,47 @@ public class HistoryTest extends TestCase {
         assertEquals(Arrays.toString(expectedDescriptions), Arrays.toString(actualDescriptions));
     }
 
+    private void assertNoEvents() {
+        assertEventTimestamps(/* Empty */);
+        assertEventDescriptions(/* Empty */);
+    }
+
+    private void assertBatteryDrainSize(int expectedSize) {
+        assertEquals(expectedSize, new History(testStorage).getBatteryDrain().size());
+    }
+
     public void testBlank() {
-        History testMe = new History();
-        assertEquals(0, testMe.getBatteryDrain().size());
-        assertEquals(0, testMe.getEvents().size());
+        assertBatteryDrainSize(0);
+        assertNoEvents();
     }
 
     public void testOnlyBatteryEvents() {
-        History testMe = new History();
+        History testMe = new History(testStorage);
         testMe.addBatteryLevelEvent(100, new Date(1 * History.HOUR_MS));
-        assertEquals(0, testMe.getBatteryDrain().size());
-        assertEquals(0, testMe.getEvents().size());
+        assertBatteryDrainSize(0);
+        assertNoEvents();
 
         testMe.addBatteryLevelEvent(98, new Date(3 * History.HOUR_MS));
-        assertEquals(1, testMe.getBatteryDrain().size());
-        assertEquals(0, testMe.getEvents().size());
+        assertBatteryDrainSize(1);
+        assertNoEvents();
 
-        XYSeries batteryDrainSeries = testMe.getBatteryDrain().get(0);
         // Drain timestamp should be between the sample timestamps
-        assertTimestamps(batteryDrainSeries, new Date(2 * History.HOUR_MS));
+        assertDrainTimestamps(0, new Date(2 * History.HOUR_MS));
         // From 100% to 98% in two hours = 1%/h
-        assertValues(batteryDrainSeries, 1.0);
+        assertValues(0, 1.0);
 
         testMe.addBatteryLevelEvent(94, new Date(5 * History.HOUR_MS));
-        assertEquals(1, testMe.getBatteryDrain().size());
-        assertEquals(0, testMe.getEvents().size());
+        assertBatteryDrainSize(1);
+        assertNoEvents();
 
-        batteryDrainSeries = testMe.getBatteryDrain().get(0);
-        assertTimestamps(batteryDrainSeries, new Date(2 * History.HOUR_MS), new Date(4 * History.HOUR_MS));
+        assertDrainTimestamps(0, new Date(2 * History.HOUR_MS), new Date(4 * History.HOUR_MS));
         // From 100% to 98% in two hours = 1%/h
         // From 98% to 94% in two hours = 2%/h
-        assertValues(batteryDrainSeries, 1.0, 2.0);
+        assertValues(0, 1.0, 2.0);
     }
 
     public void testChargingEvents() {
-        History testMe = new History();
+        History testMe = new History(testStorage);
         testMe.addBatteryLevelEvent(51, new Date(1 * History.HOUR_MS));
         testMe.addBatteryLevelEvent(50, new Date(3 * History.HOUR_MS));
 
@@ -79,18 +111,18 @@ public class HistoryTest extends TestCase {
         testMe.addBatteryLevelEvent(50, new Date(11 * History.HOUR_MS));
         testMe.addBatteryLevelEvent(47, new Date(13 * History.HOUR_MS));
 
-        assertEquals(2, testMe.getBatteryDrain().size());
-        assertValues(testMe.getBatteryDrain().get(0), 0.5);
-        assertTimestamps(testMe.getBatteryDrain().get(0), new Date(2 * History.HOUR_MS));
-        assertValues(testMe.getBatteryDrain().get(1), 1.5);
-        assertTimestamps(testMe.getBatteryDrain().get(1), new Date(12 * History.HOUR_MS));
+        assertBatteryDrainSize(2);
+        assertValues(0, 0.5);
+        assertDrainTimestamps(0, new Date(2 * History.HOUR_MS));
+        assertValues(1, 1.5);
+        assertDrainTimestamps(1, new Date(12 * History.HOUR_MS));
 
-        assertTimestamps(testMe.getEvents(), new Date(5 * History.HOUR_MS), new Date(9 * History.HOUR_MS));
-        assertDescriptions(testMe.getEvents(), "Start charging", "Stop charging");
+        assertEventTimestamps(new Date(5 * History.HOUR_MS), new Date(9 * History.HOUR_MS));
+        assertEventDescriptions("Start charging", "Stop charging");
     }
 
     public void testMissingStartChargingEvent() {
-        History testMe = new History();
+        History testMe = new History(testStorage);
         testMe.addBatteryLevelEvent(51, new Date(1 * History.HOUR_MS));
         testMe.addBatteryLevelEvent(50, new Date(3 * History.HOUR_MS));
 
@@ -101,16 +133,16 @@ public class HistoryTest extends TestCase {
         testMe.addBatteryLevelEvent(47, new Date(13 * History.HOUR_MS));
 
         // Everything before the stop charging event should be ignored
-        assertEquals(1, testMe.getBatteryDrain().size());
-        assertValues(testMe.getBatteryDrain().get(0), 1.5);
-        assertTimestamps(testMe.getBatteryDrain().get(0), new Date(12 * History.HOUR_MS));
+        assertBatteryDrainSize(1);
+        assertValues(0, 1.5);
+        assertDrainTimestamps(0, new Date(12 * History.HOUR_MS));
 
-        assertTimestamps(testMe.getEvents(), new Date(9 * History.HOUR_MS));
-        assertDescriptions(testMe.getEvents(), "Stop charging");
+        assertEventTimestamps(new Date(9 * History.HOUR_MS));
+        assertEventDescriptions("Stop charging");
     }
 
     public void testRebootEvents() {
-        History testMe = new History();
+        History testMe = new History(testStorage);
         testMe.addBatteryLevelEvent(51, new Date(1 * History.HOUR_MS));
         testMe.addBatteryLevelEvent(50, new Date(3 * History.HOUR_MS));
 
@@ -121,18 +153,18 @@ public class HistoryTest extends TestCase {
         testMe.addBatteryLevelEvent(50, new Date(11 * History.HOUR_MS));
         testMe.addBatteryLevelEvent(47, new Date(13 * History.HOUR_MS));
 
-        assertEquals(2, testMe.getBatteryDrain().size());
-        assertValues(testMe.getBatteryDrain().get(0), 0.5);
-        assertTimestamps(testMe.getBatteryDrain().get(0), new Date(2 * History.HOUR_MS));
-        assertValues(testMe.getBatteryDrain().get(1), 1.5);
-        assertTimestamps(testMe.getBatteryDrain().get(1), new Date(12 * History.HOUR_MS));
+        assertBatteryDrainSize(2);
+        assertValues(0, 0.5);
+        assertDrainTimestamps(0, new Date(2 * History.HOUR_MS));
+        assertValues(1, 1.5);
+        assertDrainTimestamps(1, new Date(12 * History.HOUR_MS));
 
-        assertTimestamps(testMe.getEvents(), new Date(5 * History.HOUR_MS), new Date(9 * History.HOUR_MS));
-        assertDescriptions(testMe.getEvents(), "System shutting down", "System starting up");
+        assertEventTimestamps(new Date(5 * History.HOUR_MS), new Date(9 * History.HOUR_MS));
+        assertEventDescriptions("System shutting down", "System starting up");
     }
 
     public void testMissingShutdownEvent() {
-        History testMe = new History();
+        History testMe = new History(testStorage);
         testMe.addBatteryLevelEvent(51, new Date(1 * History.HOUR_MS));
         testMe.addBatteryLevelEvent(50, new Date(3 * History.HOUR_MS));
 
@@ -143,11 +175,11 @@ public class HistoryTest extends TestCase {
         testMe.addBatteryLevelEvent(47, new Date(13 * History.HOUR_MS));
 
         // Everything before the system booting event should be ignored
-        assertEquals(1, testMe.getBatteryDrain().size());
-        assertValues(testMe.getBatteryDrain().get(0), 1.5);
-        assertTimestamps(testMe.getBatteryDrain().get(0), new Date(12 * History.HOUR_MS));
+        assertBatteryDrainSize(1);
+        assertValues(0, 1.5);
+        assertDrainTimestamps(0, new Date(12 * History.HOUR_MS));
 
-        assertTimestamps(testMe.getEvents(), new Date(9 * History.HOUR_MS));
-        assertDescriptions(testMe.getEvents(), "System starting up");
+        assertEventTimestamps(new Date(9 * History.HOUR_MS));
+        assertEventDescriptions("System starting up");
     }
 }

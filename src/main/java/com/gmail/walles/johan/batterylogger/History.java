@@ -1,5 +1,6 @@
 package com.gmail.walles.johan.batterylogger;
 
+import android.content.Context;
 import android.util.Log;
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeries;
@@ -28,8 +29,18 @@ public class History {
 
     private final File storage;
 
-    public History(File storage) {
+    /**
+     * Unit-testing only constructor.
+     */
+    History(File storage) {
         this.storage = storage;
+    }
+
+    /**
+     * Create a history object that logs its events to a default location.
+     */
+    public History(Context context) {
+        this.storage = new File(context.getFilesDir(), "events.log");
     }
 
     private void addEvent(HistoryEvent event) throws IOException {

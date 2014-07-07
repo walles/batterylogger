@@ -7,8 +7,7 @@ find out what makes battery usage increase.
 
 TODO
 ----
-* Make a service that updates the data holder class with battery level
-change events.
+* Make the main activity plot actual events from the log file.
 
 * Make sure the service starts on reboot.
 
@@ -32,6 +31,11 @@ upgrades.
 
 * Make sure we rotate the history file when it gets too big. Aim for
 keeping a month or more of stats at hand.
+
+* Make a preference for disabling the service.
+
+* Detect unclean shutdowns of the EventListener service and do something
+appropriate...
 
 * Find out how to find model X-coordinate for an in-graph click. This
 would be used for showing event details when we click them. Try using
@@ -64,3 +68,6 @@ persisting it and presenting it to AndroidPlot.
 
 * Make sure we can handle the case when the battery gets pulled on us
 followed by a restart.
+
+* Make a service that updates the data holder class with battery level
+change events.

@@ -71,8 +71,8 @@ public class History {
     /**
      * System starting up.
      */
-    public void addSystemBootingEvent(Date timestamp) throws IOException {
-        addEvent(HistoryEvent.createSystemBootingEvent(timestamp));
+    public void addSystemBootingEvent(Date timestamp, boolean isCharging) throws IOException {
+        addEvent(HistoryEvent.createSystemBootingEvent(timestamp, isCharging));
     }
 
     /**
@@ -109,13 +109,15 @@ public class History {
                     lastLevelEvent = null;
                     xySeries = null;
                     continue;
-                case SYSTEM_BOOT:
+                case SYSTEM_BOOT_CHARGING:
+                case SYSTEM_BOOT_UNPLUGGED:
                     if (!systemDown) {
                         // Missing shutdown event; assume an unclean shutdown and start on a new series
                         lastLevelEvent = null;
                         xySeries = null;
                     }
                     systemDown = false;
+                    charging = (event.getType() == HistoryEvent.Type.SYSTEM_BOOT_CHARGING);
                     continue;
                 case BATTERY_LEVEL:
                     // Handled below
@@ -204,7 +206,8 @@ public class History {
                 case CHARGING_STOP:
                     description = "Stop charging";
                     break;
-                case SYSTEM_BOOT:
+                case SYSTEM_BOOT_CHARGING:
+                case SYSTEM_BOOT_UNPLUGGED:
                     if (!systemDown) {
                         // Assume an unclean shutdown and insert a fake unclean-shutdown event
                         Date uncleanShutdownTimestamp;
@@ -217,7 +220,11 @@ public class History {
                         returnMe.add(toDouble(uncleanShutdownTimestamp), "Unclean shutdown");
                     }
 
-                    description = "System starting up";
+                    if (event.getType() == HistoryEvent.Type.SYSTEM_BOOT_CHARGING) {
+                        description = "System starting up (charging)";
+                    } else {
+                        description = "System starting up (not charging)";
+                    }
                     systemDown = false;
                     break;
                 case SYSTEM_SHUTDOWN:

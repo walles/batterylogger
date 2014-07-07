@@ -9,7 +9,8 @@ class HistoryEvent {
         CHARGING_START,
         CHARGING_STOP,
         SYSTEM_SHUTDOWN,
-        SYSTEM_BOOT
+        SYSTEM_BOOT_CHARGING,
+        SYSTEM_BOOT_UNPLUGGED
     }
 
     private final Date timestamp;
@@ -55,8 +56,12 @@ class HistoryEvent {
         return new HistoryEvent(timestamp, Type.SYSTEM_SHUTDOWN);
     }
 
-    public static HistoryEvent createSystemBootingEvent(Date timestamp) {
-        return new HistoryEvent(timestamp, Type.SYSTEM_BOOT);
+    public static HistoryEvent createSystemBootingEvent(Date timestamp, boolean isCharging) {
+        if (isCharging) {
+            return new HistoryEvent(timestamp, Type.SYSTEM_BOOT_CHARGING);
+        } else {
+            return new HistoryEvent(timestamp, Type.SYSTEM_BOOT_UNPLUGGED);
+        }
     }
 
     public static HistoryEvent deserializeFromString(String serialization) throws ParseException {

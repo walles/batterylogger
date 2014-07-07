@@ -30,7 +30,7 @@ public class HistoryEventTest extends TestCase {
     }
 
     public void testCreateSystemBootingEvent() throws Exception {
-        HistoryEvent testMe = HistoryEvent.createSystemBootingEvent(new Date(12345678));
+        HistoryEvent testMe = HistoryEvent.createSystemBootingEvent(new Date(12345678), true);
         HistoryEvent recycled = HistoryEvent.deserializeFromString(testMe.serializeToString());
         assertEquals(testMe, recycled);
     }

@@ -112,6 +112,9 @@ public class History {
                 case BATTERY_LEVEL:
                     // Handled below
                     break;
+                case INFO:
+                    // Doesn't affect drain
+                    continue;
                 default:
                     Log.w(TAG, "Drain: Unsupported event type " + event.getType());
                     continue;
@@ -172,6 +175,8 @@ public class History {
                 reader.close();
             }
         }
+
+        Log.i(TAG, returnMe.size() + " events read from " + storage.getAbsolutePath());
 
         return returnMe;
     }

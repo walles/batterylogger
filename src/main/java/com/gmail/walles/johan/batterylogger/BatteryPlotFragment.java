@@ -157,8 +157,8 @@ public class BatteryPlotFragment extends Fragment {
         });
 
         plot.calculateMinMaxVals();
-        minXY = new PointF(plot.getCalculatedMinX().floatValue(), plot.getCalculatedMinY().floatValue());
-        maxXY = new PointF(plot.getCalculatedMaxX().floatValue(), plot.getCalculatedMaxY().floatValue());
+        minXY = new PointF(plot.getCalculatedMinX().floatValue(), 0);
+        maxXY = new PointF(plot.getCalculatedMaxX().floatValue(), Math.max(plot.getCalculatedMaxY().floatValue(), 9f));
         originalMinXY = new PointF(minXY.x, minXY.y);
         originalMaxXY = new PointF(maxXY.x, maxXY.y);
         plot.setRangeBoundaries(minXY.y, maxXY.y, BoundaryMode.FIXED);

@@ -7,9 +7,6 @@ find out what makes battery usage increase.
 
 TODO
 ----
-* Make sure we can handle the case when the battery gets pulled on us
-followed by a restart.
-
 * Make a service that updates the data holder class with battery level
 change events.
 
@@ -32,6 +29,9 @@ installs and uninstalls.
 upgrades.
 
 * See if we can detect enabling / disabling of Google Now.
+
+* Make sure we rotate the history file when it gets too big. Aim for
+keeping a month or more of stats at hand.
 
 * Find out how to find model X-coordinate for an in-graph click. This
 would be used for showing event details when we click them. Try using
@@ -61,3 +61,6 @@ system GestureDetector instead of rolling our own.
 
 * Make a data holder class that supports both receiving data,
 persisting it and presenting it to AndroidPlot.
+
+* Make sure we can handle the case when the battery gets pulled on us
+followed by a restart.

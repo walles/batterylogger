@@ -163,23 +163,28 @@ public class HistoryTest extends AndroidTestCase {
         assertEventDescriptions("System shutting down", "System starting up");
     }
 
+    /**
+     * This would happen at unclean shutdowns; device crashes, battery runs out or is removed.
+     */
     public void testMissingShutdownEvent() throws Exception {
         History testMe = new History(testStorage);
         testMe.addBatteryLevelEvent(51, new Date(1 * History.HOUR_MS));
         testMe.addBatteryLevelEvent(50, new Date(3 * History.HOUR_MS));
 
-        testMe.addBatteryLevelEvent(51, new Date(7 * History.HOUR_MS));
+        testMe.addBatteryLevelEvent(48, new Date(7 * History.HOUR_MS));
         testMe.addSystemBootingEvent(new Date(9 * History.HOUR_MS));
 
-        testMe.addBatteryLevelEvent(50, new Date(11 * History.HOUR_MS));
-        testMe.addBatteryLevelEvent(47, new Date(13 * History.HOUR_MS));
+        testMe.addBatteryLevelEvent(46, new Date(11 * History.HOUR_MS));
+        testMe.addBatteryLevelEvent(45, new Date(13 * History.HOUR_MS));
 
-        // Everything before the system booting event should be ignored
-        assertBatteryDrainSize(1);
-        assertValues(0, 1.5);
-        assertDrainTimestamps(0, new Date(12 * History.HOUR_MS));
+        // Assume unclean shutdown between last known event before the boot event and the boot event
+        assertBatteryDrainSize(2);
+        assertValues(0, 0.5, 0.5);
+        assertDrainTimestamps(0, new Date(2 * History.HOUR_MS), new Date(5 * History.HOUR_MS));
+        assertValues(1, 0.5);
+        assertDrainTimestamps(1, new Date(12 * History.HOUR_MS));
 
-        assertEventTimestamps(new Date(9 * History.HOUR_MS));
-        assertEventDescriptions("System starting up");
+        assertEventDescriptions("Unclean shutdown", "System starting up");
+        assertEventTimestamps(new Date(8 * History.HOUR_MS), new Date(9 * History.HOUR_MS));
     }
 }

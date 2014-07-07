@@ -20,7 +20,8 @@ import java.util.List;
 import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 
 public class History {
-    public final static long HOUR_MS = 1000 * 3600;
+    public static final long HOUR_MS = 3600 * 1000;
+    public static final long FIVE_MINUTES_MS = 5 * 60 * 1000;
 
     @Nullable
     private ArrayList<HistoryEvent> eventsFromStorage;
@@ -110,10 +111,9 @@ public class History {
                     continue;
                 case SYSTEM_BOOT:
                     if (!systemDown) {
-                        // Missing start event; everything before this point is untrustworthy
+                        // Missing shutdown event; assume an unclean shutdown and start on a new series
                         lastLevelEvent = null;
                         xySeries = null;
-                        returnMe = new LinkedList<XYSeries>();
                     }
                     systemDown = false;
                     continue;
@@ -184,7 +184,14 @@ public class History {
         if (eventsFromStorage == null) {
             eventsFromStorage = readEventsFromStorage();
         }
+
+        boolean systemDown = false;
+        Date lastTimestamp;
+        Date currentTimestamp = null;
         for (HistoryEvent event : eventsFromStorage) {
+            lastTimestamp = currentTimestamp;
+            currentTimestamp = event.getTimestamp();
+
             if (event.getType() == HistoryEvent.Type.BATTERY_LEVEL) {
                 continue;
             }
@@ -198,10 +205,24 @@ public class History {
                     description = "Stop charging";
                     break;
                 case SYSTEM_BOOT:
+                    if (!systemDown) {
+                        // Assume an unclean shutdown and insert a fake unclean-shutdown event
+                        Date uncleanShutdownTimestamp;
+                        if (lastTimestamp == null) {
+                            uncleanShutdownTimestamp = new Date(event.getTimestamp().getTime() - FIVE_MINUTES_MS);
+                        } else {
+                            uncleanShutdownTimestamp = new Date((event.getTimestamp().getTime() + lastTimestamp.getTime()) / 2);
+                        }
+
+                        returnMe.add(toDouble(uncleanShutdownTimestamp), "Unclean shutdown");
+                    }
+
                     description = "System starting up";
+                    systemDown = false;
                     break;
                 case SYSTEM_SHUTDOWN:
                     description = "System shutting down";
+                    systemDown = true;
                     break;
                 default:
                     description = "Unknown event type " + event.getType();

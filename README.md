@@ -7,10 +7,10 @@ find out what makes battery usage increase.
 
 TODO
 ----
-* Make sure the service starts on reboot.
+* Don't keep track of charger state; just store start/stop charging as
+informative events and don't report negative drain.
 
-* Make sure the service notifies the data holder about charger connects
-and disconnects.
+* Make sure the service starts on reboot.
 
 * Make sure the service notifies the data holder about shutdowns and
 reboots.
@@ -27,7 +27,14 @@ upgrades.
 
 * See if we can detect enabling / disabling of Google Now.
 
-* If the plot is empty, display something explaining that to the user
+* If the log file doesn't exist or the plot is empty for some other
+reason, display something explaining that to the user.
+
+* Don't print numbers at the points in the graph
+
+* Make the X axis labels look sane at different zoom levels
+
+* Make the Y axis labels look good.
 
 * Make sure we rotate the history file when it gets too big. Aim for
 keeping a month or more of stats at hand.
@@ -73,3 +80,6 @@ followed by a restart.
 change events.
 
 * Make the main activity plot actual events from the log file.
+
+* Make sure the service notifies the data holder about charger connects
+and disconnects.

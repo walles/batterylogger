@@ -18,7 +18,7 @@
         </activity>
 
         <service
-            android:name="com.gmail.walles.johan.batterylogger.EventListener"
+            android:name=".EventListenerService"
             android:enabled="true"
             android:exported="false" >
         </service>

@@ -22,7 +22,7 @@ import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 
 public class History {
     public static final long HOUR_MS = 3600 * 1000;
-    public static final long FIVE_MINUTES_MS = 5 * 60 * 1000;
+    private static final long FIVE_MINUTES_MS = 5 * 60 * 1000;
 
     @Nullable
     private ArrayList<HistoryEvent> eventsFromStorage;

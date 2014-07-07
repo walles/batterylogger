@@ -1,10 +1,14 @@
 package com.gmail.walles.johan.batterylogger;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PointF;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -13,11 +17,12 @@ import android.view.ViewGroup;
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.PointLabelFormatter;
-import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
 
-import java.util.Arrays;
+import java.io.IOException;
+
+import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 
 public class BatteryPlotFragment extends Fragment {
     private GestureDetector gestureDetector;
@@ -67,6 +72,21 @@ public class BatteryPlotFragment extends Fragment {
         }
     }
 
+    private static final DialogInterface.OnClickListener DIALOG_DISMISSER = new DialogInterface.OnClickListener() {
+        @Override
+        public void onClick(DialogInterface dialogInterface, int i) {
+            dialogInterface.dismiss();
+        }
+    };
+
+    private static void showAlertDialog(Context context, CharSequence message) {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+        dialogBuilder.setMessage(message);
+        dialogBuilder.setIcon(android.R.drawable.ic_dialog_alert);
+        dialogBuilder.setPositiveButton(android.R.string.ok, DIALOG_DISMISSER);
+        dialogBuilder.show();
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState) {
@@ -75,42 +95,8 @@ public class BatteryPlotFragment extends Fragment {
             throw new RuntimeException("Got a null root view");
         }
 
-        // initialize our XYPlot reference:
+        // initialize our XYPlot view reference:
         plot = (XYPlot)rootView.findViewById(R.id.mySimpleXYPlot);
-
-        // Create a couple arrays of y-values to plot:
-        Number[] series1Numbers = {
-                0, 1,
-                1, 8,
-                2, 5,
-                3, 2,
-                4, 7,
-                5, 4
-        };
-        Number[] series2Numbers = {
-                10, 4,
-                11, 6,
-                12, 3,
-                13, 8,
-                14, 2,
-                15, 10
-        };
-
-        // Turn the above arrays into XYSeries':
-        XYSeries series1 = new SimpleXYSeries(
-                Arrays.asList(series1Numbers),          // SimpleXYSeries takes a List so turn our array into a List
-                SimpleXYSeries.ArrayFormat.XY_VALS_INTERLEAVED,
-                "Series1");                             // Set the display title of the series
-
-        // same as above
-        XYSeries series2 = new SimpleXYSeries(
-                Arrays.asList(series2Numbers),
-                SimpleXYSeries.ArrayFormat.XY_VALS_INTERLEAVED,
-                "Series2");
-
-        EventSeries eventSeries = new EventSeries();
-        eventSeries.add(7, "Sju sju sju");
-        eventSeries.add(8, "Åtta åtta åtta");
 
         // Create a formatter to use for drawing a series using LineAndPointRenderer
         // and configure it from xml:
@@ -119,15 +105,20 @@ public class BatteryPlotFragment extends Fragment {
         lineAndPointFormatter.configure(getActivity(), R.xml.line_point_formatter_with_plf1);
 
         // add a new series' to the xyplot:
-        plot.addSeries(series1, lineAndPointFormatter);
+        try {
+            History history = new History(getActivity());
+            for (XYSeries drain : history.getBatteryDrain()) {
+                plot.addSeries(drain, lineAndPointFormatter);
+            }
 
-        // same as above:
-        plot.addSeries(series2, lineAndPointFormatter);
-
-        Paint labelPaint = new Paint();
-        labelPaint.setAntiAlias(true);
-        labelPaint.setColor(Color.WHITE);
-        plot.addSeries(eventSeries, new EventFormatter(labelPaint));
+            Paint labelPaint = new Paint();
+            labelPaint.setAntiAlias(true);
+            labelPaint.setColor(Color.WHITE);
+            plot.addSeries(history.getEvents(), new EventFormatter(labelPaint));
+        } catch (IOException e) {
+            Log.e(TAG, "Reading battery history failed", e);
+            showAlertDialog(getActivity(), "Failed to read battery history");
+        }
 
         // reduce the number of range labels
         plot.setTicksPerRangeLabel(3);

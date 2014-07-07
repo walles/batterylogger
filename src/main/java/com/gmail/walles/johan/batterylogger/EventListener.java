@@ -51,6 +51,7 @@ public class EventListener extends Service {
                 try {
                     new History(EventListener.this).addBatteryLevelEvent(percentage, new Date());
                 } catch (IOException e) {
+                    // FIXME: Should we shut down if this happens?
                     Log.e(TAG, "Logging battery event failed", e);
                 }
 

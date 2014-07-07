@@ -7,8 +7,6 @@ find out what makes battery usage increase.
 
 TODO
 ----
-* Make the main activity plot actual events from the log file.
-
 * Make sure the service starts on reboot.
 
 * Make sure the service notifies the data holder about charger connects
@@ -28,6 +26,8 @@ installs and uninstalls.
 upgrades.
 
 * See if we can detect enabling / disabling of Google Now.
+
+* If the plot is empty, display something explaining that to the user
 
 * Make sure we rotate the history file when it gets too big. Aim for
 keeping a month or more of stats at hand.
@@ -71,3 +71,5 @@ followed by a restart.
 
 * Make a service that updates the data holder class with battery level
 change events.
+
+* Make the main activity plot actual events from the log file.

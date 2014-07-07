@@ -50,14 +50,14 @@ public class EventRenderer extends LineAndPointRenderer<EventFormatter> {
      * From http://stackoverflow.com/questions/24091390/androidplot-labels-and-text/24092382#24092382
      * @param paint paint used to draw the text
      * @param text the text to be drawn
-     * @param x x-coord of where the text should be drawn
-     * @param y y-coord of where the text should be drawn
+     * @param x x-coordinate of where the text should be drawn
+     * @param y y-coordinate of where the text should be drawn
      */
     private static void drawVerticalText(Canvas canvas, Paint paint, String text, float x, float y) {
         // record the state of the canvas before the draw:
         canvas.save(Canvas.ALL_SAVE_FLAG);
 
-        // center the canvas on our drawing coords:
+        // center the canvas on our drawing coordinates:
         canvas.translate(x, y);
 
         // rotate into the desired "vertical" orientation:

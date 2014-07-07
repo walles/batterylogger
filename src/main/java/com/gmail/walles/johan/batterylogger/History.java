@@ -61,15 +61,11 @@ public class History {
     }
 
     public void addBatteryLevelEvent(int percentage, Date timestamp) throws IOException {
-        addEvent(HistoryEvent.createBatteryLevelEvent(percentage, timestamp));
+        addEvent(HistoryEvent.createBatteryLevelEvent(timestamp, percentage));
     }
 
-    public void addStartChargingEvent(Date timestamp) throws IOException {
-        addEvent(HistoryEvent.createStartChargingEvent(timestamp));
-    }
-
-    public void addStopChargingEvent(Date timestamp) throws IOException {
-        addEvent(HistoryEvent.createStopChargingEvent(timestamp));
+    public void addInfoEvent(String message, Date timestamp) throws IOException {
+        addEvent(HistoryEvent.createInfoEvent(timestamp, message));
     }
 
     /**
@@ -82,8 +78,8 @@ public class History {
     /**
      * System starting up.
      */
-    public void addSystemBootingEvent(Date timestamp, boolean isCharging) throws IOException {
-        addEvent(HistoryEvent.createSystemBootingEvent(timestamp, isCharging));
+    public void addSystemBootingEvent(Date timestamp) throws IOException {
+        addEvent(HistoryEvent.createSystemBootingEvent(timestamp));
     }
 
     /**
@@ -93,7 +89,6 @@ public class History {
         List<XYSeries> returnMe = new LinkedList<XYSeries>();
         SimpleXYSeries xySeries = null;
 
-        boolean charging = false;
         boolean systemDown = false;
         HistoryEvent lastLevelEvent = null;
         if (eventsFromStorage == null) {
@@ -101,34 +96,18 @@ public class History {
         }
         for (HistoryEvent event : eventsFromStorage) {
             switch (event.getType()) {
-                case CHARGING_START:
-                    charging = true;
-                    lastLevelEvent = null;
-                    xySeries = null;
-                    continue;
-                case CHARGING_STOP:
-                    if (!charging) {
-                        // Missing start event; everything before this point is untrustworthy
-                        lastLevelEvent = null;
-                        xySeries = null;
-                        returnMe = new LinkedList<XYSeries>();
-                    }
-                    charging = false;
-                    continue;
                 case SYSTEM_SHUTDOWN:
                     systemDown = true;
                     lastLevelEvent = null;
                     xySeries = null;
                     continue;
-                case SYSTEM_BOOT_CHARGING:
-                case SYSTEM_BOOT_UNPLUGGED:
+                case SYSTEM_BOOT:
                     if (!systemDown) {
                         // Missing shutdown event; assume an unclean shutdown and start on a new series
                         lastLevelEvent = null;
                         xySeries = null;
                     }
                     systemDown = false;
-                    charging = (event.getType() == HistoryEvent.Type.SYSTEM_BOOT_CHARGING);
                     continue;
                 case BATTERY_LEVEL:
                     // Handled below
@@ -137,7 +116,7 @@ public class History {
                     Log.w(TAG, "Drain: Unsupported event type " + event.getType());
                     continue;
             }
-            if (charging || systemDown) {
+            if (systemDown) {
                 continue;
             }
 
@@ -149,6 +128,14 @@ public class History {
             double deltaHours =
                     (event.getTimestamp().getTime() - lastLevelEvent.getTimestamp().getTime()) / (double)HOUR_MS;
             double drain = (lastLevelEvent.getPercentage() - event.getPercentage()) / deltaHours;
+
+            if (drain < 0) {
+                // This happens while charging, start on a new series
+                lastLevelEvent = event;
+                xySeries = null;
+                continue;
+            }
+
             Date drainTimestamp = new Date((event.getTimestamp().getTime() + lastLevelEvent.getTimestamp().getTime()) / 2);
 
             if (xySeries == null) {
@@ -211,14 +198,7 @@ public class History {
 
             String description;
             switch (event.getType()) {
-                case CHARGING_START:
-                    description = "Start charging";
-                    break;
-                case CHARGING_STOP:
-                    description = "Stop charging";
-                    break;
-                case SYSTEM_BOOT_CHARGING:
-                case SYSTEM_BOOT_UNPLUGGED:
+                case SYSTEM_BOOT:
                     if (!systemDown) {
                         // Assume an unclean shutdown and insert a fake unclean-shutdown event
                         Date uncleanShutdownTimestamp;
@@ -231,16 +211,15 @@ public class History {
                         returnMe.add(toDouble(uncleanShutdownTimestamp), "Unclean shutdown");
                     }
 
-                    if (event.getType() == HistoryEvent.Type.SYSTEM_BOOT_CHARGING) {
-                        description = "System starting up (charging)";
-                    } else {
-                        description = "System starting up (not charging)";
-                    }
+                    description = "System starting up";
                     systemDown = false;
                     break;
                 case SYSTEM_SHUTDOWN:
                     description = "System shutting down";
                     systemDown = true;
+                    break;
+                case INFO:
+                    description = event.getMessage();
                     break;
                 default:
                     description = "Unknown event type " + event.getType();

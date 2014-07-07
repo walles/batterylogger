@@ -7,17 +7,10 @@ find out what makes battery usage increase.
 
 TODO
 ----
-* Don't keep track of charger state; just store start/stop charging as
-informative events and don't report negative drain.
-
 * Make sure the service starts on reboot.
 
 * Make sure the service notifies the data holder about shutdowns and
 reboots.
-
-* Manually test cross-reboot statistics gathering to see that we can
-handle starting, stopping, continuing charging or not-charging while
-down.
 
 * Make sure the service notifies the data holder about app upgrades,
 installs and uninstalls.
@@ -83,3 +76,6 @@ change events.
 
 * Make sure the service notifies the data holder about charger connects
 and disconnects.
+
+* Don't keep track of charger state; just store start/stop charging as
+informative events and don't report negative drain.

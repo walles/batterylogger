@@ -6,16 +6,15 @@ import java.util.Date;
 class HistoryEvent {
     enum Type {
         BATTERY_LEVEL,
-        CHARGING_START,
-        CHARGING_STOP,
         SYSTEM_SHUTDOWN,
-        SYSTEM_BOOT_CHARGING,
-        SYSTEM_BOOT_UNPLUGGED
+        SYSTEM_BOOT,
+        INFO
     }
 
     private final Date timestamp;
     private final Type type;
     private int percentage;
+    private String message;
 
     public Date getTimestamp() {
         return timestamp;
@@ -33,45 +32,46 @@ class HistoryEvent {
         return percentage;
     }
 
+    public String getMessage() {
+        if (type != Type.INFO) {
+            throw new UnsupportedOperationException(
+                    "Message only available for INFO events but I'm a " + type);
+        }
+        return message;
+    }
+
     private HistoryEvent(Date timestamp, Type type) {
         this.timestamp = timestamp;
         this.type = type;
     }
 
-    public static HistoryEvent createBatteryLevelEvent(int percentage, Date timestamp) {
+    public static HistoryEvent createBatteryLevelEvent(Date timestamp, int percentage) {
         HistoryEvent event = new HistoryEvent(timestamp, Type.BATTERY_LEVEL);
         event.percentage = percentage;
         return event;
     }
 
-    public static HistoryEvent createStartChargingEvent(Date timestamp) {
-        return new HistoryEvent(timestamp, Type.CHARGING_START);
-    }
-
-    public static HistoryEvent createStopChargingEvent(Date timestamp) {
-        return new HistoryEvent(timestamp, Type.CHARGING_STOP);
+    public static HistoryEvent createInfoEvent(Date timestamp, String message) {
+        HistoryEvent event = new HistoryEvent(timestamp, Type.INFO);
+        event.message = message;
+        return event;
     }
 
     public static HistoryEvent createSystemHaltingEvent(Date timestamp) {
         return new HistoryEvent(timestamp, Type.SYSTEM_SHUTDOWN);
     }
 
-    public static HistoryEvent createSystemBootingEvent(Date timestamp, boolean isCharging) {
-        if (isCharging) {
-            return new HistoryEvent(timestamp, Type.SYSTEM_BOOT_CHARGING);
-        } else {
-            return new HistoryEvent(timestamp, Type.SYSTEM_BOOT_UNPLUGGED);
-        }
+    public static HistoryEvent createSystemBootingEvent(Date timestamp) {
+        return new HistoryEvent(timestamp, Type.SYSTEM_BOOT);
     }
 
     public static HistoryEvent deserializeFromString(String serialization) throws ParseException {
         int firstSpaceIndex = serialization.indexOf(' ');
         int secondSpaceIndex = serialization.indexOf(' ', firstSpaceIndex + 1);
 
-        if (firstSpaceIndex == -1 || secondSpaceIndex == -1) {
+        if (firstSpaceIndex == -1) {
             throw new ParseException(
                     "Parse failed, firstSpace=" + firstSpaceIndex
-                            + ", secondSpace=" + secondSpaceIndex
                             + ", string: <" + serialization + ">", -1);
         }
 
@@ -86,7 +86,12 @@ class HistoryEvent {
         }
 
         long timestamp;
-        String timestampString = serialization.substring(firstSpaceIndex + 1, secondSpaceIndex);
+        String timestampString;
+        if (secondSpaceIndex != -1) {
+            timestampString = serialization.substring(firstSpaceIndex + 1, secondSpaceIndex);
+        } else {
+            timestampString = serialization.substring(firstSpaceIndex + 1);
+        }
         try {
             timestamp = Long.valueOf(timestampString);
         } catch (NumberFormatException e) {
@@ -95,24 +100,50 @@ class HistoryEvent {
             throw throwMe;
         }
 
-        int percentage;
-        String percentageString = serialization.substring(secondSpaceIndex + 1);
-        try {
-            percentage = Integer.valueOf(percentageString);
-        } catch (NumberFormatException e) {
-            ParseException throwMe = new ParseException("Parsing percentage failed: " + serialization, -1);
-            throwMe.initCause(e);
-            throw throwMe;
-        }
-
         HistoryEvent returnMe = new HistoryEvent(new Date(timestamp), type);
-        returnMe.percentage = percentage;
+
+        if (type == Type.BATTERY_LEVEL) {
+            if (secondSpaceIndex == -1) {
+                throw new ParseException(
+                        "Parse failed, firstSpace=" + firstSpaceIndex
+                                + ", secondSpace=" + secondSpaceIndex
+                                + ", string: <" + serialization + ">", -1);
+            }
+
+            int percentage;
+            String percentageString = serialization.substring(secondSpaceIndex + 1);
+            try {
+                percentage = Integer.valueOf(percentageString);
+            } catch (NumberFormatException e) {
+                ParseException throwMe = new ParseException("Parsing percentage failed: " + serialization, -1);
+                throwMe.initCause(e);
+                throw throwMe;
+            }
+
+            returnMe.percentage = percentage;
+        } else if (type == Type.INFO) {
+            if (secondSpaceIndex == -1) {
+                throw new ParseException(
+                        "Parse failed, firstSpace=" + firstSpaceIndex
+                                + ", secondSpace=" + secondSpaceIndex
+                                + ", string: <" + serialization + ">", -1);
+            }
+
+            returnMe.message = serialization.substring(secondSpaceIndex + 1);
+        }
 
         return returnMe;
     }
 
     public String serializeToString() {
-        return type.name() + " " + timestamp.getTime() + " " + percentage;
+        switch (type) {
+            case INFO:
+                return type.name() + " " + timestamp.getTime() + " " + message;
+            case BATTERY_LEVEL:
+                return type.name() + " " + timestamp.getTime() + " " + percentage;
+            default:
+                return type.name() + " " + timestamp.getTime();
+        }
     }
 
     @Override
@@ -131,6 +162,10 @@ class HistoryEvent {
         }
 
         if (type.equals(Type.BATTERY_LEVEL) && percentage != eventB.percentage) {
+            return false;
+        }
+
+        if (type.equals(Type.INFO) && !message.equals(eventB.message)) {
             return false;
         }
 

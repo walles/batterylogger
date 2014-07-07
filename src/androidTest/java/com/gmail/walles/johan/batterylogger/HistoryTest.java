@@ -99,48 +99,6 @@ public class HistoryTest extends AndroidTestCase {
         assertValues(0, 1.0, 2.0);
     }
 
-    public void testChargingEvents() throws Exception {
-        History testMe = new History(testStorage);
-        testMe.addBatteryLevelEvent(51, new Date(1 * History.HOUR_MS));
-        testMe.addBatteryLevelEvent(50, new Date(3 * History.HOUR_MS));
-
-        testMe.addStartChargingEvent(new Date(5 * History.HOUR_MS));
-        testMe.addBatteryLevelEvent(51, new Date(7 * History.HOUR_MS));
-        testMe.addStopChargingEvent(new Date(9 * History.HOUR_MS));
-
-        testMe.addBatteryLevelEvent(50, new Date(11 * History.HOUR_MS));
-        testMe.addBatteryLevelEvent(47, new Date(13 * History.HOUR_MS));
-
-        assertBatteryDrainSize(2);
-        assertValues(0, 0.5);
-        assertDrainTimestamps(0, new Date(2 * History.HOUR_MS));
-        assertValues(1, 1.5);
-        assertDrainTimestamps(1, new Date(12 * History.HOUR_MS));
-
-        assertEventTimestamps(new Date(5 * History.HOUR_MS), new Date(9 * History.HOUR_MS));
-        assertEventDescriptions("Start charging", "Stop charging");
-    }
-
-    public void testMissingStartChargingEvent() throws Exception {
-        History testMe = new History(testStorage);
-        testMe.addBatteryLevelEvent(51, new Date(1 * History.HOUR_MS));
-        testMe.addBatteryLevelEvent(50, new Date(3 * History.HOUR_MS));
-
-        testMe.addBatteryLevelEvent(51, new Date(7 * History.HOUR_MS));
-        testMe.addStopChargingEvent(new Date(9 * History.HOUR_MS));
-
-        testMe.addBatteryLevelEvent(50, new Date(11 * History.HOUR_MS));
-        testMe.addBatteryLevelEvent(47, new Date(13 * History.HOUR_MS));
-
-        // Everything before the stop charging event should be ignored
-        assertBatteryDrainSize(1);
-        assertValues(0, 1.5);
-        assertDrainTimestamps(0, new Date(12 * History.HOUR_MS));
-
-        assertEventTimestamps(new Date(9 * History.HOUR_MS));
-        assertEventDescriptions("Stop charging");
-    }
-
     public void testRebootEvents() throws Exception {
         History testMe = new History(testStorage);
         testMe.addBatteryLevelEvent(51, new Date(1 * History.HOUR_MS));
@@ -148,7 +106,7 @@ public class HistoryTest extends AndroidTestCase {
 
         testMe.addSystemHaltingEvent(new Date(5 * History.HOUR_MS));
         testMe.addBatteryLevelEvent(51, new Date(7 * History.HOUR_MS));
-        testMe.addSystemBootingEvent(new Date(9 * History.HOUR_MS), false);
+        testMe.addSystemBootingEvent(new Date(9 * History.HOUR_MS));
 
         testMe.addBatteryLevelEvent(50, new Date(11 * History.HOUR_MS));
         testMe.addBatteryLevelEvent(47, new Date(13 * History.HOUR_MS));
@@ -160,7 +118,7 @@ public class HistoryTest extends AndroidTestCase {
         assertDrainTimestamps(1, new Date(12 * History.HOUR_MS));
 
         assertEventTimestamps(new Date(5 * History.HOUR_MS), new Date(9 * History.HOUR_MS));
-        assertEventDescriptions("System shutting down", "System starting up (not charging)");
+        assertEventDescriptions("System shutting down", "System starting up");
     }
 
     /**
@@ -172,7 +130,7 @@ public class HistoryTest extends AndroidTestCase {
         testMe.addBatteryLevelEvent(50, new Date(3 * History.HOUR_MS));
 
         testMe.addBatteryLevelEvent(48, new Date(7 * History.HOUR_MS));
-        testMe.addSystemBootingEvent(new Date(9 * History.HOUR_MS), false);
+        testMe.addSystemBootingEvent(new Date(9 * History.HOUR_MS));
 
         testMe.addBatteryLevelEvent(46, new Date(11 * History.HOUR_MS));
         testMe.addBatteryLevelEvent(45, new Date(13 * History.HOUR_MS));
@@ -184,7 +142,7 @@ public class HistoryTest extends AndroidTestCase {
         assertValues(1, 0.5);
         assertDrainTimestamps(1, new Date(12 * History.HOUR_MS));
 
-        assertEventDescriptions("Unclean shutdown", "System starting up (not charging)");
+        assertEventDescriptions("Unclean shutdown", "System starting up");
         assertEventTimestamps(new Date(8 * History.HOUR_MS), new Date(9 * History.HOUR_MS));
     }
 }

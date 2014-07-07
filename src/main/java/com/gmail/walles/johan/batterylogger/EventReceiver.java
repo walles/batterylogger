@@ -76,9 +76,9 @@ public class EventReceiver extends BroadcastReceiver {
         Log.v(TAG, "Logging new charging state: " + (charging ? "Charging" : "Not charging"));
         try {
             if (charging) {
-                new History(context).addStartChargingEvent(new Date());
+                new History(context).addInfoEvent("Charger plugged in", new Date());
             } else {
-                new History(context).addStopChargingEvent(new Date());
+                new History(context).addInfoEvent("Charger disconnected", new Date());
             }
         } catch (IOException e) {
             // FIXME: Should we shut down if this happens?

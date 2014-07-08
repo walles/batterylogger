@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.PointF;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -21,55 +20,64 @@ import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
 
 import java.io.IOException;
+import java.util.Date;
 
 import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 
 public class BatteryPlotFragment extends Fragment {
     private GestureDetector gestureDetector;
     private XYPlot plot;
-    private PointF minXY;
-    private PointF maxXY;
-    private PointF originalMinXY;
-    private PointF originalMaxXY;
+
+    private double minX;
+    private double maxX;
+
+    private double originalMinX;
+    private double originalMaxX;
 
     private void zoom(float scale) {
-        float domainSpan = maxXY.x - minXY.x;
-        float domainMidPoint = maxXY.x - domainSpan / 2.0f;
-        float offset = domainSpan * scale / 2.0f;
+        double domainSpan = maxX - minX;
+        double domainMidPoint = maxX - domainSpan / 2.0f;
+        double offset = domainSpan * scale / 2.0f;
 
-        minXY.x = domainMidPoint - offset;
-        if (minXY.x < originalMinXY.x) {
-            minXY.x = originalMinXY.x;
+        minX = domainMidPoint - offset;
+        if (minX < originalMinX) {
+            minX = originalMinX;
         }
 
-        maxXY.x = domainMidPoint + offset;
-        if (maxXY.x > originalMaxXY.x) {
-            maxXY.x = originalMaxXY.x;
+        maxX = domainMidPoint + offset;
+        if (maxX > originalMaxX) {
+            maxX = originalMaxX;
         }
     }
 
-    private float pixelsToDomainUnits(float pixels) {
-        float domainSpan = maxXY.x - minXY.x;
-        float pixelSpan = plot.getWidth();
+    private double pixelsToDomainUnits(float pixels) {
+        double domainSpan = maxX - minX;
+        double pixelSpan = plot.getWidth();
         return pixels * domainSpan / pixelSpan;
     }
 
     private void scrollSideways(float nPixels) {
-        float offset = pixelsToDomainUnits(nPixels);
+        double offset = pixelsToDomainUnits(nPixels);
 
-        minXY.x += offset;
-        if (minXY.x < originalMinXY.x) {
-            float adjustment = originalMinXY.x - minXY.x;
-            minXY.x += adjustment;
-            maxXY.x += adjustment;
+        minX += offset;
+        if (minX < originalMinX) {
+            double adjustment = originalMinX - minX;
+            minX += adjustment;
+            maxX += adjustment;
         }
 
-        maxXY.x += offset;
-        if (maxXY.x > originalMaxXY.x) {
-            float adjustment = maxXY.x - originalMaxXY.x;
-            minXY.x -= adjustment;
-            maxXY.x -= adjustment;
+        maxX += offset;
+        if (maxX > originalMaxX) {
+            double adjustment = maxX - originalMaxX;
+            minX -= adjustment;
+            maxX -= adjustment;
         }
+    }
+
+    private void redrawPlot() {
+        // FIXME: Call plot.setDomainStep() with some good value
+
+        plot.redraw();
     }
 
     private static final DialogInterface.OnClickListener DIALOG_DISMISSER = new DialogInterface.OnClickListener() {
@@ -142,8 +150,8 @@ public class BatteryPlotFragment extends Fragment {
                 zoom(factor);
                 scrollSideways(dx);
 
-                plot.setDomainBoundaries(minXY.x, maxXY.x, BoundaryMode.FIXED);
-                plot.redraw();
+                plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
+                redrawPlot();
                 return true;
             }
         });
@@ -157,11 +165,29 @@ public class BatteryPlotFragment extends Fragment {
         });
 
         plot.calculateMinMaxVals();
-        minXY = new PointF(plot.getCalculatedMinX().floatValue(), 0);
-        maxXY = new PointF(plot.getCalculatedMaxX().floatValue(), Math.max(plot.getCalculatedMaxY().floatValue(), 9f));
-        originalMinXY = new PointF(minXY.x, minXY.y);
-        originalMaxXY = new PointF(maxXY.x, maxXY.y);
-        plot.setRangeBoundaries(minXY.y, maxXY.y, BoundaryMode.FIXED);
+        minX = plot.getCalculatedMinX().floatValue();
+        maxX = plot.getCalculatedMaxX().floatValue();
+        Date now = new Date();
+        if (maxX < History.toDouble(now)) {
+            maxX = History.toDouble(now);
+        }
+        Date fiveMinutesAgo = new Date(now.getTime() - History.FIVE_MINUTES_MS);
+        if (minX > History.toDouble(fiveMinutesAgo)) {
+            minX = History.toDouble(fiveMinutesAgo);
+        }
+
+        originalMinX = minX;
+        originalMaxX = maxX;
+
+        plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
+
+        float maxY = plot.getCalculatedMaxY().floatValue();
+        if (maxY < 5) {
+            maxY = 5;
+        }
+
+        plot.setRangeBoundaries(0, maxY, BoundaryMode.FIXED);
+        redrawPlot();
 
         return rootView;
     }

@@ -132,7 +132,7 @@ public class History {
                     (event.getTimestamp().getTime() - lastLevelEvent.getTimestamp().getTime()) / (double)HOUR_MS;
             double drain = (lastLevelEvent.getPercentage() - event.getPercentage()) / deltaHours;
 
-            if (drain < 0) {
+            if (drain <= 0) {
                 // This happens while charging, start on a new series
                 lastLevelEvent = event;
                 xySeries = null;

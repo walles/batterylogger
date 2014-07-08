@@ -20,7 +20,7 @@ reason, display something explaining that to the user.
 
 * Don't print numbers at the points in the graph
 
-* Tune the zoom sensitivity.
+* Think about how to show overlapping info events.
 
 * Make double clicking the graph zoom out as much as possible.
 
@@ -83,3 +83,5 @@ informative events and don't report negative drain.
 
 * Make sure the service notifies the data holder about shutdowns and
 reboots.
+
+* Tune the zoom sensitivity.

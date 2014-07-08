@@ -141,11 +141,14 @@ public class BatteryPlotFragment extends Fragment {
 
             @Override
             public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent2, float dx, float dy) {
+                // Tuned from real-world testing, change the number if it's too high or too low
+                final float ZOOM_SPEED = 7;
+
                 float factor;
                 if (dy < 0) {
-                    factor = 1.0f / (1.0f - dy / plot.getHeight());
+                    factor = 1.0f / (1.0f - dy * ZOOM_SPEED / plot.getHeight());
                 } else {
-                    factor = dy / plot.getHeight() + 1.0f;
+                    factor = dy * ZOOM_SPEED / plot.getHeight() + 1.0f;
                 }
                 zoom(factor);
                 scrollSideways(dx);

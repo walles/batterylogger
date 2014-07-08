@@ -22,8 +22,6 @@ reason, display something explaining that to the user.
 
 * Think about how to show overlapping info events.
 
-* Make double clicking the graph zoom out as much as possible.
-
 * Make the X axis labels look sane at different zoom levels
 
 * Make the Y axis labels look good.
@@ -85,3 +83,5 @@ informative events and don't report negative drain.
 reboots.
 
 * Tune the zoom sensitivity.
+
+* Make double clicking the graph zoom out as much as possible.

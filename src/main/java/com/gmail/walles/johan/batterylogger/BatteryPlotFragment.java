@@ -131,11 +131,21 @@ public class BatteryPlotFragment extends Fragment {
         // reduce the number of range labels
         plot.setTicksPerRangeLabel(3);
 
-        gestureDetector = new GestureDetector(getActivity(), new GestureDetector.SimpleOnGestureListener() {
+        GestureDetector.SimpleOnGestureListener gestureListener = new GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onDown(MotionEvent motionEvent) {
                 // Return true since the framework is weird:
                 // http://stackoverflow.com/questions/4107565/on-android-do-gesture-events-work-on-the-emulator
+                return true;
+            }
+
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                minX = originalMinX;
+                maxX = originalMaxX;
+                plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
+                redrawPlot();
+
                 return true;
             }
 
@@ -157,8 +167,11 @@ public class BatteryPlotFragment extends Fragment {
                 redrawPlot();
                 return true;
             }
-        });
+        };
+
+        gestureDetector = new GestureDetector(getActivity(), gestureListener);
         gestureDetector.setIsLongpressEnabled(false);
+        gestureDetector.setOnDoubleTapListener(gestureListener);
 
         plot.setOnTouchListener(new View.OnTouchListener() {
             @Override

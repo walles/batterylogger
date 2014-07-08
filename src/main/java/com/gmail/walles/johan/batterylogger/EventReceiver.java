@@ -22,6 +22,30 @@ public class EventReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         if (Intent.ACTION_BATTERY_CHANGED.equals(intent.getAction())) {
             handleBatteryChanged(context, intent);
+        } else if (Intent.ACTION_SHUTDOWN.equals(intent.getAction())
+                || "android.intent.action.QUICKBOOT_POWEROFF".equals(intent.getAction()))
+        {
+            Log.v(TAG, "Logging system halt");
+            try {
+                new History(context).addSystemHaltingEvent(new Date());
+            } catch (IOException e) {
+                // FIXME: Should we shut down if this happens?
+                Log.e(TAG, "Logging system shutdown event failed", e);
+            }
+        } else if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())
+                || "android.intent.action.QUICKBOOT_POWERON".equals(intent.getAction())) {
+            Log.v(TAG, "Logging system boot");
+            try {
+                new History(context).addSystemBootingEvent(new Date());
+            } catch (IOException e) {
+                // FIXME: Should we shut down if this happens?
+                Log.e(TAG, "Logging system boot event failed", e);
+            }
+
+            // Auto-launch after reboot
+            EventListenerService.startService(context, false);
+        } else {
+            Log.i(TAG, "Ignoring unknown intent action: " + intent.getAction());
         }
     }
 

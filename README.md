@@ -7,11 +7,6 @@ find out what makes battery usage increase.
 
 TODO
 ----
-* Make sure the service starts on reboot.
-
-* Make sure the service notifies the data holder about shutdowns and
-reboots.
-
 * Make sure the service notifies the data holder about app upgrades,
 installs and uninstalls.
 
@@ -24,6 +19,10 @@ upgrades.
 reason, display something explaining that to the user.
 
 * Don't print numbers at the points in the graph
+
+* Tune the zoom sensitivity.
+
+* Make double clicking the graph zoom out as much as possible.
 
 * Make the X axis labels look sane at different zoom levels
 
@@ -79,3 +78,8 @@ and disconnects.
 
 * Don't keep track of charger state; just store start/stop charging as
 informative events and don't report negative drain.
+
+* Make sure the service starts on reboot.
+
+* Make sure the service notifies the data holder about shutdowns and
+reboots.

@@ -14,9 +14,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (startService(new Intent(this, EventListenerService.class)) == null) {
-            Log.e(TAG, "Unable to start EventListener service");
-        }
+        EventListenerService.startService(this, true);
 
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {

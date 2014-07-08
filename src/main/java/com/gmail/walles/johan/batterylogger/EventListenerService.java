@@ -1,6 +1,7 @@
 package com.gmail.walles.johan.batterylogger;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
@@ -15,21 +16,41 @@ import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
  * Listens for battery related events and logs them.
  */
 public class EventListenerService extends Service {
+    private boolean running = false;
+
+    private static final String LOG_START_EXTRA = "should log start";
+    public static void startService(Context context, boolean logStart) {
+        Intent intent = new Intent(context, EventListenerService.class);
+        intent.putExtra(LOG_START_EXTRA, logStart);
+
+        boolean started = (context.startService(intent) != null);
+        if (!started) {
+            throw new RuntimeException("Unable to start event listener service");
+        }
+    }
+
     @Override
-    public void onCreate() {
-        super.onCreate();
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        boolean shouldLogStart = intent.getBooleanExtra(LOG_START_EXTRA, true);
 
-        Log.i(TAG, "Event listener service starting...");
+        if (!running) {
+            Log.i(TAG, "Event listener service starting...");
 
-        try {
-            new History(this).addInfoEvent("Battery logging started", new Date());
-        } catch (IOException e) {
-            // FIXME: Should we shut down the service when this happens?
-            Log.e(TAG, "Unable to log events", e);
+            if (shouldLogStart) {
+                try {
+                    new History(this).addInfoEvent("Battery logging started", new Date());
+                } catch (IOException e) {
+                    // FIXME: Should we shut down the service when this happens?
+                    Log.e(TAG, "Unable to log events", e);
+                }
+            }
+
+            // Listen for changes to battery charge
+            registerReceiver(new EventReceiver(), new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
         }
 
-        // Listen for changes to battery charge
-        registerReceiver(new EventReceiver(), new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        running = true;
+        return START_REDELIVER_INTENT;
     }
 
     @Override

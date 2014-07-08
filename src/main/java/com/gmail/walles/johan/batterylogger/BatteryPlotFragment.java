@@ -201,6 +201,10 @@ public class BatteryPlotFragment extends Fragment {
         if (maxY < 5) {
             maxY = 5;
         }
+        if (maxY > 25) {
+            // We sometimes get unreasonable outliers, clamp them so they don't make the graph unreadable
+            maxY = 25;
+        }
 
         plot.setRangeBoundaries(0, maxY, BoundaryMode.FIXED);
         redrawPlot();

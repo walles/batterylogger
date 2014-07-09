@@ -32,6 +32,14 @@
                 <action android:name="android.intent.action.QUICKBOOT_POWEROFF" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
             </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_ADDED" />
+                <action android:name="android.intent.action.PACKAGE_DATA_CLEARED" />
+                <action android:name="android.intent.action.PACKAGE_REMOVED" />
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <data android:scheme="package" />
+            </intent-filter>
         </receiver>
     </application>
 </manifest>

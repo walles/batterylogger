@@ -7,24 +7,26 @@ find out what makes battery usage increase.
 
 TODO
 ----
-* Make sure the service notifies the data holder about app upgrades,
-installs and uninstalls.
-
 * Make sure the service notifies the data holder about OS / kernel
 upgrades.
 
-* See if we can detect enabling / disabling of Google Now.
+* Print proper app names and versions when logging app removals.
+
+* See if we can detect enabling / disabling of Google Now and log
+that. Or maybe when services start / stop in general?
 
 * If the log file doesn't exist or the plot is empty for some other
 reason, display something explaining that to the user.
 
 * Don't print numbers at the points in the graph
 
+* Make the points in the graph real big, bigger than the line thickness
+
+* Zoom around the finger, not around the middle
+
 * Think about how to show overlapping info events.
 
 * Make the X axis labels look sane at different zoom levels
-
-* Make the Y axis labels look good.
 
 * Make sure we rotate the history file when it gets too big. Aim for
 keeping a month or more of stats at hand.
@@ -34,10 +36,7 @@ keeping a month or more of stats at hand.
 * Detect unclean shutdowns of the EventListener service and do something
 appropriate...
 
-* Find out how to find model X-coordinate for an in-graph click. This
-would be used for showing event details when we click them. Try using
-ValPixConverter:
-http://androidplot.com/javadoc/0.6.0/com/androidplot/util/ValPixConverter.html
+* Make the Y axis labels look good.
 
 DONE
 ----
@@ -85,3 +84,6 @@ reboots.
 * Tune the zoom sensitivity.
 
 * Make double clicking the graph zoom out as much as possible.
+
+* Make sure the service notifies the data holder about app upgrades,
+installs and uninstalls.

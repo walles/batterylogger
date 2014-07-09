@@ -35,29 +35,27 @@ public class BatteryPlotFragment extends Fragment {
     private double originalMinX;
     private double originalMaxX;
 
-    private void zoom(float scale) {
-        double domainSpan = maxX - minX;
-        double domainMidPoint = maxX - domainSpan / 2.0f;
-        double offset = domainSpan * scale / 2.0f;
-
-        minX = domainMidPoint - offset;
+    private void zoom(double factor, double pivot) {
+        double leftSpan = pivot - minX;
+        minX = pivot - leftSpan * factor;
         if (minX < originalMinX) {
             minX = originalMinX;
         }
 
-        maxX = domainMidPoint + offset;
+        double rightSpan = maxX - pivot;
+        maxX = pivot + rightSpan * factor;
         if (maxX > originalMaxX) {
             maxX = originalMaxX;
         }
     }
 
-    private double pixelsToDomainUnits(float pixels) {
+    private double pixelsToDomainUnits(double pixels) {
         double domainSpan = maxX - minX;
         double pixelSpan = plot.getWidth();
         return pixels * domainSpan / pixelSpan;
     }
 
-    private void scrollSideways(float nPixels) {
+    private void scrollSideways(double nPixels) {
         double offset = pixelsToDomainUnits(nPixels);
 
         minX += offset;
@@ -159,15 +157,16 @@ public class BatteryPlotFragment extends Fragment {
             @Override
             public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent2, float dx, float dy) {
                 // Tuned from real-world testing, change the number if it's too high or too low
-                final float ZOOM_SPEED = 7;
+                final double ZOOM_SPEED = 7;
 
-                float factor;
+                double factor;
                 if (dy < 0) {
                     factor = 1.0f / (1.0f - dy * ZOOM_SPEED / plot.getHeight());
                 } else {
                     factor = dy * ZOOM_SPEED / plot.getHeight() + 1.0f;
                 }
-                zoom(factor);
+                double pivot = plot.getGraphWidget().getXVal(motionEvent2.getX());
+                zoom(factor, pivot);
                 scrollSideways(dx);
 
                 plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
@@ -188,8 +187,8 @@ public class BatteryPlotFragment extends Fragment {
         });
 
         plot.calculateMinMaxVals();
-        minX = plot.getCalculatedMinX().floatValue();
-        maxX = plot.getCalculatedMaxX().floatValue();
+        minX = plot.getCalculatedMinX().doubleValue();
+        maxX = plot.getCalculatedMaxX().doubleValue();
         Date now = new Date();
         if (maxX < History.toDouble(now)) {
             maxX = History.toDouble(now);
@@ -204,7 +203,7 @@ public class BatteryPlotFragment extends Fragment {
 
         plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
 
-        float maxY = plot.getCalculatedMaxY().floatValue();
+        double maxY = plot.getCalculatedMaxY().doubleValue();
         if (maxY < 5) {
             maxY = 5;
         }

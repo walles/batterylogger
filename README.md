@@ -23,8 +23,6 @@ reason, display something explaining that to the user.
 * Make the points in the graph real big, bigger than the line thickness.
 Ref: http://stackoverflow.com/questions/10169080/custom-points-on-graph-using-androidplot
 
-* Zoom around the finger, not around the middle
-
 * Think about how to show overlapping info events.
 
 * Make the X axis labels look sane at different zoom levels
@@ -90,3 +88,5 @@ reboots.
 installs and uninstalls.
 
 * Don't print numbers at the points in the graph
+
+* Zoom around the finger, not around the middle

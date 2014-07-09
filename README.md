@@ -20,7 +20,8 @@ reason, display something explaining that to the user.
 
 * Fake the data when running in the emulator?
 
-* Make the points in the graph real big, bigger than the line thickness
+* Make the points in the graph real big, bigger than the line thickness.
+Ref: http://stackoverflow.com/questions/10169080/custom-points-on-graph-using-androidplot
 
 * Zoom around the finger, not around the middle
 

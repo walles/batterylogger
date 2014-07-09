@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.PointLabelFormatter;
+import com.androidplot.xy.PointLabeler;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
 
@@ -110,6 +111,12 @@ public class BatteryPlotFragment extends Fragment {
         // and configure it from xml:
         LineAndPointFormatter lineAndPointFormatter = new LineAndPointFormatter();
         lineAndPointFormatter.setPointLabelFormatter(new PointLabelFormatter());
+        lineAndPointFormatter.setPointLabeler(new PointLabeler() {
+            @Override
+            public String getLabel(XYSeries xySeries, int i) {
+                return "";
+            }
+        });
         lineAndPointFormatter.configure(getActivity(), R.xml.line_point_formatter_with_plf1);
 
         // add a new series' to the xyplot:

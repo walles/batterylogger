@@ -18,7 +18,7 @@ that. Or maybe when services start / stop in general?
 * If the log file doesn't exist or the plot is empty for some other
 reason, display something explaining that to the user.
 
-* Don't print numbers at the points in the graph
+* Fake the data when running in the emulator?
 
 * Make the points in the graph real big, bigger than the line thickness
 
@@ -87,3 +87,5 @@ reboots.
 
 * Make sure the service notifies the data holder about app upgrades,
 installs and uninstalls.
+
+* Don't print numbers at the points in the graph

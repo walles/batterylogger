@@ -7,6 +7,8 @@ find out what makes battery usage increase.
 
 TODO
 ----
+* Make the X axis labels look sane at different zoom levels
+
 * Make sure the service notifies the data holder about OS / kernel
 upgrades.
 
@@ -24,8 +26,6 @@ reason, display something explaining that to the user.
 Ref: http://stackoverflow.com/questions/10169080/custom-points-on-graph-using-androidplot
 
 * Think about how to show overlapping info events.
-
-* Make the X axis labels look sane at different zoom levels
 
 * Make sure we rotate the history file when it gets too big. Aim for
 keeping a month or more of stats at hand.
@@ -90,3 +90,5 @@ installs and uninstalls.
 * Don't print numbers at the points in the graph
 
 * Zoom around the finger, not around the middle
+
+* Remove the lines between the vertices

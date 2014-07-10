@@ -143,7 +143,8 @@ public class BatteryPlotFragment extends Fragment {
         plot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 1);
         plot.setTicksPerRangeLabel(5);
 
-        plot.setTicksPerDomainLabel(3);
+        plot.setTicksPerDomainLabel(1);
+        plot.setDomainStep(XYStepMode.SUBDIVIDE, 4);
         plot.setDomainValueFormat(new Format() {
             @Override
             public StringBuffer format(Object o, StringBuffer toAppendTo, FieldPosition position) {

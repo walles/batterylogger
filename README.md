@@ -10,13 +10,21 @@ TODO
 * Make sure the service notifies the data holder about OS / kernel
 upgrades.
 
-* Print proper app names and versions when logging app removals.
-
-* See if we can detect enabling / disabling of Google Now and log
-that. Or maybe when services start / stop in general?
+* Make sure we rotate the history file when it gets too big. Aim for
+keeping a month or more of stats at hand.
 
 * If the log file doesn't exist or the plot is empty for some other
 reason, display something explaining that to the user.
+
+* Make a preference for disabling the service.
+
+* Print proper app names and versions when logging app removals.
+
+* Force landscape mode? Drain patterns are more visible if the Y axis
+is more compressed.
+
+* See if we can detect enabling / disabling of Google Now and log
+that. Or maybe when services start / stop in general?
 
 * Fake the data when running in the emulator?
 
@@ -24,11 +32,6 @@ reason, display something explaining that to the user.
 Ref: http://stackoverflow.com/questions/10169080/custom-points-on-graph-using-androidplot
 
 * Think about how to show overlapping info events.
-
-* Make sure we rotate the history file when it gets too big. Aim for
-keeping a month or more of stats at hand.
-
-* Make a preference for disabling the service.
 
 * Detect unclean shutdowns of the EventListener service and do something
 appropriate

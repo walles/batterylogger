@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.RectF;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -194,8 +195,12 @@ public class BatteryPlotFragment extends Fragment {
                 } else {
                     factor = dy * ZOOM_SPEED / plot.getHeight() + 1.0f;
                 }
-                double pivot = plot.getGraphWidget().getXVal(motionEvent2.getX());
-                zoom(factor, pivot);
+                RectF gridRect = plot.getGraphWidget().getGridRect();
+                // getXVal throws IAE if the X value is outside of the rectangle
+                if (gridRect.contains(motionEvent2.getX(), gridRect.top)) {
+                    double pivot = plot.getGraphWidget().getXVal(motionEvent2.getX());
+                    zoom(factor, pivot);
+                }
                 scrollSideways(dx);
 
                 plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);

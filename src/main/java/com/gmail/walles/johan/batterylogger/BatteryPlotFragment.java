@@ -20,6 +20,7 @@ import com.androidplot.xy.PointLabelFormatter;
 import com.androidplot.xy.PointLabeler;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
+import com.androidplot.xy.XYStepMode;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -139,7 +140,9 @@ public class BatteryPlotFragment extends Fragment {
             showAlertDialog(getActivity(), "Failed to read battery history");
         }
 
-        plot.setTicksPerRangeLabel(3);
+        plot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 1);
+        plot.setTicksPerRangeLabel(5);
+
         plot.setTicksPerDomainLabel(3);
         plot.setDomainValueFormat(new Format() {
             @Override

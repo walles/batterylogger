@@ -7,8 +7,6 @@ find out what makes battery usage increase.
 
 TODO
 ----
-* Make the X axis labels look sane at different zoom levels
-
 * Make sure the service notifies the data holder about OS / kernel
 upgrades.
 
@@ -33,7 +31,7 @@ keeping a month or more of stats at hand.
 * Make a preference for disabling the service.
 
 * Detect unclean shutdowns of the EventListener service and do something
-appropriate...
+appropriate
 
 * Make the Y axis labels look good.
 
@@ -92,3 +90,5 @@ installs and uninstalls.
 * Zoom around the finger, not around the middle
 
 * Remove the lines between the vertices
+
+* Make the X axis labels look sane at different zoom levels

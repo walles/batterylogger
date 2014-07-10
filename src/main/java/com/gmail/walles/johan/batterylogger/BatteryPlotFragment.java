@@ -19,8 +19,13 @@ import com.androidplot.xy.PointLabelFormatter;
 import com.androidplot.xy.PointLabeler;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.text.FieldPosition;
+import java.text.Format;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
@@ -133,8 +138,32 @@ public class BatteryPlotFragment extends Fragment {
             showAlertDialog(getActivity(), "Failed to read battery history");
         }
 
-        // reduce the number of range labels
         plot.setTicksPerRangeLabel(3);
+        plot.setTicksPerDomainLabel(3);
+        plot.setDomainValueFormat(new Format() {
+            @Override
+            public StringBuffer format(Object o, StringBuffer toAppendTo, FieldPosition position) {
+                Date timestamp = History.toDate((Number)o);
+                long domainWidthSeconds = History.toDate(maxX - minX).getTime() / 1000;
+                SimpleDateFormat format;
+                if (domainWidthSeconds < 5 * 60) {
+                    format = new SimpleDateFormat("HH:mm:ss");
+                } else if (domainWidthSeconds < 86400) {
+                    format = new SimpleDateFormat("HH:mm");
+                } else if (domainWidthSeconds < 86400 * 7) {
+                    format = new SimpleDateFormat("EEE HH:mm");
+                } else {
+                    format = new SimpleDateFormat("MMM d");
+                }
+                return format.format(timestamp, toAppendTo, position);
+            }
+
+            @Override
+            @Nullable
+            public Object parseObject(String s, ParsePosition parsePosition) {
+                return null;
+            }
+        });
 
         GestureDetector.SimpleOnGestureListener gestureListener = new GestureDetector.SimpleOnGestureListener() {
             @Override

@@ -7,6 +7,13 @@ find out what makes battery usage increase.
 
 TODO
 ----
+* Rewrite the data collection service to sample the system state
+every 15 minutes and deduct data points from the differences between
+those states. The reason is that we can't trust our service to stay
+alive (real-life observation).
+
+* Draw a median line across each series.
+
 * Make sure the service notifies the data holder about OS / kernel
 upgrades.
 

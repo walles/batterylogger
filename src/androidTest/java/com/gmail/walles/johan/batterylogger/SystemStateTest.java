@@ -9,35 +9,59 @@ import java.util.Date;
 
 public class SystemStateTest extends TestCase {
     private final Date now = new Date();
-    private final Date then = new Date(System.currentTimeMillis() - History.FIVE_MINUTES_MS);
+    private final Date then = new Date(now.getTime() - History.FIVE_MINUTES_MS);
+    private final Date bootTimestamp = new Date(then.getTime() - History.FIVE_MINUTES_MS);
+
+    public void testConstructor() {
+        try {
+            new SystemState(then, 27, false, now);
+            fail("Expected IAE when boot is in the future");
+        } catch (IllegalArgumentException ignored) {
+            // Expected exception intentionally ignored
+        }
+    }
 
     public void testEquals() {
-        assertTrue(new SystemState(now, 27, true).equals(new SystemState(now, 27, true)));
-        assertFalse(new SystemState(now, 27, true).equals(new SystemState(then, 27, true)));
-        assertFalse(new SystemState(now, 27, true).equals(new SystemState(now, 36, true)));
-        assertFalse(new SystemState(now, 27, true).equals(new SystemState(now, 27, false)));
+        assertTrue(new SystemState(now, 27, true, bootTimestamp).equals(new SystemState(now, 27, true, bootTimestamp)));
+        assertFalse(new SystemState(now, 27, true, bootTimestamp).equals(new SystemState(then, 27, true, bootTimestamp)));
+        assertFalse(new SystemState(now, 27, true, bootTimestamp).equals(new SystemState(now, 36, true, bootTimestamp)));
+        assertFalse(new SystemState(now, 27, true, bootTimestamp).equals(new SystemState(now, 27, false, bootTimestamp)));
+        assertFalse(new SystemState(now, 27, true, bootTimestamp).equals(new SystemState(now, 27, false, then)));
 
-        SystemState a = new SystemState(now, 27, false);
+        SystemState a = new SystemState(now, 27, false, bootTimestamp);
         a.addInstalledApp("a.b.c", "Griseknoa", "1.2.3");
 
-        SystemState b = new SystemState(now, 27, false);
+        SystemState b = new SystemState(now, 27, false, bootTimestamp);
         b.addInstalledApp("a.b.c", "Griseknoa", "1.2.3");
         assertEquals(a, b);
 
-        SystemState c = new SystemState(now, 27, false);
+        SystemState c = new SystemState(now, 27, false, bootTimestamp);
         c.addInstalledApp("x.y.z", "Griseknoa", "1.2.3");
         assertFalse(a.equals(c));
 
-        SystemState d = new SystemState(now, 27, false);
+        SystemState d = new SystemState(now, 27, false, bootTimestamp);
         d.addInstalledApp("a.b.c", "Charles-Ingvar", "1.2.3");
         assertFalse(a.equals(d));
 
-        SystemState e = new SystemState(now, 27, false);
+        SystemState e = new SystemState(now, 27, false, bootTimestamp);
         e.addInstalledApp("a.b.c", "Griseknoa", "4.5.6");
         assertFalse(a.equals(e));
     }
 
+    public void testUnorderedEquals() {
+        SystemState a = new SystemState(now, 27, false, bootTimestamp);
+        a.addInstalledApp("a.b.c", "Griseknoa", "1.2.3");
+        a.addInstalledApp("d.e.f", "Snickarboa", "4.5.6");
+
+        SystemState b = new SystemState(now, 27, false, bootTimestamp);
+        b.addInstalledApp("d.e.f", "Snickarboa", "4.5.6");
+        b.addInstalledApp("a.b.c", "Griseknoa", "1.2.3");
+
+        assertEquals(a, b);
+    }
+
     private void assertEvents(Collection<HistoryEvent> testMe, HistoryEvent ... expected) {
+        assertNotNull("Events must be non-null, were null", testMe);
         String expectedString = Arrays.toString(expected);
         String actualString = Arrays.toString(testMe.toArray());
         assertEquals(expectedString, actualString);
@@ -48,74 +72,80 @@ public class SystemStateTest extends TestCase {
     }
 
     public void testBatteryEvent() {
-        SystemState a = new SystemState(then, 27, false);
+        SystemState a = new SystemState(then, 27, false, bootTimestamp);
 
-        SystemState b = new SystemState(now, 26, false);
+        SystemState b = new SystemState(now, 26, false, bootTimestamp);
         assertEvents(b.getEventsSince(a), HistoryEvent.createBatteryLevelEvent(now, 26));
 
-        SystemState c = new SystemState(now, 28, false);
+        SystemState c = new SystemState(now, 28, false, bootTimestamp);
         assertNoEvents(c.getEventsSince(a));
 
-        SystemState d = new SystemState(now, 29, false);
+        SystemState d = new SystemState(now, 29, false, bootTimestamp);
         assertNoEvents(d.getEventsSince(a));
     }
 
     public void testStartChargingEvent() {
-        SystemState a = new SystemState(then, 27, false);
-        SystemState b = new SystemState(now, 27, true);
+        SystemState a = new SystemState(then, 27, false, bootTimestamp);
+        SystemState b = new SystemState(now, 27, true, bootTimestamp);
 
-        Date betweenThenAndNow = new Date((now.getTime() + then.getTime()) / 2);
-
-        assertEvents(b.getEventsSince(a), HistoryEvent.createInfoEvent(betweenThenAndNow, "Start charging"));
+        assertEvents(b.getEventsSince(a), HistoryEvent.createInfoEvent(now, "Start charging"));
     }
 
     public void testStopChargingEvent() {
-        SystemState a = new SystemState(then, 27, true);
-        SystemState b = new SystemState(now, 27, false);
+        SystemState a = new SystemState(then, 27, true, bootTimestamp);
+        SystemState b = new SystemState(now, 27, false, bootTimestamp);
 
-        Date betweenThenAndNow = new Date((now.getTime() + then.getTime()) / 2);
+        assertEvents(b.getEventsSince(a), HistoryEvent.createInfoEvent(now, "Stop charging"));
+    }
 
-        assertEvents(b.getEventsSince(a), HistoryEvent.createInfoEvent(betweenThenAndNow, "Stop charging"));
+    private static Date between(Date t0, Date t1) {
+        return new Date((t0.getTime() + t1.getTime()) / 2);
+    }
+
+    /**
+     * Create amount dates between (but not including) t0 and t1.
+     */
+    private static Date[] between(Date t0, Date t1, int amount) {
+        Date returnMe[] = new Date[amount];
+        long span = t1.getTime() - t0.getTime();
+        for (int i = 0; i < amount; i++) {
+            returnMe[i] = new Date(t0.getTime() + ((i + 1) * span) / (amount + 1));
+        }
+        return returnMe;
     }
 
     public void testInstallEvent() {
-        SystemState a = new SystemState(then, 27, false);
+        SystemState a = new SystemState(then, 27, false, bootTimestamp);
 
-        SystemState b = new SystemState(now, 27, false);
+        SystemState b = new SystemState(now, 27, false, bootTimestamp);
         b.addInstalledApp("a.b.c", "ABC", "1.2.3");
 
-        Date betweenThenAndNow = new Date((now.getTime() + then.getTime()) / 2);
-
-        assertEvents(b.getEventsSince(a), HistoryEvent.createInfoEvent(betweenThenAndNow, "ABC 1.2.3 installed"));
+        assertEvents(b.getEventsSince(a), HistoryEvent.createInfoEvent(between(then, now), "ABC 1.2.3 installed"));
     }
 
     public void testUninstallEvent() {
-        SystemState a = new SystemState(then, 27, false);
+        SystemState a = new SystemState(then, 27, false, bootTimestamp);
         a.addInstalledApp("a.b.c", "ABC", "1.2.3");
 
-        SystemState b = new SystemState(now, 27, false);
+        SystemState b = new SystemState(now, 27, false, bootTimestamp);
 
-        Date betweenThenAndNow = new Date((now.getTime() + then.getTime()) / 2);
-
-        assertEvents(b.getEventsSince(a), HistoryEvent.createInfoEvent(betweenThenAndNow, "ABC 1.2.3 uninstalled"));
+        assertEvents(b.getEventsSince(a), HistoryEvent.createInfoEvent(between(then, now), "ABC 1.2.3 uninstalled"));
     }
 
     public void testUpgradeEvent() {
-        SystemState a = new SystemState(then, 27, false);
+        SystemState a = new SystemState(then, 27, false, bootTimestamp);
         a.addInstalledApp("a.b.c", "ABC", "1.2.3");
 
-        SystemState b = new SystemState(now, 27, false);
+        SystemState b = new SystemState(now, 27, false, bootTimestamp);
         b.addInstalledApp("a.b.c", "ABC", "2.3.4");
 
-        Date betweenThenAndNow = new Date((now.getTime() + then.getTime()) / 2);
-
-        assertEvents(b.getEventsSince(a), HistoryEvent.createInfoEvent(betweenThenAndNow, "ABC upgraded from 1.2.3 to 2.3.4"));
+        assertEvents(b.getEventsSince(a), HistoryEvent.createInfoEvent(between(then, now), "ABC upgraded from 1.2.3 to 2.3.4"));
     }
 
     public void testPersistence() throws Exception {
         File tempFile = File.createTempFile("systemstate-", ".txt");
         try {
-            SystemState a = new SystemState(then, 27, false);
+            SystemState a = new SystemState(then, 27, false, bootTimestamp);
             a.addInstalledApp("a.b.c", "ABC", "1.2.3");
 
             a.writeToFile(tempFile);
@@ -128,5 +158,41 @@ public class SystemStateTest extends TestCase {
                 tempFile.delete();
             }
         }
+    }
+
+    public void testHaltAndBootEvents() {
+        Date boot1 = new Date(0);
+        Date sample1 = new Date(1000);
+        Date boot2 = new Date(2000);
+        Date sample2 = new Date(3000);
+
+        SystemState beforeReboot = new SystemState(sample1, 27, false, boot1);
+        SystemState afterReboot = new SystemState(sample2, 27, true, boot2);
+
+        assertEvents(afterReboot.getEventsSince(beforeReboot),
+                HistoryEvent.createSystemHaltingEvent(sample1),
+                HistoryEvent.createInfoEvent(between(sample1, boot2), "Start charging"),
+                HistoryEvent.createSystemBootingEvent(boot2));
+    }
+
+    /**
+     * Verify that different events resulting in text in the graph don't overlap each other.
+     */
+    public void testPreventOverlappingEvents() {
+        SystemState a = new SystemState(then, 27, true, bootTimestamp);
+        a.addInstalledApp("a.b.c", "Upgrader", "1.2.3");
+        a.addInstalledApp("d.e.f", "Remover", "2.3.4");
+
+        SystemState b = new SystemState(now, 26, false, bootTimestamp);
+        b.addInstalledApp("a.b.c", "Upgrader", "1.2.5");
+        b.addInstalledApp("g.h.i", "Adder", "5.6.7");
+
+        Date datesBetween[] = between(then, now, 4);
+        assertEvents(b.getEventsSince(a),
+                HistoryEvent.createInfoEvent(datesBetween[0], "Stop charging"),
+                HistoryEvent.createInfoEvent(datesBetween[1], "Upgrader upgraded from 1.2.3 to 1.2.5"),
+                HistoryEvent.createInfoEvent(datesBetween[2], "Remover 2.3.4 uninstalled"),
+                HistoryEvent.createInfoEvent(datesBetween[3], "Adder 5.6.7 installed"),
+                HistoryEvent.createBatteryLevelEvent(now, 26));
     }
 }

@@ -14,7 +14,7 @@ import java.util.Date;
  * </ul>
  */
 public class SystemState {
-    public SystemState(Date bootTimestamp, int batteryPercentage, boolean charging) {
+    public SystemState(Date timestamp, int batteryPercentage, boolean charging, Date bootTimestamp) {
 
     }
 

@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 
 /**
@@ -82,7 +83,17 @@ public class SystemState {
     }
 
     public Collection<HistoryEvent> getEventsSince(SystemState then) {
-        return null;
+        if (timestamp.before(then.timestamp)) {
+            throw new IllegalArgumentException("Timestamp of other state must be older than mine");
+        }
+
+        Collection<HistoryEvent> returnMe = new LinkedList<HistoryEvent>();
+
+        if (batteryPercentage < then.batteryPercentage) {
+            returnMe.add(HistoryEvent.createBatteryLevelEvent(timestamp, batteryPercentage));
+        }
+
+        return returnMe;
     }
 
     @Override

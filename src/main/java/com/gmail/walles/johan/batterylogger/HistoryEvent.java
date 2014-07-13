@@ -68,7 +68,7 @@ class HistoryEvent {
     @Override
     public String toString() {
         return "HistoryEvent{" +
-                "timestamp=" + timestamp +
+                timestamp +
                 ", " + type +
                 ", " + percentage + "%" +
                 ", '" + message + '\'' +

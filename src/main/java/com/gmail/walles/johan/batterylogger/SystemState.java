@@ -11,11 +11,14 @@ import java.util.Date;
  *     <li>Battery level</li>
  *     <li>Charging / not-charging status</li>
  *     <li>OS fingerprint</li>
+ *     <li>When this system was last booted</li>
  * </ul>
  */
 public class SystemState {
     public SystemState(Date timestamp, int batteryPercentage, boolean charging, Date bootTimestamp) {
-
+        if (timestamp.before(bootTimestamp)) {
+            throw new IllegalArgumentException("Sample timestamp must be after boot timestamp");
+        }
     }
 
     public void addInstalledApp(String dottedName, String displayName, String versionName) {

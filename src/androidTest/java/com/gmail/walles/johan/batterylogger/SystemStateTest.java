@@ -188,6 +188,7 @@ public class SystemStateTest extends TestCase {
         b.addInstalledApp("g.h.i", "Adder", "5.6.7");
 
         Date datesBetween[] = between(then, now, 4);
+        // Note that the actual order here is arbitrary
         assertEvents(b.getEventsSince(a),
                 HistoryEvent.createInfoEvent(datesBetween[0], "Stop charging"),
                 HistoryEvent.createInfoEvent(datesBetween[1], "Upgrader upgraded from 1.2.3 to 1.2.5"),

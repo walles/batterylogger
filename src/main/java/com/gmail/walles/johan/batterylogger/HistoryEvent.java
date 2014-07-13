@@ -65,6 +65,16 @@ class HistoryEvent {
         return new HistoryEvent(timestamp, Type.SYSTEM_BOOT);
     }
 
+    @Override
+    public String toString() {
+        return "HistoryEvent{" +
+                "timestamp=" + timestamp +
+                ", " + type +
+                ", " + percentage + "%" +
+                ", '" + message + '\'' +
+                '}';
+    }
+
     public static HistoryEvent deserializeFromString(String serialization) throws ParseException {
         int firstSpaceIndex = serialization.indexOf(' ');
         int secondSpaceIndex = serialization.indexOf(' ', firstSpaceIndex + 1);

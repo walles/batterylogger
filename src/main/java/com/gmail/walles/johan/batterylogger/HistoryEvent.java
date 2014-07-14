@@ -1,9 +1,17 @@
 package com.gmail.walles.johan.batterylogger;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.text.ParseException;
 import java.util.Date;
 
-class HistoryEvent {
+class HistoryEvent implements Comparable<HistoryEvent> {
+    @Override
+    public int compareTo(HistoryEvent historyEvent) {
+        return getTimestamp().compareTo(historyEvent.getTimestamp());
+    }
+
     enum Type {
         BATTERY_LEVEL,
         SYSTEM_SHUTDOWN,
@@ -11,13 +19,31 @@ class HistoryEvent {
         INFO
     }
 
-    private final Date timestamp;
+    @Nullable
+    private Date timestamp;
+
     private final Type type;
     private int percentage;
     private String message;
 
     public Date getTimestamp() {
+        if (timestamp == null) {
+            throw new IllegalStateException("Must set timestamp first");
+        }
+
         return timestamp;
+    }
+
+    public void setTimestamp(@NotNull Date timestamp) {
+        if (this.timestamp != null) {
+            throw new IllegalStateException("Timestamp already set");
+        }
+
+        this.timestamp = timestamp;
+    }
+
+    public boolean isComplete() {
+        return timestamp != null;
     }
 
     public Type getType() {
@@ -40,28 +66,28 @@ class HistoryEvent {
         return message;
     }
 
-    private HistoryEvent(Date timestamp, Type type) {
+    private HistoryEvent(@Nullable Date timestamp, Type type) {
         this.timestamp = timestamp;
         this.type = type;
     }
 
-    public static HistoryEvent createBatteryLevelEvent(Date timestamp, int percentage) {
+    public static HistoryEvent createBatteryLevelEvent(@Nullable Date timestamp, int percentage) {
         HistoryEvent event = new HistoryEvent(timestamp, Type.BATTERY_LEVEL);
         event.percentage = percentage;
         return event;
     }
 
-    public static HistoryEvent createInfoEvent(Date timestamp, String message) {
+    public static HistoryEvent createInfoEvent(@Nullable Date timestamp, String message) {
         HistoryEvent event = new HistoryEvent(timestamp, Type.INFO);
         event.message = message;
         return event;
     }
 
-    public static HistoryEvent createSystemHaltingEvent(Date timestamp) {
+    public static HistoryEvent createSystemHaltingEvent(@Nullable Date timestamp) {
         return new HistoryEvent(timestamp, Type.SYSTEM_SHUTDOWN);
     }
 
-    public static HistoryEvent createSystemBootingEvent(Date timestamp) {
+    public static HistoryEvent createSystemBootingEvent(@Nullable Date timestamp) {
         return new HistoryEvent(timestamp, Type.SYSTEM_BOOT);
     }
 
@@ -146,6 +172,10 @@ class HistoryEvent {
     }
 
     public String serializeToString() {
+        if (timestamp == null) {
+            throw new IllegalStateException("Must set timestamp before serializing");
+        }
+
         switch (type) {
             case INFO:
                 return type.name() + " " + timestamp.getTime() + " " + message;
@@ -167,7 +197,10 @@ class HistoryEvent {
             return false;
         }
 
-        if (!timestamp.equals(eventB.timestamp)) {
+        if (timestamp == null && eventB.timestamp != null) {
+            return false;
+        }
+        if (timestamp != eventB.timestamp && !timestamp.equals(eventB.timestamp)) {
             return false;
         }
 

@@ -88,30 +88,18 @@ public class SystemStateTest extends TestCase {
         SystemState a = new SystemState(then, 27, false, bootTimestamp);
         SystemState b = new SystemState(now, 27, true, bootTimestamp);
 
-        assertEvents(b.getEventsSince(a), HistoryEvent.createInfoEvent(now, "Start charging"));
+        assertEvents(b.getEventsSince(a), HistoryEvent.createInfoEvent(between(then, now), "Start charging"));
     }
 
     public void testStopChargingEvent() {
         SystemState a = new SystemState(then, 27, true, bootTimestamp);
         SystemState b = new SystemState(now, 27, false, bootTimestamp);
 
-        assertEvents(b.getEventsSince(a), HistoryEvent.createInfoEvent(now, "Stop charging"));
+        assertEvents(b.getEventsSince(a), HistoryEvent.createInfoEvent(between(then, now), "Stop charging"));
     }
 
     private static Date between(Date t0, Date t1) {
         return new Date((t0.getTime() + t1.getTime()) / 2);
-    }
-
-    /**
-     * Create amount dates between (but not including) t0 and t1.
-     */
-    private static Date[] between(Date t0, Date t1, int amount) {
-        Date returnMe[] = new Date[amount];
-        long span = t1.getTime() - t0.getTime();
-        for (int i = 0; i < amount; i++) {
-            returnMe[i] = new Date(t0.getTime() + ((i + 1) * span) / (amount + 1));
-        }
-        return returnMe;
     }
 
     public void testInstallEvent() {
@@ -174,7 +162,7 @@ public class SystemStateTest extends TestCase {
                 HistoryEvent.createSystemBootingEvent(boot2));
     }
 
-    public void testHaltAndBootAndBatteryEvents() {
+    public void testHaltAndBootAndChargeEvents() {
         Date boot1 = new Date(0);
         Date sample1 = new Date(1000);
         Date boot2 = new Date(2000);
@@ -201,7 +189,7 @@ public class SystemStateTest extends TestCase {
         b.addInstalledApp("a.b.c", "Upgrader", "1.2.5");
         b.addInstalledApp("g.h.i", "Adder", "5.6.7");
 
-        Date datesBetween[] = between(then, now, 4);
+        Date datesBetween[] = SystemState.between(then, now, 4);
         // Note that the actual order here is arbitrary
         assertEvents(b.getEventsSince(a),
                 HistoryEvent.createInfoEvent(datesBetween[0], "Stop charging"),
@@ -209,5 +197,11 @@ public class SystemStateTest extends TestCase {
                 HistoryEvent.createInfoEvent(datesBetween[2], "Remover 2.3.4 uninstalled"),
                 HistoryEvent.createInfoEvent(datesBetween[3], "Adder 5.6.7 installed"),
                 HistoryEvent.createBatteryLevelEvent(now, 26));
+    }
+
+    public void testBetween() {
+        Date dates[] = SystemState.between(then, now, 1);
+        assertEquals(1, dates.length);
+        assertEquals(between(then, now), dates[0]);
     }
 }

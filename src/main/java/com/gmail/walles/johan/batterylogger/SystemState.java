@@ -2,9 +2,11 @@ package com.gmail.walles.johan.batterylogger;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -82,12 +84,24 @@ public class SystemState {
         installedApps.put(dottedName, new InstalledApp(dottedName, displayName, versionName));
     }
 
+    /**
+     * Create amount dates between (but not including) t0 and t1.
+     */
+    static Date[] between(Date t0, Date t1, int amount) {
+        Date returnMe[] = new Date[amount];
+        long span = t1.getTime() - t0.getTime();
+        for (int i = 0; i < amount; i++) {
+            returnMe[i] = new Date(t0.getTime() + ((i + 1) * span) / (amount + 1));
+        }
+        return returnMe;
+    }
+
     public Collection<HistoryEvent> getEventsSince(SystemState then) {
         if (timestamp.before(then.timestamp)) {
             throw new IllegalArgumentException("Timestamp of other state must be older than mine");
         }
 
-        Collection<HistoryEvent> returnMe = new LinkedList<HistoryEvent>();
+        List<HistoryEvent> returnMe = new LinkedList<HistoryEvent>();
 
         if (!bootTimestamp.equals(then.bootTimestamp)) {
             returnMe.add(HistoryEvent.createSystemHaltingEvent(new Date(then.timestamp.getTime() + 1)));
@@ -97,6 +111,33 @@ public class SystemState {
         if (batteryPercentage < then.batteryPercentage) {
             returnMe.add(HistoryEvent.createBatteryLevelEvent(timestamp, batteryPercentage));
         }
+
+        if (charging && !then.charging) {
+            returnMe.add(HistoryEvent.createInfoEvent(null, "Start charging"));
+        }
+        if (then.charging && !charging) {
+            returnMe.add(HistoryEvent.createInfoEvent(null, "Stop charging"));
+        }
+
+        // Add dates to all events that need it
+        int needTimestampCount = 0;
+        for (HistoryEvent event : returnMe) {
+            if (!event.isComplete()) {
+                needTimestampCount++;
+            }
+        }
+        if (needTimestampCount > 0) {
+            Date timestamps[] = between(then.timestamp, timestamp, needTimestampCount);
+            int nextFreeTimestampIndex = 0;
+            for (HistoryEvent event : returnMe) {
+                if (!event.isComplete()) {
+                    event.setTimestamp(timestamps[nextFreeTimestampIndex++]);
+                }
+            }
+        }
+
+        // Now that everyone has their dates, sort!
+        Collections.sort(returnMe);
 
         return returnMe;
     }

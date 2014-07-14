@@ -89,6 +89,11 @@ public class SystemState {
 
         Collection<HistoryEvent> returnMe = new LinkedList<HistoryEvent>();
 
+        if (!bootTimestamp.equals(then.bootTimestamp)) {
+            returnMe.add(HistoryEvent.createSystemHaltingEvent(new Date(then.timestamp.getTime() + 1)));
+            returnMe.add(HistoryEvent.createSystemBootingEvent(bootTimestamp));
+        }
+
         if (batteryPercentage < then.batteryPercentage) {
             returnMe.add(HistoryEvent.createBatteryLevelEvent(timestamp, batteryPercentage));
         }

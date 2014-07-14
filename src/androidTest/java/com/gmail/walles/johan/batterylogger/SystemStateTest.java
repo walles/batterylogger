@@ -170,7 +170,21 @@ public class SystemStateTest extends TestCase {
         SystemState afterReboot = new SystemState(sample2, 27, true, boot2);
 
         assertEvents(afterReboot.getEventsSince(beforeReboot),
-                HistoryEvent.createSystemHaltingEvent(sample1),
+                HistoryEvent.createSystemHaltingEvent(new Date(sample1.getTime() + 1)),
+                HistoryEvent.createSystemBootingEvent(boot2));
+    }
+
+    public void testHaltAndBootAndBatteryEvents() {
+        Date boot1 = new Date(0);
+        Date sample1 = new Date(1000);
+        Date boot2 = new Date(2000);
+        Date sample2 = new Date(3000);
+
+        SystemState beforeReboot = new SystemState(sample1, 27, false, boot1);
+        SystemState afterReboot = new SystemState(sample2, 27, true, boot2);
+
+        assertEvents(afterReboot.getEventsSince(beforeReboot),
+                HistoryEvent.createSystemHaltingEvent(new Date(sample1.getTime() + 1)),
                 HistoryEvent.createInfoEvent(between(sample1, boot2), "Start charging"),
                 HistoryEvent.createSystemBootingEvent(boot2));
     }

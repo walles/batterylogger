@@ -155,7 +155,7 @@ public class SystemStateTest extends TestCase {
         Date sample2 = new Date(3000);
 
         SystemState beforeReboot = new SystemState(sample1, 27, false, boot1);
-        SystemState afterReboot = new SystemState(sample2, 27, true, boot2);
+        SystemState afterReboot = new SystemState(sample2, 27, false, boot2);
 
         assertEvents(afterReboot.getEventsSince(beforeReboot),
                 HistoryEvent.createSystemHaltingEvent(new Date(sample1.getTime() + 1)),

@@ -5,9 +5,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Snapshot of system state containing
@@ -96,6 +98,41 @@ public class SystemState {
         return returnMe;
     }
 
+    /**
+     * @param events Packaging events will be added to this collection
+     */
+    private void addPackagingEventsSince(SystemState then, Collection<HistoryEvent> events) {
+        Set<String> added = new HashSet<String>(installedApps.keySet());
+        added.removeAll(then.installedApps.keySet());
+        for (String dottedName : added) {
+            InstalledApp installedApp = installedApps.get(dottedName);
+            events.add(HistoryEvent.createInfoEvent(null,
+                    installedApp.displayName + " " + installedApp.versionName + " installed"));
+        }
+
+        Set<String> removed = new HashSet<String>(then.installedApps.keySet());
+        removed.removeAll(installedApps.keySet());
+        for (String dottedName : removed) {
+            InstalledApp installedApp = then.installedApps.get(dottedName);
+            events.add(HistoryEvent.createInfoEvent(null,
+                    installedApp.displayName + " " + installedApp.versionName + " uninstalled"));
+        }
+
+        Set<String> retained = new HashSet<String>(installedApps.keySet());
+        retained.retainAll(then.installedApps.keySet());
+        for (String dottedName : retained) {
+            InstalledApp installedThen = then.installedApps.get(dottedName);
+            InstalledApp installedNow = installedApps.get(dottedName);
+            if (installedThen.equals(installedNow)) {
+                continue;
+            }
+            events.add(HistoryEvent.createInfoEvent(null,
+                    installedNow.displayName
+                            + " upgraded from " + installedThen.versionName
+                            + " to " + installedNow.versionName));
+        }
+    }
+
     public Collection<HistoryEvent> getEventsSince(SystemState then) {
         if (timestamp.before(then.timestamp)) {
             throw new IllegalArgumentException("Timestamp of other state must be older than mine");
@@ -127,6 +164,8 @@ public class SystemState {
         if (chargingEvent != null) {
             returnMe.add(chargingEvent);
         }
+
+        addPackagingEventsSince(then, returnMe);
 
         // Add dates to all events that need it
         int needTimestampCount = 0;

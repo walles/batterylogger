@@ -103,20 +103,29 @@ public class SystemState {
 
         List<HistoryEvent> returnMe = new LinkedList<HistoryEvent>();
 
+        boolean reboot = false;
         if (!bootTimestamp.equals(then.bootTimestamp)) {
             returnMe.add(HistoryEvent.createSystemHaltingEvent(new Date(then.timestamp.getTime() + 1)));
             returnMe.add(HistoryEvent.createSystemBootingEvent(bootTimestamp));
+            reboot = true;
         }
 
         if (batteryPercentage < then.batteryPercentage) {
             returnMe.add(HistoryEvent.createBatteryLevelEvent(timestamp, batteryPercentage));
         }
 
+        HistoryEvent chargingEvent = null;
         if (charging && !then.charging) {
-            returnMe.add(HistoryEvent.createInfoEvent(null, "Start charging"));
+            chargingEvent = HistoryEvent.createInfoEvent(null, "Start charging");
         }
         if (then.charging && !charging) {
-            returnMe.add(HistoryEvent.createInfoEvent(null, "Stop charging"));
+            chargingEvent = HistoryEvent.createInfoEvent(null, "Stop charging");
+        }
+        if (reboot && chargingEvent != null) {
+            chargingEvent.setTimestamp(between(then.bootTimestamp, timestamp, 1)[0]);
+        }
+        if (chargingEvent != null) {
+            returnMe.add(chargingEvent);
         }
 
         // Add dates to all events that need it

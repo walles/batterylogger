@@ -193,9 +193,9 @@ public class SystemStateTest extends TestCase {
         // Note that the actual order here is arbitrary
         assertEvents(b.getEventsSince(a),
                 HistoryEvent.createInfoEvent(datesBetween[0], "Stop charging"),
-                HistoryEvent.createInfoEvent(datesBetween[1], "Upgrader upgraded from 1.2.3 to 1.2.5"),
+                HistoryEvent.createInfoEvent(datesBetween[1], "Adder 5.6.7 installed"),
                 HistoryEvent.createInfoEvent(datesBetween[2], "Remover 2.3.4 uninstalled"),
-                HistoryEvent.createInfoEvent(datesBetween[3], "Adder 5.6.7 installed"),
+                HistoryEvent.createInfoEvent(datesBetween[3], "Upgrader upgraded from 1.2.3 to 1.2.5"),
                 HistoryEvent.createBatteryLevelEvent(now, 26));
     }
 

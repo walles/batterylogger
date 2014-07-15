@@ -42,6 +42,7 @@ class HistoryEvent implements Comparable<HistoryEvent> {
         this.timestamp = timestamp;
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isComplete() {
         return timestamp != null;
     }

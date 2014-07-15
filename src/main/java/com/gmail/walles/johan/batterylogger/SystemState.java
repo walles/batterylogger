@@ -227,7 +227,9 @@ public class SystemState {
         if (!this.timestamp.equals(that.timestamp)) {
             return false;
         }
-        if (!this.bootTimestamp.equals(that.bootTimestamp)) {
+        long bootMsDelta = Math.abs(this.bootTimestamp.getTime() - that.bootTimestamp.getTime());
+        if (bootMsDelta > 20 * 1000) {
+            // Boot time differs by more than 20s
             return false;
         }
 

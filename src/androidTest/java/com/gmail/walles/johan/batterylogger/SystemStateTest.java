@@ -204,4 +204,17 @@ public class SystemStateTest extends TestCase {
         assertEquals(1, dates.length);
         assertEquals(between(then, now), dates[0]);
     }
+
+    /**
+     * Two SystemStates should be equal even if their boot timestamps are a little bit off. Since the boot timestamps
+     * are calculated will millisecond precision we need some marigin of error.
+     */
+    public void testBootTimeLeniency() {
+        SystemState a = new SystemState(now, 27, false, new Date(0));
+        SystemState b = new SystemState(now, 27, false, new Date(10 * 1000));
+        assertEquals(a, b);
+
+        SystemState c = new SystemState(now, 27, false, new Date(100 * 1000));
+        assertFalse(a.equals(c));
+    }
 }

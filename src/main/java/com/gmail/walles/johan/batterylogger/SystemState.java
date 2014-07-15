@@ -1,6 +1,11 @@
 package com.gmail.walles.johan.batterylogger;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -23,12 +28,12 @@ import java.util.Set;
  */
 public class SystemState {
     private static class InstalledApp {
-        public final String packageName;
+        public final String dottedName;
         public final String displayName;
         public final String versionName;
 
-        public InstalledApp(String packageName, String displayName, String versionName) {
-            this.packageName = packageName;
+        public InstalledApp(String dottedName, String displayName, String versionName) {
+            this.dottedName = dottedName;
             this.displayName = displayName;
             this.versionName = versionName;
         }
@@ -41,7 +46,7 @@ public class SystemState {
             InstalledApp that = (InstalledApp) o;
 
             if (!displayName.equals(that.displayName)) return false;
-            if (!packageName.equals(that.packageName)) return false;
+            if (!dottedName.equals(that.dottedName)) return false;
             if (!versionName.equals(that.versionName)) return false;
 
             return true;
@@ -49,7 +54,7 @@ public class SystemState {
 
         @Override
         public int hashCode() {
-            int result = packageName.hashCode();
+            int result = dottedName.hashCode();
             result = 31 * result + displayName.hashCode();
             result = 31 * result + versionName.hashCode();
             return result;
@@ -58,7 +63,7 @@ public class SystemState {
         @Override
         public String toString() {
             return "InstalledApp{" +
-                    "packageName='" + packageName + '\'' +
+                    "dottedName='" + dottedName + '\'' +
                     ", displayName='" + displayName + '\'' +
                     ", versionName='" + versionName + '\'' +
                     '}';
@@ -233,11 +238,67 @@ public class SystemState {
         return true;
     }
 
-    public void writeToFile(File file) {
+    public void writeToFile(File file) throws IOException {
+        PrintWriter writer = null;
+        try {
+            writer = new PrintWriter(new FileWriter(file));
 
+            writer.println(timestamp.getTime());
+            writer.println(batteryPercentage);
+            writer.println(bootTimestamp.getTime());
+            writer.println(charging);
+            for (InstalledApp app : installedApps.values()) {
+                writer.println(app.dottedName);
+                writer.println("  " + app.displayName);
+                writer.println("  " + app.versionName);
+            }
+        } finally {
+            if (writer != null) {
+                writer.close();
+            }
+        }
     }
 
-    public static SystemState readFromFile(File file) {
-        return null;
+    public static SystemState readFromFile(File file) throws IOException {
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(file));
+            Date timestamp = new Date(Long.valueOf(reader.readLine()));
+            int batteryPercentage = Integer.valueOf(reader.readLine());
+            Date bootTimestamp = new Date(Long.valueOf(reader.readLine()));
+            boolean charging = Boolean.valueOf(reader.readLine());
+            SystemState returnMe = new SystemState(timestamp, batteryPercentage, charging, bootTimestamp);
+
+            while (true) {
+                String dottedName = reader.readLine();
+                if (dottedName == null) {
+                    break;
+                }
+
+                String displayName = reader.readLine();
+                if (displayName == null) {
+                    break;
+                }
+                displayName = displayName.trim();
+
+                String versionName = reader.readLine();
+                if (versionName == null) {
+                    break;
+                }
+                versionName = versionName.trim();
+
+                returnMe.addInstalledApp(dottedName, displayName, versionName);
+            }
+
+            return returnMe;
+        } catch (NumberFormatException e) {
+            IOException throwMe = new IOException("Number parsing failed");
+            throwMe.initCause(e);
+            throw throwMe;
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
+        }
     }
 }

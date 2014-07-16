@@ -1,5 +1,14 @@
 package com.gmail.walles.johan.batterylogger;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.os.BatteryManager;
+import android.os.Build;
+import android.os.SystemClock;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -302,5 +311,81 @@ public class SystemState {
                 reader.close();
             }
         }
+    }
+
+    public static SystemState readFromSystem(Context context) throws IOException {
+        Date now = new Date();
+        Date bootTimestamp = new Date(System.currentTimeMillis() - SystemClock.elapsedRealtime());
+
+        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        Intent batteryStatus = context.registerReceiver(null, ifilter);
+        if (batteryStatus == null) {
+            throw new IOException("Battery status unavailable");
+        }
+
+        int status = batteryStatus.getIntExtra(BatteryManager.EXTRA_STATUS, -1);
+        if (status == -1) {
+            throw new IOException("Battery charging status unavailable");
+        }
+        boolean charging =
+                (status == BatteryManager.BATTERY_STATUS_CHARGING
+                        || status == BatteryManager.BATTERY_STATUS_FULL);
+
+        int batteryLevel = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+        if (batteryLevel == -1) {
+            throw new IOException("Battery level unavailable");
+        }
+        int batteryScale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+        if (batteryScale == -1) {
+            throw new IOException("Battery scale unavailable");
+        }
+        int batteryPercentage = (100 * batteryLevel) / batteryScale;
+
+        SystemState returnMe = new SystemState(now, batteryPercentage, charging, bootTimestamp);
+
+        // Add installed apps
+        PackageManager packageManager = context.getPackageManager();
+        if (packageManager == null) {
+            throw new IOException("Package manager not available");
+        }
+        List<PackageInfo> installedPackages = packageManager.getInstalledPackages(0);
+        for (PackageInfo packageInfo : installedPackages) {
+            if (packageInfo.applicationInfo == null) {
+                throw new IOException(
+                        "Package info without application info: "
+                                + packageInfo.packageName + " "
+                                + packageInfo.versionName);
+            }
+
+            String dottedName = packageInfo.applicationInfo.packageName;
+            if (dottedName == null) {
+                throw new IOException("Dotted name unavailable for: "
+                        + packageInfo.packageName + " "
+                        + packageInfo.versionName);
+            }
+
+            CharSequence displayName = packageInfo.applicationInfo.loadLabel(packageManager);
+            if (displayName == null) {
+                displayName = dottedName;
+            }
+
+            String versionName = packageInfo.versionName;
+            if (versionName == null || versionName.length() == 0) {
+                versionName = Integer.toString(packageInfo.versionCode);
+            }
+
+            returnMe.addInstalledApp(
+                    dottedName,
+                    displayName.toString(),
+                    versionName);
+        }
+
+        // Add OS fingerprint
+        returnMe.addInstalledApp(
+                "an.identifier.for.the.os.build.griseknoa",
+                "Android OS",
+                Build.FINGERPRINT);
+
+        return returnMe;
     }
 }

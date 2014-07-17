@@ -12,7 +12,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        EventListenerService.startService(this, true);
+        SystemSamplingService.enable(this);
 
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {

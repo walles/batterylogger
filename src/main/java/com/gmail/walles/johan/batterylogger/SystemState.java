@@ -41,7 +41,7 @@ public class SystemState {
         public final String displayName;
         public final String versionName;
 
-        public InstalledApp(String dottedName, String displayName, String versionName) {
+        private InstalledApp(String dottedName, String displayName, String versionName) {
             this.dottedName = dottedName;
             this.displayName = displayName;
             this.versionName = versionName;
@@ -317,8 +317,8 @@ public class SystemState {
         Date now = new Date();
         Date bootTimestamp = new Date(System.currentTimeMillis() - SystemClock.elapsedRealtime());
 
-        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
-        Intent batteryStatus = context.registerReceiver(null, ifilter);
+        IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        Intent batteryStatus = context.registerReceiver(null, filter);
         if (batteryStatus == null) {
             throw new IOException("Battery status unavailable");
         }

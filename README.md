@@ -7,15 +7,9 @@ find out what makes battery usage increase.
 
 TODO
 ----
-* Rewrite the data collection service to sample the system state
-every 15 minutes and deduct data points from the differences between
-those states. The reason is that we can't trust our service to stay
-alive (real-life observation).
-
 * Draw a median line across each series.
 
-* Make sure the service notifies the data holder about OS / kernel
-upgrades.
+* Collect application-data-cleared events if possible.
 
 * Make sure we rotate the history file when it gets too big. Aim for
 keeping a month or more of stats at hand.
@@ -24,8 +18,6 @@ keeping a month or more of stats at hand.
 reason, display something explaining that to the user.
 
 * Make a preference for disabling the service.
-
-* Print proper app names and versions when logging app removals.
 
 * Force landscape mode? Drain patterns are more visible if the Y axis
 is more compressed.
@@ -36,14 +28,11 @@ that. Or maybe when services start / stop in general?
 * Fake the data when running in the emulator?
 
 * Make the points in the graph real big, bigger than the line thickness.
-Ref: http://stackoverflow.com/questions/10169080/custom-points-on-graph-using-androidplot
-
-* Think about how to show overlapping info events.
-
-* Detect unclean shutdowns of the EventListener service and do something
-appropriate
+Ref: <http://stackoverflow.com/questions/10169080/custom-points-on-graph-using-androidplot>
 
 * Make the Y axis labels look good.
+
+* Make an icon.
 
 DONE
 ----
@@ -51,7 +40,7 @@ DONE
 copy in /libs
 
 * Implement the Androidplot quickstart tutorial:
-http://androidplot.com/docs/quickstart/
+<http://androidplot.com/docs/quickstart/>
 
 * Make sure we can push to googledrive.
 
@@ -59,11 +48,11 @@ http://androidplot.com/docs/quickstart/
 
 * Make sure we can label individual points. This would be used for
 showing events in the graph. Try the PointLabeler as described here:
-http://androidplot.com/point-labeling-tools-in-0-5-1/
+<http://androidplot.com/point-labeling-tools-in-0-5-1/>
 
 * Make sure the graph is zoomable (by dragging vertically) and
 pannable (by dragging sideways). Have a look at
-http://androidplot.com/docs/how-to-pan-zoom-and-scale/ but use the
+<http://androidplot.com/docs/how-to-pan-zoom-and-scale/> but use the
 system GestureDetector instead of rolling our own.
 
 * Make a data holder class that supports both receiving data,
@@ -102,3 +91,17 @@ installs and uninstalls.
 * Remove the lines between the vertices
 
 * Make the X axis labels look sane at different zoom levels
+
+* Rewrite the data collection service to sample the system state
+every 15 minutes and deduct data points from the differences between
+those states. The reason is that we can't trust our service to stay
+alive (real-life observation).
+
+* Make sure the service notifies the data holder about OS / kernel
+upgrades.
+
+* Print proper app names and versions when logging app removals.
+
+* Think about how to show overlapping info events. With the new
+sample-based approach we simply don't generate any overlapping
+events.

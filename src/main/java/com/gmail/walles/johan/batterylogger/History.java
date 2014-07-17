@@ -43,7 +43,7 @@ public class History {
         this.storage = new File(context.getFilesDir(), "events.log");
     }
 
-    private void addEvent(HistoryEvent event) throws IOException {
+    public void addEvent(HistoryEvent event) throws IOException {
         if (eventsFromStorage != null) {
             // Add in memory
             eventsFromStorage.add(event);
@@ -58,28 +58,6 @@ public class History {
                 printWriter.close();
             }
         }
-    }
-
-    public void addBatteryLevelEvent(int percentage, Date timestamp) throws IOException {
-        addEvent(HistoryEvent.createBatteryLevelEvent(timestamp, percentage));
-    }
-
-    public void addInfoEvent(String message, Date timestamp) throws IOException {
-        addEvent(HistoryEvent.createInfoEvent(timestamp, message));
-    }
-
-    /**
-     * System halting.
-     */
-    public void addSystemHaltingEvent(Date timestamp) throws IOException {
-        addEvent(HistoryEvent.createSystemHaltingEvent(timestamp));
-    }
-
-    /**
-     * System starting up.
-     */
-    public void addSystemBootingEvent(Date timestamp) throws IOException {
-        addEvent(HistoryEvent.createSystemBootingEvent(timestamp));
     }
 
     /**

@@ -76,11 +76,11 @@ public class HistoryTest extends AndroidTestCase {
 
     public void testOnlyBatteryEvents() throws Exception {
         History testMe = new History(testStorage);
-        testMe.addBatteryLevelEvent(100, new Date(1 * History.HOUR_MS));
+        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(1 * History.HOUR_MS), 100));
         assertBatteryDrainSize(0);
         assertNoEvents();
 
-        testMe.addBatteryLevelEvent(98, new Date(3 * History.HOUR_MS));
+        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(3 * History.HOUR_MS), 98));
         assertBatteryDrainSize(1);
         assertNoEvents();
 
@@ -89,7 +89,7 @@ public class HistoryTest extends AndroidTestCase {
         // From 100% to 98% in two hours = 1%/h
         assertValues(0, 1.0);
 
-        testMe.addBatteryLevelEvent(94, new Date(5 * History.HOUR_MS));
+        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(5 * History.HOUR_MS), 94));
         assertBatteryDrainSize(1);
         assertNoEvents();
 
@@ -101,15 +101,15 @@ public class HistoryTest extends AndroidTestCase {
 
     public void testRebootEvents() throws Exception {
         History testMe = new History(testStorage);
-        testMe.addBatteryLevelEvent(51, new Date(1 * History.HOUR_MS));
-        testMe.addBatteryLevelEvent(50, new Date(3 * History.HOUR_MS));
+        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(1 * History.HOUR_MS), 51));
+        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(3 * History.HOUR_MS), 50));
 
-        testMe.addSystemHaltingEvent(new Date(5 * History.HOUR_MS));
-        testMe.addBatteryLevelEvent(51, new Date(7 * History.HOUR_MS));
-        testMe.addSystemBootingEvent(new Date(9 * History.HOUR_MS));
+        testMe.addEvent(HistoryEvent.createSystemHaltingEvent(new Date(5 * History.HOUR_MS)));
+        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(7 * History.HOUR_MS), 51));
+        testMe.addEvent(HistoryEvent.createSystemBootingEvent(new Date(9 * History.HOUR_MS)));
 
-        testMe.addBatteryLevelEvent(50, new Date(11 * History.HOUR_MS));
-        testMe.addBatteryLevelEvent(47, new Date(13 * History.HOUR_MS));
+        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(11 * History.HOUR_MS), 50));
+        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(13 * History.HOUR_MS), 47));
 
         assertBatteryDrainSize(2);
         assertValues(0, 0.5);
@@ -126,14 +126,14 @@ public class HistoryTest extends AndroidTestCase {
      */
     public void testMissingShutdownEvent() throws Exception {
         History testMe = new History(testStorage);
-        testMe.addBatteryLevelEvent(51, new Date(1 * History.HOUR_MS));
-        testMe.addBatteryLevelEvent(50, new Date(3 * History.HOUR_MS));
+        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(1 * History.HOUR_MS), 51));
+        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(3 * History.HOUR_MS), 50));
 
-        testMe.addBatteryLevelEvent(48, new Date(7 * History.HOUR_MS));
-        testMe.addSystemBootingEvent(new Date(9 * History.HOUR_MS));
+        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(7 * History.HOUR_MS), 48));
+        testMe.addEvent(HistoryEvent.createSystemBootingEvent(new Date(9 * History.HOUR_MS)));
 
-        testMe.addBatteryLevelEvent(46, new Date(11 * History.HOUR_MS));
-        testMe.addBatteryLevelEvent(45, new Date(13 * History.HOUR_MS));
+        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(11 * History.HOUR_MS), 46));
+        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(13 * History.HOUR_MS), 45));
 
         // Assume unclean shutdown between last known event before the boot event and the boot event
         assertBatteryDrainSize(2);

@@ -20,25 +20,15 @@
         </activity>
 
         <service
-            android:name=".EventListenerService"
+            android:name=".SystemSamplingService"
             android:enabled="true"
             android:exported="false" >
         </service>
 
         <receiver android:name=".EventReceiver">
             <intent-filter>
-                <action android:name="android.intent.action.ACTION_SHUTDOWN" />
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.QUICKBOOT_POWEROFF" />
                 <action android:name="android.intent.action.QUICKBOOT_POWERON" />
-            </intent-filter>
-
-            <intent-filter>
-                <action android:name="android.intent.action.PACKAGE_ADDED" />
-                <action android:name="android.intent.action.PACKAGE_DATA_CLEARED" />
-                <action android:name="android.intent.action.PACKAGE_REMOVED" />
-                <action android:name="android.intent.action.PACKAGE_REPLACED" />
-                <data android:scheme="package" />
             </intent-filter>
         </receiver>
     </application>

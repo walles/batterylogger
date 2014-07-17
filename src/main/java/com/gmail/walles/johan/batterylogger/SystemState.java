@@ -250,9 +250,11 @@ public class SystemState {
     }
 
     public void writeToFile(File file) throws IOException {
+        File tmp = new File(file.getAbsolutePath() + ".tmp");
+
         PrintWriter writer = null;
         try {
-            writer = new PrintWriter(new FileWriter(file));
+            writer = new PrintWriter(new FileWriter(tmp));
 
             writer.println(timestamp.getTime());
             writer.println(batteryPercentage);
@@ -267,6 +269,10 @@ public class SystemState {
             if (writer != null) {
                 writer.close();
             }
+        }
+
+        if (!tmp.renameTo(file)) {
+            throw new IOException("Rename failed: " + tmp.getAbsolutePath() + "->" + file.getAbsolutePath());
         }
     }
 

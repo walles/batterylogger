@@ -76,11 +76,6 @@ public class SystemSamplingService extends Service {
     }
 
     @Override
-    public void onDestroy() {
-
-    }
-
-    @Override
     public IBinder onBind(Intent intent) {
         throw new UnsupportedOperationException("Binding unsupported, please use startService() instead");
     }

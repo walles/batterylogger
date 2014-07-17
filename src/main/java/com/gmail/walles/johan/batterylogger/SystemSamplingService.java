@@ -68,8 +68,6 @@ public class SystemSamplingService extends Service {
             }
 
             state.writeToFile(stateFile);
-
-            Log.v(TAG, "System state sampled");
         } catch (IOException e) {
             Log.e(TAG, "Event logging failed", e);
         }

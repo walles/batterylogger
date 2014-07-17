@@ -8,6 +8,7 @@ import android.content.pm.PackageManager;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.SystemClock;
+import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -24,6 +25,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 
 /**
  * Snapshot of system state containing
@@ -392,6 +395,15 @@ public class SystemState {
                 "Android OS",
                 Build.FINGERPRINT);
 
+        Log.v(TAG, String.format("System state sampled: %s, %d%%, %d apps",
+                charging ? "charging" : "not charging",
+                batteryPercentage,
+                returnMe.getAppCount()));
+
         return returnMe;
+    }
+
+    private int getAppCount() {
+        return installedApps.size();
     }
 }

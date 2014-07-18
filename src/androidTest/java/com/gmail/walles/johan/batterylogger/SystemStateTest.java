@@ -1,13 +1,13 @@
 package com.gmail.walles.johan.batterylogger;
 
-import junit.framework.TestCase;
+import android.test.AndroidTestCase;
 
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 
-public class SystemStateTest extends TestCase {
+public class SystemStateTest extends AndroidTestCase {
     private final Date now = new Date();
     private final Date then = new Date(now.getTime() - History.FIVE_MINUTES_MS);
     private final Date bootTimestamp = new Date(then.getTime() - History.FIVE_MINUTES_MS);
@@ -216,5 +216,32 @@ public class SystemStateTest extends TestCase {
 
         SystemState c = new SystemState(now, 27, false, new Date(100 * 1000));
         assertFalse(a.equals(c));
+    }
+
+    /**
+     * Sanity check the current system state.
+     */
+    public void testReadFromSystem() throws Exception {
+        //noinspection ConstantConditions
+        SystemState testMe = SystemState.readFromSystem(getContext());
+
+        int appCount = testMe.getAppCount();
+        assertTrue("App count is " + appCount, testMe.getAppCount() > 10);
+
+        int batteryPercentage = testMe.getBatteryPercentage();
+        assertTrue("Battery percentage is " + batteryPercentage + "%", testMe.getBatteryPercentage() >= 0);
+
+        File tempFile = File.createTempFile("systemstate-", ".txt");
+        try {
+            testMe.writeToFile(tempFile);
+            SystemState b = SystemState.readFromFile(tempFile);
+
+            assertEquals(testMe, b);
+        } finally {
+            if (tempFile != null) {
+                //noinspection ResultOfMethodCallIgnored
+                tempFile.delete();
+            }
+        }
     }
 }

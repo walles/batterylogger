@@ -83,6 +83,11 @@ public class SystemState {
     }
 
     private final Date timestamp;
+
+    public int getBatteryPercentage() {
+        return batteryPercentage;
+    }
+
     private final int batteryPercentage;
     private final boolean charging;
     private final Date bootTimestamp;
@@ -403,7 +408,7 @@ public class SystemState {
         return returnMe;
     }
 
-    private int getAppCount() {
+    public int getAppCount() {
         return installedApps.size();
     }
 }

@@ -234,9 +234,7 @@ public class SystemStateTest extends AndroidTestCase {
         File tempFile = File.createTempFile("systemstate-", ".txt");
         try {
             testMe.writeToFile(tempFile);
-            SystemState b = SystemState.readFromFile(tempFile);
-
-            assertEquals(testMe, b);
+            assertEquals(testMe, SystemState.readFromFile(tempFile));
         } finally {
             if (tempFile != null) {
                 //noinspection ResultOfMethodCallIgnored

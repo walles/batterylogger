@@ -39,48 +39,6 @@ import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
  * </ul>
  */
 public class SystemState {
-    private static class InstalledApp {
-        public final String dottedName;
-        public final String displayName;
-        public final String versionName;
-
-        private InstalledApp(String dottedName, String displayName, String versionName) {
-            this.dottedName = dottedName;
-            this.displayName = displayName;
-            this.versionName = versionName;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            InstalledApp that = (InstalledApp) o;
-
-            if (!displayName.equals(that.displayName)) return false;
-            if (!dottedName.equals(that.dottedName)) return false;
-            if (!versionName.equals(that.versionName)) return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            int result = dottedName.hashCode();
-            result = 31 * result + displayName.hashCode();
-            result = 31 * result + versionName.hashCode();
-            return result;
-        }
-
-        @Override
-        public String toString() {
-            return "InstalledApp{" +
-                    "dottedName='" + dottedName + '\'' +
-                    ", displayName='" + displayName + '\'' +
-                    ", versionName='" + versionName + '\'' +
-                    '}';
-        }
-    }
 
     private final Date timestamp;
 
@@ -91,6 +49,11 @@ public class SystemState {
     private final int batteryPercentage;
     private final boolean charging;
     private final Date bootTimestamp;
+
+    public Collection<InstalledApp> getInstalledApps() {
+        return installedApps.values();
+    }
+
     private final Map<String, InstalledApp> installedApps = new HashMap<String, InstalledApp>();
 
     public SystemState(Date timestamp, int batteryPercentage, boolean charging, Date bootTimestamp) {
@@ -269,9 +232,7 @@ public class SystemState {
             writer.println(bootTimestamp.getTime());
             writer.println(charging);
             for (InstalledApp app : installedApps.values()) {
-                writer.println(app.dottedName);
-                writer.println("  " + app.displayName);
-                writer.println("  " + app.versionName);
+                app.println(writer);
             }
         } finally {
             if (writer != null) {
@@ -295,24 +256,12 @@ public class SystemState {
             SystemState returnMe = new SystemState(timestamp, batteryPercentage, charging, bootTimestamp);
 
             while (true) {
-                String dottedName = reader.readLine();
-                if (dottedName == null) {
+                InstalledApp app = InstalledApp.readLines(reader);
+                if (app == null) {
                     break;
                 }
 
-                String displayName = reader.readLine();
-                if (displayName == null) {
-                    break;
-                }
-                displayName = displayName.trim();
-
-                String versionName = reader.readLine();
-                if (versionName == null) {
-                    break;
-                }
-                versionName = versionName.trim();
-
-                returnMe.addInstalledApp(dottedName, displayName, versionName);
+                returnMe.addInstalledApp(app.dottedName, app.displayName, app.versionName);
             }
 
             return returnMe;

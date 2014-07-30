@@ -126,7 +126,7 @@ public class SystemState {
         List<HistoryEvent> returnMe = new LinkedList<HistoryEvent>();
 
         boolean reboot = false;
-        if (!bootTimestamp.equals(then.bootTimestamp)) {
+        if (!bootTimestampsMatch(then)) {
             returnMe.add(HistoryEvent.createSystemHaltingEvent(new Date(then.timestamp.getTime() + 1)));
             returnMe.add(HistoryEvent.createSystemBootingEvent(bootTimestamp));
             reboot = true;
@@ -191,6 +191,15 @@ public class SystemState {
                 '}';
     }
 
+    private boolean bootTimestampsMatch(SystemState that) {
+        long bootMsDelta = Math.abs(this.bootTimestamp.getTime() - that.bootTimestamp.getTime());
+        if (bootMsDelta > 20 * 1000) {
+            // Boot time differs by more than 20s
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (!o.getClass().equals(SystemState.class)) {
@@ -207,9 +216,7 @@ public class SystemState {
         if (!this.timestamp.equals(that.timestamp)) {
             return false;
         }
-        long bootMsDelta = Math.abs(this.bootTimestamp.getTime() - that.bootTimestamp.getTime());
-        if (bootMsDelta > 20 * 1000) {
-            // Boot time differs by more than 20s
+        if (!bootTimestampsMatch(that)) {
             return false;
         }
 

@@ -150,9 +150,9 @@ public class SystemStateTest extends AndroidTestCase {
 
     public void testHaltAndBootEvents() {
         Date boot1 = new Date(0);
-        Date sample1 = new Date(1000);
-        Date boot2 = new Date(2000);
-        Date sample2 = new Date(3000);
+        Date sample1 = new Date(100000);
+        Date boot2 = new Date(200000);
+        Date sample2 = new Date(300000);
 
         SystemState beforeReboot = new SystemState(sample1, 27, false, boot1);
         SystemState afterReboot = new SystemState(sample2, 27, false, boot2);
@@ -164,9 +164,9 @@ public class SystemStateTest extends AndroidTestCase {
 
     public void testHaltAndBootAndChargeEvents() {
         Date boot1 = new Date(0);
-        Date sample1 = new Date(1000);
-        Date boot2 = new Date(2000);
-        Date sample2 = new Date(3000);
+        Date sample1 = new Date(100000);
+        Date boot2 = new Date(200000);
+        Date sample2 = new Date(300000);
 
         SystemState beforeReboot = new SystemState(sample1, 27, false, boot1);
         SystemState afterReboot = new SystemState(sample2, 27, true, boot2);

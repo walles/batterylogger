@@ -9,8 +9,7 @@ TODO
 ----
 * If we change the system clock, think about how that would affect
 boot timestamps, the system sampling's reboot detection and the timestamp
-logging in general. Maybe log a system-clock-reset event? Can we detect
-that?
+logging in general.
 
 * Draw a median line across each series.
 

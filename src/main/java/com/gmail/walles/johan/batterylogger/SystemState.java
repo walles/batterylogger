@@ -276,10 +276,11 @@ public class SystemState {
         }
     }
 
-    public static SystemState readFromSystem(Context context) throws IOException {
-        Date now = new Date();
-        Date bootTimestamp = new Date(System.currentTimeMillis() - SystemClock.elapsedRealtime());
+    public static Date getBootTimestamp() {
+        return new Date(System.currentTimeMillis() - SystemClock.elapsedRealtime());
+    }
 
+    public static SystemState readFromSystem(Context context) throws IOException {
         IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         Intent batteryStatus = context.registerReceiver(null, filter);
         if (batteryStatus == null) {
@@ -304,7 +305,7 @@ public class SystemState {
         }
         int batteryPercentage = (100 * batteryLevel) / batteryScale;
 
-        SystemState returnMe = new SystemState(now, batteryPercentage, charging, bootTimestamp);
+        SystemState returnMe = new SystemState(new Date(), batteryPercentage, charging, getBootTimestamp());
 
         // Add installed apps
         PackageManager packageManager = context.getPackageManager();

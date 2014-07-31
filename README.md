@@ -7,11 +7,17 @@ find out what makes battery usage increase.
 
 TODO
 ----
+* Draw a median line across each series.
+
+* Make sure there's room for displaying a text event at the far left of
+the graph. Right now, any leftmost event is printed mostly outside of the
+visible area.
+
 * If we change the system clock, think about how that would affect
 boot timestamps, the system sampling's reboot detection and the timestamp
 logging in general.
 
-* Draw a median line across each series.
+* Startup feels slow on my phone, profile that maybe?
 
 * Collect application-data-cleared events if possible.
 

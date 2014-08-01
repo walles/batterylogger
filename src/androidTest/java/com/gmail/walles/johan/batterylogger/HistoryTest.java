@@ -1,6 +1,7 @@
 package com.gmail.walles.johan.batterylogger;
 
 import android.test.AndroidTestCase;
+import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeries;
 
 import java.io.File;
@@ -144,5 +145,71 @@ public class HistoryTest extends AndroidTestCase {
 
         assertEventDescriptions("Unclean shutdown", "System starting up");
         assertEventTimestamps(new Date(8 * History.HOUR_MS), new Date(9 * History.HOUR_MS));
+    }
+
+    public void testMedianLine0() {
+        XYSeries validateMe = History.medianLine(
+                new SimpleXYSeries(Arrays.asList(new Number[] {}),
+                        SimpleXYSeries.ArrayFormat.XY_VALS_INTERLEAVED, "Gris"));
+
+        assertEquals("Gris Median", validateMe.getTitle());
+        assertEquals(0, validateMe.size());
+    }
+
+    public void testMedianLine1() {
+        XYSeries validateMe = History.medianLine(
+                new SimpleXYSeries(Arrays.asList(5, 4),
+                        SimpleXYSeries.ArrayFormat.XY_VALS_INTERLEAVED, "Gris"));
+
+        assertEquals("Gris Median", validateMe.getTitle());
+        assertEquals(1, validateMe.size());
+
+        assertEquals(5, validateMe.getX(0));
+        assertEquals(4, validateMe.getY(0));
+    }
+
+    public void testMedianLine2() {
+        XYSeries validateMe = History.medianLine(
+                new SimpleXYSeries(Arrays.asList(5, 4, 6, 5),
+                        SimpleXYSeries.ArrayFormat.XY_VALS_INTERLEAVED, "Gris"));
+
+        assertEquals("Gris Median", validateMe.getTitle());
+        assertEquals(2, validateMe.size());
+
+        assertEquals(5.0, validateMe.getX(0));
+        assertEquals(4.5, validateMe.getY(0));
+
+        assertEquals(6.0, validateMe.getX(1));
+        assertEquals(4.5, validateMe.getY(1));
+    }
+
+    public void testMedianLine3() {
+        XYSeries validateMe = History.medianLine(
+                new SimpleXYSeries(Arrays.asList(1, 4, 2, 5, 3, 6),
+                        SimpleXYSeries.ArrayFormat.XY_VALS_INTERLEAVED, "Gris"));
+
+        assertEquals("Gris Median", validateMe.getTitle());
+        assertEquals(2, validateMe.size());
+
+        assertEquals(1.0, validateMe.getX(0));
+        assertEquals(5.0, validateMe.getY(0));
+
+        assertEquals(3.0, validateMe.getX(1));
+        assertEquals(5.0, validateMe.getY(1));
+    }
+
+    public void testMedianLine4() {
+        XYSeries validateMe = History.medianLine(
+                new SimpleXYSeries(Arrays.asList(1, 4, 2, 5, 3, 6, 4, 7),
+                        SimpleXYSeries.ArrayFormat.XY_VALS_INTERLEAVED, "Gris"));
+
+        assertEquals("Gris Median", validateMe.getTitle());
+        assertEquals(2, validateMe.size());
+
+        assertEquals(1.0, validateMe.getX(0));
+        assertEquals(5.5, validateMe.getY(0));
+
+        assertEquals(4.0, validateMe.getX(1));
+        assertEquals(5.5, validateMe.getY(1));
     }
 }

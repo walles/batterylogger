@@ -5,10 +5,8 @@ upgrades have happened.
 The idea then is that using this information it should be possible to
 find out what makes battery usage increase.
 
-TODO
-----
-* Draw a median line across each series.
-
+TODO Before Releasing to the Public
+-----------------------------------
 * Make sure there's room for displaying a text event at the far left of
 the graph. Right now, any leftmost event is printed mostly outside of the
 visible area.
@@ -19,8 +17,6 @@ logging in general.
 
 * Startup feels slow on my phone, profile that maybe?
 
-* Collect application-data-cleared events if possible.
-
 * Make sure we rotate the history file when it gets too big. Aim for
 keeping a month or more of stats at hand.
 
@@ -28,6 +24,12 @@ keeping a month or more of stats at hand.
 reason, display something explaining that to the user.
 
 * Make a preference for disabling the service.
+
+* Make an icon.
+
+TODO Misc
+---------
+* Collect application-data-cleared events if possible.
 
 * Force landscape mode? Drain patterns are more visible if the Y axis
 is more compressed.
@@ -41,8 +43,6 @@ that. Or maybe when services start / stop in general?
 Ref: <http://stackoverflow.com/questions/10169080/custom-points-on-graph-using-androidplot>
 
 * Make the Y axis labels look good.
-
-* Make an icon.
 
 DONE
 ----
@@ -115,3 +115,5 @@ upgrades.
 * Think about how to show overlapping info events. With the new
 sample-based approach we simply don't generate any overlapping
 events.
+
+* Draw a median line across each series.

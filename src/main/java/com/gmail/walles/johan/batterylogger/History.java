@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -128,6 +129,57 @@ public class History {
             lastLevelEvent = event;
         }
 
+        return returnMe;
+    }
+
+    static XYSeries medianLine(XYSeries series) {
+        SimpleXYSeries returnMe = new SimpleXYSeries(series.getTitle() + " Median");
+
+        if (series.size() == 0) {
+            return returnMe;
+        }
+        if (series.size() == 1) {
+            returnMe.addLast(series.getX(0), series.getY(0));
+            return returnMe;
+        }
+
+        double left = Double.MAX_VALUE;
+        double right = Double.MIN_VALUE;
+        double values[] = new double[series.size()];
+        for (int i = 0; i < series.size(); i++) {
+            double x = series.getX(i).doubleValue();
+            if (x < left) {
+                left = x;
+            }
+            if (x > right) {
+                right = x;
+            }
+
+            values[i] = series.getY(i).doubleValue();
+        }
+        Arrays.sort(values);
+
+        double median;
+        if (series.size() % 2 == 1) {
+            median = values[series.size() / 2];
+        } else {
+            median = values[series.size() / 2] + values[series.size() / 2 - 1];
+            median /= 2.0;
+        }
+        returnMe.addLast(left, median);
+        returnMe.addLast(right, median);
+
+        return returnMe;
+    }
+
+    /**
+     * Calls {@link #getBatteryDrain()} and creates one median line for each series.
+     */
+    public List<XYSeries> getDrainMedians() throws IOException {
+        List<XYSeries> returnMe = new LinkedList<XYSeries>();
+        for (XYSeries drain : getBatteryDrain()) {
+            returnMe.add(medianLine(drain));
+        }
         return returnMe;
     }
 

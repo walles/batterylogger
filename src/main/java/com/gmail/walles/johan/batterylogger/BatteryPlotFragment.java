@@ -112,25 +112,38 @@ public class BatteryPlotFragment extends Fragment {
         // initialize our XYPlot view reference:
         plot = (XYPlot)rootView.findViewById(R.id.mySimpleXYPlot);
 
-        // Create a formatter to use for drawing a series using LineAndPointRenderer
-        // and configure it from xml:
-        LineAndPointFormatter lineAndPointFormatter = new LineAndPointFormatter();
-        lineAndPointFormatter.setPointLabelFormatter(new PointLabelFormatter());
-        lineAndPointFormatter.setPointLabeler(new PointLabeler() {
+        LineAndPointFormatter drainFormatter = new LineAndPointFormatter();
+        drainFormatter.setPointLabelFormatter(new PointLabelFormatter());
+        drainFormatter.setPointLabeler(new PointLabeler() {
             @Override
             public String getLabel(XYSeries xySeries, int i) {
                 return "";
             }
         });
-        lineAndPointFormatter.configure(getActivity(), R.xml.line_point_formatter_with_plf1);
+        drainFormatter.configure(getActivity(), R.xml.drain_formatter);
 
-        // add a new series' to the xyplot:
+        LineAndPointFormatter medianFormatter = new LineAndPointFormatter();
+        medianFormatter.setPointLabelFormatter(new PointLabelFormatter());
+        medianFormatter.setPointLabeler(new PointLabeler() {
+            @Override
+            public String getLabel(XYSeries xySeries, int i) {
+                return "";
+            }
+        });
+        medianFormatter.configure(getActivity(), R.xml.median_formatter);
+
         try {
+            // Add battery drain series to the plot
             History history = new History(getActivity());
             for (XYSeries drain : history.getBatteryDrain()) {
-                plot.addSeries(drain, lineAndPointFormatter);
+                plot.addSeries(drain, drainFormatter);
             }
 
+            for (XYSeries median : history.getDrainMedians()) {
+                plot.addSeries(median, medianFormatter);
+            }
+
+            // Add events to the plot
             Paint labelPaint = new Paint();
             labelPaint.setAntiAlias(true);
             labelPaint.setColor(Color.WHITE);

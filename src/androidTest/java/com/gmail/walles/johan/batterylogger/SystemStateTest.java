@@ -141,6 +141,7 @@ public class SystemStateTest extends AndroidTestCase {
 
             assertEquals(a, b);
         } finally {
+            //noinspection ConstantConditions
             if (tempFile != null) {
                 //noinspection ResultOfMethodCallIgnored
                 tempFile.delete();
@@ -236,6 +237,7 @@ public class SystemStateTest extends AndroidTestCase {
             testMe.writeToFile(tempFile);
             assertEquals(testMe, SystemState.readFromFile(tempFile));
         } finally {
+            //noinspection ConstantConditions
             if (tempFile != null) {
                 //noinspection ResultOfMethodCallIgnored
                 tempFile.delete();

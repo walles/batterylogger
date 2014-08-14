@@ -191,6 +191,7 @@ public class SystemState {
                 '}';
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean bootTimestampsMatch(SystemState that) {
         long bootMsDelta = Math.abs(this.bootTimestamp.getTime() - that.bootTimestamp.getTime());
         if (bootMsDelta > 20 * 1000) {

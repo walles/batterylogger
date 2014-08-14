@@ -8,7 +8,7 @@ import java.util.Date;
 
 class HistoryEvent implements Comparable<HistoryEvent> {
     @Override
-    public int compareTo(HistoryEvent historyEvent) {
+    public int compareTo(@NotNull HistoryEvent historyEvent) {
         return getTimestamp().compareTo(historyEvent.getTimestamp());
     }
 

@@ -52,7 +52,7 @@ copy in /libs
 * Implement the Androidplot quickstart tutorial:
 <http://androidplot.com/docs/quickstart/>
 
-* Make sure we can push to googledrive.
+* Make sure we can push to Google Drive.
 
 * Make sure we can show a graph with holes in it.
 

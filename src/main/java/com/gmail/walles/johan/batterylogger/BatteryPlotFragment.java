@@ -21,6 +21,8 @@ import com.androidplot.xy.PointLabeler;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
 import com.androidplot.xy.XYStepMode;
+
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -93,6 +95,7 @@ public class BatteryPlotFragment extends Fragment {
         }
     };
 
+    @SuppressWarnings("SameParameterValue")
     private static void showAlertDialog(Context context, CharSequence message) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
         dialogBuilder.setMessage(message);
@@ -160,7 +163,7 @@ public class BatteryPlotFragment extends Fragment {
         plot.setDomainStep(XYStepMode.SUBDIVIDE, 4);
         plot.setDomainValueFormat(new Format() {
             @Override
-            public StringBuffer format(Object o, StringBuffer toAppendTo, FieldPosition position) {
+            public StringBuffer format(Object o, @NotNull StringBuffer toAppendTo, @NotNull FieldPosition position) {
                 Date timestamp = History.toDate((Number)o);
                 long domainWidthSeconds = History.toDate(maxX - minX).getTime() / 1000;
                 SimpleDateFormat format;
@@ -178,7 +181,7 @@ public class BatteryPlotFragment extends Fragment {
 
             @Override
             @Nullable
-            public Object parseObject(String s, ParsePosition parsePosition) {
+            public Object parseObject(String s, @NotNull ParsePosition parsePosition) {
                 return null;
             }
         });

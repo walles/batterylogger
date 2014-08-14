@@ -7,35 +7,35 @@ find out what makes battery usage increase.
 
 TODO Before Releasing to the Public
 -----------------------------------
-* Make sure there's room for displaying a text event at the far left of
-the graph. Right now, any leftmost event is printed mostly outside of the
-visible area.
+* Switch to pinch-zoom; the current scheme makes it too hard to scroll
+sideways.
+
+* Make sure we rotate the history file when it gets too big. Aim for
+keeping a month or more of stats at hand.
 
 * If we change the system clock, think about how that would affect
 boot timestamps, the system sampling's reboot detection and the timestamp
 logging in general.
 
-* Startup feels slow on my phone, profile that maybe?
-
-* Make sure we rotate the history file when it gets too big. Aim for
-keeping a month or more of stats at hand.
-
-* If the log file doesn't exist or the plot is empty for some other
-reason, display something explaining that to the user.
-
-* Make a preference for disabling the service.
-
 * Make an icon.
 
 TODO Misc
 ---------
+* See if we can detect enabling / disabling of Google Now and log
+that. Or maybe when services start / stop in general?
+
+* Make a preference for disabling the service.
+
+* Startup feels slow on my phone, profile that maybe?
+
+* Make sure there's room for displaying a text event at the far left of
+the graph. Right now, any leftmost event is printed mostly outside of the
+visible area.
+
 * Collect application-data-cleared events if possible.
 
 * Force landscape mode? Drain patterns are more visible if the Y axis
 is more compressed.
-
-* See if we can detect enabling / disabling of Google Now and log
-that. Or maybe when services start / stop in general?
 
 * Fake the data when running in the emulator?
 
@@ -117,3 +117,6 @@ sample-based approach we simply don't generate any overlapping
 events.
 
 * Draw a median line across each series.
+
+* If the log file doesn't exist or the plot is empty for some other
+reason, display something explaining that to the user.

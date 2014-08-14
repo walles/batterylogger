@@ -31,6 +31,7 @@ import java.text.Format;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 
 import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 
@@ -95,9 +96,9 @@ public class BatteryPlotFragment extends Fragment {
         }
     };
 
-    @SuppressWarnings("SameParameterValue")
-    private static void showAlertDialog(Context context, CharSequence message) {
+    private static void showAlertDialog(Context context, CharSequence title, CharSequence message) {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+        dialogBuilder.setTitle(title);
         dialogBuilder.setMessage(message);
         dialogBuilder.setIcon(android.R.drawable.ic_dialog_alert);
         dialogBuilder.setPositiveButton(android.R.string.ok, DIALOG_DISMISSER);
@@ -142,7 +143,8 @@ public class BatteryPlotFragment extends Fragment {
                 plot.addSeries(drain, drainFormatter);
             }
 
-            for (XYSeries median : history.getDrainMedians()) {
+            final List<XYSeries> medians = history.getDrainMedians();
+            for (XYSeries median : medians) {
                 plot.addSeries(median, medianFormatter);
             }
 
@@ -151,9 +153,16 @@ public class BatteryPlotFragment extends Fragment {
             labelPaint.setAntiAlias(true);
             labelPaint.setColor(Color.WHITE);
             plot.addSeries(history.getEvents(), new EventFormatter(labelPaint));
+
+            if (medians.size() < 5) {
+                showAlertDialog(getActivity(), "Very Little Data",
+                        "If you come back in a week you'll be able to see patterns much better.");
+            }
         } catch (IOException e) {
             Log.e(TAG, "Reading battery history failed", e);
-            showAlertDialog(getActivity(), "Failed to read battery history");
+            showAlertDialog(getActivity(),
+                    "No Battery History",
+                    "Come back in a few hours to get a graph, or in a week to be able to see patterns.");
         }
 
         plot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 1);

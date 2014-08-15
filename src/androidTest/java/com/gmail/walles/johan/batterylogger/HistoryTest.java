@@ -212,4 +212,33 @@ public class HistoryTest extends AndroidTestCase {
         assertEquals(4.0, validateMe.getX(1));
         assertEquals(5.5, validateMe.getY(1));
     }
+
+    public void testMaintainFileSize() throws Exception {
+        History testMe = new History(testStorage);
+        Date now = new Date();
+        long lastFileSize = 0;
+
+        char[] array = new char[10 * 1024];
+        Arrays.fill(array, 'x');
+        final String longEventDescription = new String(array);
+
+        while (true) {
+            testMe.addEvent(HistoryEvent.createInfoEvent(now, longEventDescription));
+
+            long fileSize = testStorage.length();
+            assertTrue("File should have been truncated before 500kb: " + fileSize,
+                    fileSize < 500 * 1024);
+
+            if (fileSize < lastFileSize) {
+                // It got truncated
+                assertTrue("File should have been allowed to grow to at least 350kb: " + lastFileSize,
+                        lastFileSize > 350 * 1024);
+                assertTrue("File should have been truncated to 250kb-350kb: " + fileSize,
+                        fileSize > 250 * 1024 && fileSize < 350 * 1024);
+                return;
+            }
+
+            lastFileSize = fileSize;
+        }
+    }
 }

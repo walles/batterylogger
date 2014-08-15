@@ -8,10 +8,7 @@ find out what makes battery usage increase.
 TODO Before Releasing to the Public
 -----------------------------------
 * Switch to pinch-zoom; the current scheme makes it too hard to scroll
-sideways.
-
-* Make sure we rotate the history file when it gets too big. Aim for
-keeping a month or more of stats at hand.
+sideways. Try using ScaleGestureDetector for this!
 
 * If we change the system clock, think about how that would affect
 boot timestamps, the system sampling's reboot detection and the timestamp
@@ -120,3 +117,6 @@ events.
 
 * If the log file doesn't exist or the plot is empty for some other
 reason, display something explaining that to the user.
+
+* Make sure we rotate the history file when it gets too big. When it
+gets bigger than 400kb, we drop the first 25% of all events.

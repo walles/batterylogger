@@ -22,11 +22,13 @@ import java.util.List;
 import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 
 public class History {
+    private static final long MAX_HISTORY_FILE_SIZE = 400 * 1024;
+
     public static final long HOUR_MS = 3600 * 1000;
     public static final long FIVE_MINUTES_MS = 5 * 60 * 1000;
 
     @Nullable
-    private ArrayList<HistoryEvent> eventsFromStorage;
+    private List<HistoryEvent> eventsFromStorage;
 
     private final File storage;
 
@@ -44,6 +46,38 @@ public class History {
         this.storage = new File(context.getFilesDir(), "events.log");
     }
 
+    private void dropOldHistory() throws IOException {
+        if (eventsFromStorage == null) {
+            eventsFromStorage = readEventsFromStorage();
+        }
+
+        // Skip the first quarter of the list
+        List<HistoryEvent> truncated =
+                eventsFromStorage.subList(eventsFromStorage.size() / 4, eventsFromStorage.size() - 1);
+        PrintWriter printWriter = null;
+        try {
+            File tmp = File.createTempFile("history-", ".txt", storage.getParentFile());
+            printWriter = new PrintWriter(new FileWriter(tmp));
+            for (HistoryEvent event : truncated) {
+                printWriter.println(event.serializeToString());
+            }
+            printWriter.close();
+            printWriter = null;
+
+            if (!tmp.renameTo(storage)) {
+                throw new IOException(
+                        "Renaming " + tmp.getAbsolutePath()
+                                + " to " + storage.getAbsolutePath()
+                                + " failed while truncating history");
+            }
+            eventsFromStorage = truncated;
+        } finally {
+            if (printWriter != null) {
+                printWriter.close();
+            }
+        }
+    }
+
     public void addEvent(HistoryEvent event) throws IOException {
         if (eventsFromStorage != null) {
             // Add in memory
@@ -58,6 +92,10 @@ public class History {
             if (printWriter != null) {
                 printWriter.close();
             }
+        }
+
+        if (storage.length() > MAX_HISTORY_FILE_SIZE) {
+            dropOldHistory();
         }
     }
 

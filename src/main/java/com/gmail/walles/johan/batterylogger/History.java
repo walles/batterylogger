@@ -339,6 +339,10 @@ public class History {
     public static History createFakeHistory() {
         History history = new History();
         history.eventsFromStorage = new ArrayList<HistoryEvent>();
+        //noinspection ConstantConditions
+        if (FAKE_HISTORY_DAYS_OLD_START == FAKE_HISTORY_DAYS_OLD_END) {
+            return history;
+        }
 
         Calendar now = new GregorianCalendar();
         now.add(Calendar.DAY_OF_MONTH, -FAKE_HISTORY_DAYS_OLD_START);

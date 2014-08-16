@@ -255,7 +255,7 @@ public class BatteryPlotFragment extends Fragment {
                         "Come back in a few hours to get a graph, or in a week to be able to see patterns.");
             } else if (medians.size() < 5) {
                 showAlertDialog(getActivity(),
-                        "Very Little Data",
+                        "Very Short History",
                         "If you come back in a week you'll be able to see patterns much better.");
             }
         } catch (IOException e) {

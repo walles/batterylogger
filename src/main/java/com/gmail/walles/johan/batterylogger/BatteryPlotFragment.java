@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 import com.androidplot.xy.BoundaryMode;
@@ -36,9 +37,6 @@ import java.util.List;
 import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 
 public class BatteryPlotFragment extends Fragment {
-    private GestureDetector gestureDetector;
-    private XYPlot plot;
-
     private double minX;
     private double maxX;
 
@@ -59,14 +57,14 @@ public class BatteryPlotFragment extends Fragment {
         }
     }
 
-    private double pixelsToDomainUnits(double pixels) {
+    private double pixelsToDomainUnits(final XYPlot plot, double pixels) {
         double domainSpan = maxX - minX;
         double pixelSpan = plot.getWidth();
         return pixels * domainSpan / pixelSpan;
     }
 
-    private void scrollSideways(double nPixels) {
-        double offset = pixelsToDomainUnits(nPixels);
+    private void scrollSideways(final XYPlot plot, double nPixels) {
+        double offset = pixelsToDomainUnits(plot, nPixels);
 
         minX += offset;
         if (minX < originalMinX) {
@@ -83,7 +81,7 @@ public class BatteryPlotFragment extends Fragment {
         }
     }
 
-    private void redrawPlot() {
+    private void redrawPlot(final XYPlot plot) {
         // FIXME: Call plot.setDomainStep() with some good value
 
         plot.redraw();
@@ -114,8 +112,77 @@ public class BatteryPlotFragment extends Fragment {
         }
 
         // initialize our XYPlot view reference:
-        plot = (XYPlot)rootView.findViewById(R.id.mySimpleXYPlot);
+        XYPlot plot = (XYPlot)rootView.findViewById(R.id.mySimpleXYPlot);
 
+        addPlotData(plot);
+        plot.setOnTouchListener(getOnTouchListener(plot));
+        setUpPlotLayout(plot);
+        redrawPlot(plot);
+
+        return rootView;
+    }
+
+    private void setUpPlotLayout(final XYPlot plot) {
+        plot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 1);
+        plot.setTicksPerRangeLabel(5);
+
+        plot.setTicksPerDomainLabel(1);
+        plot.setDomainStep(XYStepMode.SUBDIVIDE, 4);
+        plot.setDomainValueFormat(new Format() {
+            @Override
+            public StringBuffer format(Object o, @NotNull StringBuffer toAppendTo, @NotNull FieldPosition position) {
+                Date timestamp = History.toDate((Number) o);
+                long domainWidthSeconds = History.toDate(maxX - minX).getTime() / 1000;
+                SimpleDateFormat format;
+                if (domainWidthSeconds < 5 * 60) {
+                    format = new SimpleDateFormat("HH:mm:ss");
+                } else if (domainWidthSeconds < 86400) {
+                    format = new SimpleDateFormat("HH:mm");
+                } else if (domainWidthSeconds < 86400 * 7) {
+                    format = new SimpleDateFormat("EEE HH:mm");
+                } else {
+                    format = new SimpleDateFormat("MMM d");
+                }
+                return format.format(timestamp, toAppendTo, position);
+            }
+
+            @Override
+            @Nullable
+            public Object parseObject(String s, @NotNull ParsePosition parsePosition) {
+                return null;
+            }
+        });
+
+        plot.calculateMinMaxVals();
+        minX = plot.getCalculatedMinX().doubleValue();
+        maxX = plot.getCalculatedMaxX().doubleValue();
+        Date now = new Date();
+        if (maxX < History.toDouble(now)) {
+            maxX = History.toDouble(now);
+        }
+        Date fiveMinutesAgo = new Date(now.getTime() - History.FIVE_MINUTES_MS);
+        if (minX > History.toDouble(fiveMinutesAgo)) {
+            minX = History.toDouble(fiveMinutesAgo);
+        }
+
+        originalMinX = minX;
+        originalMaxX = maxX;
+
+        plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
+
+        double maxY = plot.getCalculatedMaxY().doubleValue();
+        if (maxY < 5) {
+            maxY = 5;
+        }
+        if (maxY > 25) {
+            // We sometimes get unreasonable outliers, clamp them so they don't make the graph unreadable
+            maxY = 25;
+        }
+
+        plot.setRangeBoundaries(0, maxY, BoundaryMode.FIXED);
+    }
+
+    private void addPlotData(final XYPlot plot) {
         LineAndPointFormatter drainFormatter = new LineAndPointFormatter();
         drainFormatter.setPointLabelFormatter(new PointLabelFormatter());
         drainFormatter.setPointLabeler(new PointLabeler() {
@@ -164,120 +231,83 @@ public class BatteryPlotFragment extends Fragment {
                     "No Battery History",
                     "Come back in a few hours to get a graph, or in a week to be able to see patterns.");
         }
+    }
 
-        plot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 1);
-        plot.setTicksPerRangeLabel(5);
-
-        plot.setTicksPerDomainLabel(1);
-        plot.setDomainStep(XYStepMode.SUBDIVIDE, 4);
-        plot.setDomainValueFormat(new Format() {
+    private View.OnTouchListener getOnTouchListener(final XYPlot plot) {
+        final GestureDetector gestureDetector = getOneFingerGestureDetector(plot);
+        final ScaleGestureDetector scaleGestureDetector = getTwoFingerGestureDetector(plot);
+        return new View.OnTouchListener() {
             @Override
-            public StringBuffer format(Object o, @NotNull StringBuffer toAppendTo, @NotNull FieldPosition position) {
-                Date timestamp = History.toDate((Number)o);
-                long domainWidthSeconds = History.toDate(maxX - minX).getTime() / 1000;
-                SimpleDateFormat format;
-                if (domainWidthSeconds < 5 * 60) {
-                    format = new SimpleDateFormat("HH:mm:ss");
-                } else if (domainWidthSeconds < 86400) {
-                    format = new SimpleDateFormat("HH:mm");
-                } else if (domainWidthSeconds < 86400 * 7) {
-                    format = new SimpleDateFormat("EEE HH:mm");
-                } else {
-                    format = new SimpleDateFormat("MMM d");
-                }
-                return format.format(timestamp, toAppendTo, position);
-            }
-
-            @Override
-            @Nullable
-            public Object parseObject(String s, @NotNull ParsePosition parsePosition) {
-                return null;
-            }
-        });
-
-        GestureDetector.SimpleOnGestureListener gestureListener = new GestureDetector.SimpleOnGestureListener() {
-            @Override
-            public boolean onDown(MotionEvent motionEvent) {
-                // Return true since the framework is weird:
-                // http://stackoverflow.com/questions/4107565/on-android-do-gesture-events-work-on-the-emulator
-                return true;
-            }
-
-            @Override
-            public boolean onDoubleTap(MotionEvent e) {
-                minX = originalMinX;
-                maxX = originalMaxX;
-                plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
-                redrawPlot();
-
-                return true;
-            }
-
-            @Override
-            public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent2, float dx, float dy) {
-                // Tuned from real-world testing, change the number if it's too high or too low
-                final double ZOOM_SPEED = 7;
-
-                double factor;
-                if (dy < 0) {
-                    factor = 1.0f / (1.0f - dy * ZOOM_SPEED / plot.getHeight());
-                } else {
-                    factor = dy * ZOOM_SPEED / plot.getHeight() + 1.0f;
-                }
-                RectF gridRect = plot.getGraphWidget().getGridRect();
-                // getXVal throws IAE if the X value is outside of the rectangle
-                if (gridRect.contains(motionEvent2.getX(), gridRect.top)) {
-                    double pivot = plot.getGraphWidget().getXVal(motionEvent2.getX());
-                    zoom(factor, pivot);
-                }
-                scrollSideways(dx);
-
-                plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
-                redrawPlot();
-                return true;
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                boolean returnMe = false;
+                returnMe |= scaleGestureDetector.onTouchEvent(motionEvent);
+                returnMe |= gestureDetector.onTouchEvent(motionEvent);
+                returnMe |= view.onTouchEvent(motionEvent);
+                return returnMe;
             }
         };
+    }
 
-        gestureDetector = new GestureDetector(getActivity(), gestureListener);
+    private GestureDetector getOneFingerGestureDetector(final XYPlot plot) {
+        GestureDetector.SimpleOnGestureListener gestureListener =
+                new GestureDetector.SimpleOnGestureListener()
+                {
+                    @Override
+                    public boolean onDown(MotionEvent motionEvent) {
+                        // Return true since the framework is weird:
+                        // http://stackoverflow.com/questions/4107565/on-android-do-gesture-events-work-on-the-emulator
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onDoubleTap(MotionEvent e) {
+                        // Reset zoom to max out
+                        minX = originalMinX;
+                        maxX = originalMaxX;
+                        plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
+                        redrawPlot(plot);
+
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent2, float dx, float dy) {
+                        scrollSideways(plot, dx);
+
+                        plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
+                        redrawPlot(plot);
+                        return true;
+                    }
+                };
+
+        final GestureDetector gestureDetector = new GestureDetector(getActivity(), gestureListener);
         gestureDetector.setIsLongpressEnabled(false);
         gestureDetector.setOnDoubleTapListener(gestureListener);
 
-        plot.setOnTouchListener(new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View view, MotionEvent motionEvent) {
-                return gestureDetector.onTouchEvent(motionEvent);
-            }
-        });
+        return gestureDetector;
+    }
 
-        plot.calculateMinMaxVals();
-        minX = plot.getCalculatedMinX().doubleValue();
-        maxX = plot.getCalculatedMaxX().doubleValue();
-        Date now = new Date();
-        if (maxX < History.toDouble(now)) {
-            maxX = History.toDouble(now);
-        }
-        Date fiveMinutesAgo = new Date(now.getTime() - History.FIVE_MINUTES_MS);
-        if (minX > History.toDouble(fiveMinutesAgo)) {
-            minX = History.toDouble(fiveMinutesAgo);
-        }
+    private ScaleGestureDetector getTwoFingerGestureDetector(final XYPlot plot) {
+        ScaleGestureDetector.SimpleOnScaleGestureListener gestureListener =
+                new ScaleGestureDetector.SimpleOnScaleGestureListener()
+                {
+                    @Override
+                    public boolean onScale(ScaleGestureDetector detector) {
+                        float factor = detector.getPreviousSpan() / detector.getCurrentSpan();
+                        float pixelX = detector.getFocusX();
+                        RectF gridRect = plot.getGraphWidget().getGridRect();
+                        // getXVal throws IAE if the X value is outside of the rectangle
+                        if (gridRect.contains(pixelX, gridRect.top)) {
+                            double pivot = plot.getGraphWidget().getXVal(pixelX);
+                            zoom(factor, pivot);
+                        }
 
-        originalMinX = minX;
-        originalMaxX = maxX;
+                        plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
+                        redrawPlot(plot);
+                        return true;
+                    }
+                };
 
-        plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
-
-        double maxY = plot.getCalculatedMaxY().doubleValue();
-        if (maxY < 5) {
-            maxY = 5;
-        }
-        if (maxY > 25) {
-            // We sometimes get unreasonable outliers, clamp them so they don't make the graph unreadable
-            maxY = 25;
-        }
-
-        plot.setRangeBoundaries(0, maxY, BoundaryMode.FIXED);
-        redrawPlot();
-
-        return rootView;
+        return new ScaleGestureDetector(getActivity(), gestureListener);
     }
 }

@@ -7,17 +7,25 @@ find out what makes battery usage increase.
 
 TODO Before Releasing to the Public
 -----------------------------------
-* Switch to pinch-zoom; the current scheme makes it too hard to scroll
-sideways. Try using ScaleGestureDetector for this!
-
 * If we change the system clock, think about how that would affect
 boot timestamps, the system sampling's reboot detection and the timestamp
 logging in general.
+
+* Think about font size for the what-happened texts in the graph. Should
+they be resizable? They should at least default to some size related to
+the system font size setting.
+
+* Right now if you "exit" the app by pressing the Home button, it will
+show stale data the next time you activate it. What should we do about
+that?
 
 * Make an icon.
 
 TODO Misc
 ---------
+* Replace the medians by something else? Averages? Least square approximated
+lines?
+
 * See if we can detect enabling / disabling of Google Now and log
 that. Or maybe when services start / stop in general?
 
@@ -120,3 +128,6 @@ reason, display something explaining that to the user.
 
 * Make sure we rotate the history file when it gets too big. When it
 gets bigger than 400kb, we drop the first 25% of all events.
+
+* Switch to pinch-zoom; the current scheme makes it too hard to scroll
+sideways. Try using ScaleGestureDetector for this!

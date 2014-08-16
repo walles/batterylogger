@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -37,6 +38,8 @@ import java.util.List;
 import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 
 public class BatteryPlotFragment extends Fragment {
+    public static final int IN_GRAPH_TEXT_SIZE_SP = 12;
+
     private double minX;
     private double maxX;
 
@@ -182,6 +185,26 @@ public class BatteryPlotFragment extends Fragment {
         plot.setRangeBoundaries(0, maxY, BoundaryMode.FIXED);
     }
 
+    @SuppressWarnings("SameParameterValue")
+    private float spToPixels(float sp) {
+        float scaledDensity = getActivity().getResources().getDisplayMetrics().scaledDensity;
+        return sp * scaledDensity;
+    }
+
+    public static boolean isRunningOnEmulator() {
+        // Inspired by
+        // http://stackoverflow.com/questions/2799097/how-can-i-detect-when-an-android-application-is-running-in-the-emulator
+        if ("sdk".equals(Build.PRODUCT)) {
+            return true;
+        }
+
+        if ("google_sdk".equals(Build.PRODUCT)) {
+            return true;
+        }
+
+        return false;
+    }
+
     private void addPlotData(final XYPlot plot) {
         LineAndPointFormatter drainFormatter = new LineAndPointFormatter();
         drainFormatter.setPointLabelFormatter(new PointLabelFormatter());
@@ -206,6 +229,10 @@ public class BatteryPlotFragment extends Fragment {
         try {
             // Add battery drain series to the plot
             History history = new History(getActivity());
+            if (history.isEmpty() && BuildConfig.DEBUG && isRunningOnEmulator()) {
+                history = History.createFakeHistory();
+            }
+
             for (XYSeries drain : history.getBatteryDrain()) {
                 plot.addSeries(drain, drainFormatter);
             }
@@ -219,17 +246,22 @@ public class BatteryPlotFragment extends Fragment {
             Paint labelPaint = new Paint();
             labelPaint.setAntiAlias(true);
             labelPaint.setColor(Color.WHITE);
+            labelPaint.setTextSize(spToPixels(IN_GRAPH_TEXT_SIZE_SP));
             plot.addSeries(history.getEvents(), new EventFormatter(labelPaint));
 
-            if (medians.size() < 5) {
-                showAlertDialog(getActivity(), "Very Little Data",
+            if (history.isEmpty()) {
+                showAlertDialog(getActivity(),
+                        "No Battery History",
+                        "Come back in a few hours to get a graph, or in a week to be able to see patterns.");
+            } else if (medians.size() < 5) {
+                showAlertDialog(getActivity(),
+                        "Very Little Data",
                         "If you come back in a week you'll be able to see patterns much better.");
             }
         } catch (IOException e) {
             Log.e(TAG, "Reading battery history failed", e);
             showAlertDialog(getActivity(),
-                    "No Battery History",
-                    "Come back in a few hours to get a graph, or in a week to be able to see patterns.");
+                    "Reading History Failed", e.getMessage());
         }
     }
 
@@ -239,8 +271,8 @@ public class BatteryPlotFragment extends Fragment {
         return new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                boolean returnMe = false;
-                returnMe |= scaleGestureDetector.onTouchEvent(motionEvent);
+                boolean returnMe;
+                returnMe = scaleGestureDetector.onTouchEvent(motionEvent);
                 returnMe |= gestureDetector.onTouchEvent(motionEvent);
                 returnMe |= view.onTouchEvent(motionEvent);
                 return returnMe;

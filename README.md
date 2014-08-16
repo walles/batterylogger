@@ -11,18 +11,18 @@ TODO Before Releasing to the Public
 boot timestamps, the system sampling's reboot detection and the timestamp
 logging in general.
 
-* Think about font size for the what-happened texts in the graph. Should
-they be resizable? They should at least default to some size related to
-the system font size setting.
-
 * Right now if you "exit" the app by pressing the Home button, it will
 show stale data the next time you activate it. What should we do about
-that?
+that? When becoming visible, if the most recent data point is older than
+1h or so, reload the history.
 
 * Make an icon.
 
 TODO Misc
 ---------
+* Make sure we support one-finger scaling. Maybe there's an appcompat 
+ScaleGestureDetector that supports this?
+
 * Replace the medians by something else? Averages? Least square approximated
 lines?
 
@@ -41,8 +41,6 @@ visible area.
 
 * Force landscape mode? Drain patterns are more visible if the Y axis
 is more compressed.
-
-* Fake the data when running in the emulator?
 
 * Make the points in the graph real big, bigger than the line thickness.
 Ref: <http://stackoverflow.com/questions/10169080/custom-points-on-graph-using-androidplot>
@@ -131,3 +129,9 @@ gets bigger than 400kb, we drop the first 25% of all events.
 
 * Switch to pinch-zoom; the current scheme makes it too hard to scroll
 sideways. Try using ScaleGestureDetector for this!
+
+* Think about font size for the what-happened texts in the graph. Should
+they be resizable? They should at least default to some size related to
+the system font size setting.
+
+* Fake the data when running in the emulator

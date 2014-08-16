@@ -15,13 +15,19 @@ import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 
 public class History {
+    private static final int FAKE_HISTORY_DAYS_OLD_START = 10;
+    private static final int FAKE_HISTORY_DAYS_OLD_END = 0;
+
     private static final long MAX_HISTORY_FILE_SIZE = 400 * 1024;
 
     public static final long HOUR_MS = 3600 * 1000;
@@ -224,6 +230,10 @@ public class History {
     private ArrayList<HistoryEvent> readEventsFromStorage() throws IOException {
         ArrayList<HistoryEvent> returnMe = new ArrayList<HistoryEvent>();
 
+        if (storage == null || !storage.exists()) {
+            return returnMe;
+        }
+
         BufferedReader reader = null;
         int lineNumber = 1;
         try {
@@ -308,5 +318,65 @@ public class History {
 
     public static double toDouble(Date timestamp) {
         return timestamp.getTime() / 1000L;
+    }
+
+    public boolean isEmpty() throws IOException {
+        if (eventsFromStorage == null) {
+            eventsFromStorage = readEventsFromStorage();
+        }
+
+        return eventsFromStorage.isEmpty();
+    }
+
+    /**
+     * Used by {@link #createFakeHistory()}
+     */
+    private History() {
+        // We don't want to persist the fake history
+        storage = null;
+    }
+
+    public static History createFakeHistory() {
+        History history = new History();
+        history.eventsFromStorage = new ArrayList<HistoryEvent>();
+
+        Calendar now = new GregorianCalendar();
+        now.add(Calendar.DAY_OF_MONTH, -FAKE_HISTORY_DAYS_OLD_START);
+
+        Calendar end = new GregorianCalendar();
+        end.add(Calendar.DAY_OF_MONTH, -FAKE_HISTORY_DAYS_OLD_END);
+
+        int charge = 50;
+        Random random = new Random();
+        boolean wasCharging = false;
+        int upgradeCounter = 42;
+        while (now.before(end)) {
+            int hourOfDay = now.get(Calendar.HOUR_OF_DAY);
+            boolean charging = hourOfDay < 8 || hourOfDay > 21;
+
+            if (charging) {
+                charge += 15;
+            } else {
+                charge -= (random.nextInt(3) + 3);
+            }
+            history.eventsFromStorage.add(HistoryEvent.createBatteryLevelEvent(now.getTime(), charge));
+            if (charging != wasCharging) {
+                history.eventsFromStorage.add(HistoryEvent.createInfoEvent(now.getTime(),
+                        charging ? "Start charging" : "Stop charging"));
+            }
+            if (upgradeCounter-- == 0) {
+                // Upgrade message is an actual message from running the app on a phone, I wanted a
+                // long one
+                Date timestamp = new Date(now.getTime().getTime() + 15 * 60 * 1000);
+                history.eventsFromStorage.add(
+                        HistoryEvent.createInfoEvent(timestamp,
+                                "Google Play Musik upgraded from 5.6.160sp.1258283 to 5.6.160sp.1258284"));
+            }
+
+            now.add(Calendar.HOUR_OF_DAY, 1);
+            wasCharging = charging;
+        }
+
+        return history;
     }
 }

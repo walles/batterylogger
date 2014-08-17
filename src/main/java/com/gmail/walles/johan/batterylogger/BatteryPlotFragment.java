@@ -251,17 +251,17 @@ public class BatteryPlotFragment extends Fragment {
 
             if (history.isEmpty()) {
                 showAlertDialog(getActivity(),
-                        "No Battery History",
+                        "No Battery History Recorded",
                         "Come back in a few hours to get a graph, or in a week to be able to see patterns.");
             } else if (medians.size() < 5) {
                 showAlertDialog(getActivity(),
-                        "Very Short History",
+                        "Very Short Battery History Recorded",
                         "If you come back in a week you'll be able to see patterns much better.");
             }
         } catch (IOException e) {
             Log.e(TAG, "Reading battery history failed", e);
             showAlertDialog(getActivity(),
-                    "Reading History Failed", e.getMessage());
+                    "Reading Battery History Failed", e.getMessage());
         }
     }
 

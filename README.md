@@ -11,9 +11,6 @@ TODO Before Releasing to the Public
 boot timestamps, the system sampling's reboot detection and the timestamp
 logging in general.
 
-* If the sampling service throws an exception, store the exception stack
-trace in a world readable file in a world readable directory.
-
 * Make an icon.
 
 TODO Misc
@@ -141,3 +138,6 @@ the system font size setting.
 show stale data the next time you activate it. What should we do about
 that? When becoming visible, if the most recent data point is older than
 1h or so, reload the history.
+
+* If the sampling service throws an exception, store the exception stack
+trace in a world readable file in a world readable directory.

@@ -11,15 +11,18 @@ TODO Before Releasing to the Public
 boot timestamps, the system sampling's reboot detection and the timestamp
 logging in general.
 
+* Replace the start/stop-charging messages by green lines at Y=0 while
+charging?
+
 * Make an icon.
 
 TODO Misc
 ---------
+* Make History.createHistory() create its history by synthetic SystemStates
+rather than just adding history events.
+
 * Make sure we support one-finger scaling. Maybe there's an appcompat 
 ScaleGestureDetector that supports this?
-
-* Replace the start/stop-charging messages by green lines at Y=0 while
-charging?
 
 * Replace the medians by something else? Averages? Least square approximated
 lines?

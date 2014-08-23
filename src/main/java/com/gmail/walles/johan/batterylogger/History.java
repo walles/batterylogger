@@ -36,12 +36,13 @@ public class History {
     @Nullable
     private List<HistoryEvent> eventsFromStorage;
 
+    @Nullable
     private final File storage;
 
     /**
      * Unit-testing only constructor.
      */
-    History(File storage) {
+    History(@Nullable File storage) {
         this.storage = storage;
     }
 
@@ -60,6 +61,11 @@ public class History {
         // Skip the first quarter of the list
         List<HistoryEvent> truncated =
                 eventsFromStorage.subList(eventsFromStorage.size() / 4, eventsFromStorage.size() - 1);
+
+        if (storage == null) {
+            return;
+        }
+
         PrintWriter printWriter = null;
         try {
             File tmp = File.createTempFile("history-", ".txt", storage.getParentFile());
@@ -88,6 +94,10 @@ public class History {
         if (eventsFromStorage != null) {
             // Add in memory
             eventsFromStorage.add(event);
+        }
+
+        if (storage == null) {
+            return;
         }
 
         PrintWriter printWriter = null;
@@ -336,7 +346,7 @@ public class History {
         storage = null;
     }
 
-    public static History createFakeHistory() {
+    public static History createFakeHistory() throws IOException {
         History history = new History();
         history.eventsFromStorage = new ArrayList<HistoryEvent>();
         //noinspection ConstantConditions
@@ -350,10 +360,16 @@ public class History {
         Calendar end = new GregorianCalendar();
         end.add(Calendar.DAY_OF_MONTH, -FAKE_HISTORY_DAYS_OLD_END);
 
+        Date before = new Date(now.getTime().getTime() - 86400 * 1000);
+
         int charge = 50;
         Random random = new Random();
-        boolean wasCharging = false;
-        int upgradeCounter = 42;
+        int iterationsUntilUpgrade = 42;
+
+        SystemState previous = new SystemState(now.getTime(), charge, false, before);
+        String packageVersion = "5.6.160sp.1258283";
+        previous.addInstalledApp("a.b.c", "Google Play Music", packageVersion);
+
         while (now.before(end)) {
             int hourOfDay = now.get(Calendar.HOUR_OF_DAY);
             boolean charging = hourOfDay < 8 || hourOfDay > 21;
@@ -363,22 +379,20 @@ public class History {
             } else {
                 charge -= (random.nextInt(3) + 3);
             }
-            history.eventsFromStorage.add(HistoryEvent.createBatteryLevelEvent(now.getTime(), charge));
-            if (charging != wasCharging) {
-                history.eventsFromStorage.add(HistoryEvent.createInfoEvent(now.getTime(),
-                        charging ? "Start charging" : "Stop charging"));
-            }
-            if (upgradeCounter-- == 0) {
-                // Upgrade message is an actual message from running the app on a phone, I wanted a
-                // long one
-                Date timestamp = new Date(now.getTime().getTime() + 15 * 60 * 1000);
-                history.eventsFromStorage.add(
-                        HistoryEvent.createInfoEvent(timestamp,
-                                "Google Play Musik upgraded from 5.6.160sp.1258283 to 5.6.160sp.1258284"));
+
+            if (iterationsUntilUpgrade-- == 0) {
+                packageVersion = "5.6.160sp.1258284";
             }
 
             now.add(Calendar.HOUR_OF_DAY, 1);
-            wasCharging = charging;
+            SystemState current = new SystemState(now.getTime(), charge, charging, before);
+            current.addInstalledApp("a.b.c", "Google Play Music", packageVersion);
+
+            for (HistoryEvent event : current.getEventsSince(previous)) {
+                history.addEvent(event);
+            }
+
+            previous = current;
         }
 
         return history;

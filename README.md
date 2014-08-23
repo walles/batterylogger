@@ -18,10 +18,7 @@ charging?
 
 TODO Misc
 ---------
-* Make History.createHistory() create its history by synthetic SystemStates
-rather than just adding history events.
-
-* Make sure we support one-finger scaling. Maybe there's an appcompat 
+* Make sure we support one-finger scaling. Maybe there's an appcompat
 ScaleGestureDetector that supports this?
 
 * Replace the medians by something else? Averages? Least square approximated
@@ -144,3 +141,6 @@ that? When becoming visible, if the most recent data point is older than
 
 * If the sampling service throws an exception, store the exception stack
 trace in a world readable file in a world readable directory.
+
+* Make History.createHistory() create its history by synthetic SystemStates
+rather than just adding history events.

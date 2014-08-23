@@ -202,6 +202,10 @@ public class BatteryPlotFragment extends Fragment {
             return true;
         }
 
+        if ("google_sdk_x86".equals(Build.PRODUCT)) {
+            return true;
+        }
+
         return false;
     }
 

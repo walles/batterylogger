@@ -1,7 +1,6 @@
 package com.gmail.walles.johan.batterylogger;
 
 import android.test.AndroidTestCase;
-import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeries;
 
 import java.io.File;
@@ -191,10 +190,21 @@ public class HistoryTest extends AndroidTestCase {
             assertEquals(xySeries.getY(0), xySeries.getY(1));
             double y = xySeries.getY(0).doubleValue();
             assertTrue(y >= 0);
+
+            char type;
             if (y == 0) {
-                builder.append('_');
+                type = '_';
             } else {
-                builder.append('-');
+                type = '-';
+            }
+
+            double lengthHours =
+                    (xySeries.getX(1).doubleValue() - xySeries.getX(0).doubleValue()) / 3600.0;
+            // Round lengthHours so that half an hour is rounded up to 1
+            int numberOfChars = (int)(lengthHours + 0.6);
+            assertTrue(numberOfChars > 0);
+            for (int i = 0; i < numberOfChars; i++) {
+                builder.append(type);
             }
         }
 

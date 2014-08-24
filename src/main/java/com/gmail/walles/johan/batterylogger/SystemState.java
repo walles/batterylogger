@@ -138,10 +138,10 @@ public class SystemState {
 
         HistoryEvent chargingEvent = null;
         if (charging && !then.charging) {
-            chargingEvent = HistoryEvent.createInfoEvent(null, "Start charging");
+            chargingEvent = HistoryEvent.createStartChargingEvent(null);
         }
         if (then.charging && !charging) {
-            chargingEvent = HistoryEvent.createInfoEvent(null, "Stop charging");
+            chargingEvent = HistoryEvent.createStopChargingEvent(null);
         }
         if (reboot && chargingEvent != null) {
             chargingEvent.setTimestamp(between(then.bootTimestamp, timestamp, 1)[0]);

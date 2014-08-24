@@ -146,6 +146,8 @@ public class History {
                     // Handled below
                     break;
                 case INFO:
+                case START_CHARGING:
+                case STOP_CHARGING:
                     // Doesn't affect drain
                     continue;
                 default:
@@ -313,6 +315,12 @@ public class History {
                     break;
                 case INFO:
                     description = event.getMessage();
+                    break;
+                case START_CHARGING:
+                    description = "Start charging";
+                    break;
+                case STOP_CHARGING:
+                    description = "Stop charging";
                     break;
                 default:
                     description = "Unknown event type " + event.getType();

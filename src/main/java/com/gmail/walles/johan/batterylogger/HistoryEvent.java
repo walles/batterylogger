@@ -16,7 +16,9 @@ class HistoryEvent implements Comparable<HistoryEvent> {
         BATTERY_LEVEL,
         SYSTEM_SHUTDOWN,
         SYSTEM_BOOT,
-        INFO
+        INFO,
+        START_CHARGING,
+        STOP_CHARGING
     }
 
     @Nullable
@@ -90,6 +92,14 @@ class HistoryEvent implements Comparable<HistoryEvent> {
 
     public static HistoryEvent createSystemBootingEvent(@Nullable Date timestamp) {
         return new HistoryEvent(timestamp, Type.SYSTEM_BOOT);
+    }
+
+    public static HistoryEvent createStartChargingEvent(@Nullable Date timestamp) {
+        return new HistoryEvent(timestamp, Type.START_CHARGING);
+    }
+
+    public static HistoryEvent createStopChargingEvent(@Nullable Date timestamp) {
+        return new HistoryEvent(timestamp, Type.STOP_CHARGING);
     }
 
     @Override

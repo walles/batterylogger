@@ -88,14 +88,14 @@ public class SystemStateTest extends AndroidTestCase {
         SystemState a = new SystemState(then, 27, false, bootTimestamp);
         SystemState b = new SystemState(now, 27, true, bootTimestamp);
 
-        assertEvents(b.getEventsSince(a), HistoryEvent.createInfoEvent(between(then, now), "Start charging"));
+        assertEvents(b.getEventsSince(a), HistoryEvent.createStartChargingEvent(between(then, now)));
     }
 
     public void testStopChargingEvent() {
         SystemState a = new SystemState(then, 27, true, bootTimestamp);
         SystemState b = new SystemState(now, 27, false, bootTimestamp);
 
-        assertEvents(b.getEventsSince(a), HistoryEvent.createInfoEvent(between(then, now), "Stop charging"));
+        assertEvents(b.getEventsSince(a), HistoryEvent.createStopChargingEvent(between(then, now)));
     }
 
     private static Date between(Date t0, Date t1) {
@@ -174,7 +174,7 @@ public class SystemStateTest extends AndroidTestCase {
 
         assertEvents(afterReboot.getEventsSince(beforeReboot),
                 HistoryEvent.createSystemHaltingEvent(new Date(sample1.getTime() + 1)),
-                HistoryEvent.createInfoEvent(between(sample1, boot2), "Start charging"),
+                HistoryEvent.createStartChargingEvent(between(sample1, boot2)),
                 HistoryEvent.createSystemBootingEvent(boot2));
     }
 
@@ -193,7 +193,7 @@ public class SystemStateTest extends AndroidTestCase {
         Date datesBetween[] = SystemState.between(then, now, 4);
         // Note that the actual order here is arbitrary
         assertEvents(b.getEventsSince(a),
-                HistoryEvent.createInfoEvent(datesBetween[0], "Stop charging"),
+                HistoryEvent.createStopChargingEvent(datesBetween[0]),
                 HistoryEvent.createInfoEvent(datesBetween[1], "Adder 5.6.7 installed"),
                 HistoryEvent.createInfoEvent(datesBetween[2], "Remover 2.3.4 uninstalled"),
                 HistoryEvent.createInfoEvent(datesBetween[3], "Upgrader upgraded from 1.2.3 to 1.2.5"),

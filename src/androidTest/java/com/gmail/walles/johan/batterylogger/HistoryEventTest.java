@@ -5,27 +5,32 @@ import junit.framework.TestCase;
 import java.util.Date;
 
 public class HistoryEventTest extends TestCase {
+    private void assertRecycling(HistoryEvent event) throws Exception {
+        HistoryEvent recycled = HistoryEvent.deserializeFromString(event.serializeToString());
+        assertEquals(event, recycled);
+    }
+
     public void testCreateBatteryLevelEvent() throws Exception {
-        HistoryEvent testMe = HistoryEvent.createBatteryLevelEvent(new Date(12345678), 42);
-        HistoryEvent recycled = HistoryEvent.deserializeFromString(testMe.serializeToString());
-        assertEquals(testMe, recycled);
+        assertRecycling(HistoryEvent.createBatteryLevelEvent(new Date(12345678), 42));
     }
 
     public void testCreateInfoEvent() throws Exception {
-        HistoryEvent testMe = HistoryEvent.createInfoEvent(new Date(12345678), "some message");
-        HistoryEvent recycled = HistoryEvent.deserializeFromString(testMe.serializeToString());
-        assertEquals(testMe, recycled);
+        assertRecycling(HistoryEvent.createInfoEvent(new Date(12345678), "some message"));
     }
 
     public void testCreateSystemHaltingEvent() throws Exception {
-        HistoryEvent testMe = HistoryEvent.createSystemHaltingEvent(new Date(12345678));
-        HistoryEvent recycled = HistoryEvent.deserializeFromString(testMe.serializeToString());
-        assertEquals(testMe, recycled);
+        assertRecycling(HistoryEvent.createSystemHaltingEvent(new Date(12345678)));
     }
 
     public void testCreateSystemBootingEvent() throws Exception {
-        HistoryEvent testMe = HistoryEvent.createSystemBootingEvent(new Date(12345678));
-        HistoryEvent recycled = HistoryEvent.deserializeFromString(testMe.serializeToString());
-        assertEquals(testMe, recycled);
+        assertRecycling(HistoryEvent.createSystemBootingEvent(new Date(12345678)));
+    }
+
+    public void testCreateStartChargingEvent() throws Exception {
+        assertRecycling(HistoryEvent.createStartChargingEvent(new Date(12345678)));
+    }
+
+    public void testCreateStopChargingEvent() throws Exception {
+        assertRecycling(HistoryEvent.createStopChargingEvent(new Date(12345678)));
     }
 }

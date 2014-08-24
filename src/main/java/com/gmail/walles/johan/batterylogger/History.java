@@ -360,32 +360,52 @@ public class History {
         Calendar end = new GregorianCalendar();
         end.add(Calendar.DAY_OF_MONTH, -FAKE_HISTORY_DAYS_OLD_END);
 
-        Date before = new Date(now.getTime().getTime() - 86400 * 1000);
+        long timeSpanMs = end.getTime().getTime() - now.getTime().getTime();
+        Date upgradeTimestamp = new Date(now.getTime().getTime() + timeSpanMs * 2 / 7);
+        Date downtimeStart = new Date(now.getTime().getTime() + timeSpanMs * 3 / 7);
+        Date downtimeEnd = new Date(now.getTime().getTime() + timeSpanMs * 4 / 7);
+
+        Date bootTimestamp = new Date(now.getTime().getTime() - 86400 * 1000);
 
         int charge = 50;
         Random random = new Random();
-        int iterationsUntilUpgrade = 42;
 
-        SystemState previous = new SystemState(now.getTime(), charge, false, before);
+        SystemState previous = new SystemState(now.getTime(), charge, false, bootTimestamp);
         String packageVersion = "5.6.160sp.1258283";
         previous.addInstalledApp("a.b.c", "Google Play Music", packageVersion);
 
         while (now.before(end)) {
+            now.add(Calendar.HOUR_OF_DAY, 1);
             int hourOfDay = now.get(Calendar.HOUR_OF_DAY);
             boolean charging = hourOfDay < 8 || hourOfDay > 21;
 
-            if (charging) {
-                charge += 15;
-            } else {
-                charge -= (random.nextInt(3) + 3);
+            if (downtimeStart != null && now.getTime().getTime() > downtimeStart.getTime()) {
+                bootTimestamp = downtimeEnd;
+                downtimeStart = null;
+                continue;
+            }
+            if (now.getTime().getTime() < bootTimestamp.getTime()) {
+                continue;
             }
 
-            if (iterationsUntilUpgrade-- == 0) {
+            if (charging) {
+                charge += 15;
+                if (charge > 100) {
+                    charge = 100;
+                }
+            } else {
+                charge -= (random.nextInt(3) + 3);
+                if (charge < 0) {
+                    charge = 0;
+                }
+            }
+
+            if (upgradeTimestamp != null && now.getTime().getTime() > upgradeTimestamp.getTime()) {
+                upgradeTimestamp = null;
                 packageVersion = "5.6.160sp.1258284";
             }
 
-            now.add(Calendar.HOUR_OF_DAY, 1);
-            SystemState current = new SystemState(now.getTime(), charge, charging, before);
+            SystemState current = new SystemState(now.getTime(), charge, charging, bootTimestamp);
             current.addInstalledApp("a.b.c", "Google Play Music", packageVersion);
 
             for (HistoryEvent event : current.getEventsSince(previous)) {

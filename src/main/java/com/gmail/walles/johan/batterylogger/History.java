@@ -4,6 +4,8 @@ import android.content.Context;
 import android.util.Log;
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeries;
+
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
@@ -42,7 +44,7 @@ public class History {
     /**
      * Unit-testing only constructor.
      */
-    History(@Nullable File storage) {
+    History(@SuppressWarnings("NullableProblems") @NotNull File storage) {
         this.storage = storage;
     }
 
@@ -188,54 +190,73 @@ public class History {
         return returnMe;
     }
 
-    static XYSeries medianLine(XYSeries series) {
-        SimpleXYSeries returnMe = new SimpleXYSeries(series.getTitle() + " Median");
-
-        if (series.size() == 0) {
-            return returnMe;
-        }
-        if (series.size() == 1) {
-            returnMe.addLast(series.getX(0), series.getY(0));
-            return returnMe;
+    static double median(List<Double> numbers) {
+        if (numbers.size() == 0) {
+            throw new IllegalArgumentException("Cannot take median of 0 numbers");
         }
 
-        double left = Double.MAX_VALUE;
-        double right = Double.MIN_VALUE;
-        double values[] = new double[series.size()];
-        for (int i = 0; i < series.size(); i++) {
-            double x = series.getX(i).doubleValue();
-            if (x < left) {
-                left = x;
-            }
-            if (x > right) {
-                right = x;
-            }
-
-            values[i] = series.getY(i).doubleValue();
-        }
-        Arrays.sort(values);
+        Double sortedNumbers[] = numbers.toArray(new Double[numbers.size()]);
+        Arrays.sort(sortedNumbers);
 
         double median;
-        if (series.size() % 2 == 1) {
-            median = values[series.size() / 2];
+        if (numbers.size() % 2 == 1) {
+            median = sortedNumbers[numbers.size() / 2];
         } else {
-            median = values[series.size() / 2] + values[series.size() / 2 - 1];
+            median = sortedNumbers[numbers.size() / 2] + sortedNumbers[numbers.size() / 2 - 1];
             median /= 2.0;
         }
-        returnMe.addLast(left, median);
-        returnMe.addLast(right, median);
 
-        return returnMe;
+        return median;
     }
 
     /**
      * Calls {@link #getBatteryDrain()} and creates one median line for each series.
      */
-    public List<XYSeries> getDrainMedians() throws IOException {
-        List<XYSeries> returnMe = new LinkedList<XYSeries>();
-        for (XYSeries drain : getBatteryDrain()) {
-            returnMe.add(medianLine(drain));
+    public List<XYSeries> getDrainLines() throws IOException {
+        if (eventsFromStorage == null) {
+            eventsFromStorage = readEventsFromStorage();
         }
+        if (eventsFromStorage == null || eventsFromStorage.isEmpty()) {
+            return new LinkedList<XYSeries>();
+        }
+
+        List<XYSeries> returnMe = new LinkedList<XYSeries>();
+        List<HistoryEvent> batteryEvents = null;
+        for (HistoryEvent event : eventsFromStorage) {
+            if (event.getType() != HistoryEvent.Type.BATTERY_LEVEL) {
+                continue;
+            }
+
+            if (batteryEvents == null) {
+                // Start new line
+                batteryEvents = new LinkedList<HistoryEvent>();
+            }
+
+            batteryEvents.add(event);
+        }
+
+        List<Double> drainNumbers = new LinkedList<Double>();
+        HistoryEvent previousEvent = null;
+        for (HistoryEvent event : batteryEvents) {
+            if (previousEvent == null) {
+                previousEvent = event;
+                continue;
+            }
+
+            int drain = previousEvent.getPercentage() - event.getPercentage();
+            double dHours =
+                    (event.getTimestamp().getTime() - previousEvent.getTimestamp().getTime())
+                            / (3600 * 1000.0);
+            drainNumbers.add(drain / dHours);
+        }
+
+        double median = median(drainNumbers);
+        SimpleXYSeries xySeries = new SimpleXYSeries("gris");
+        xySeries.addLast(toDouble(batteryEvents.get(0).getTimestamp()), median);
+        xySeries.addLast(toDouble(batteryEvents.get(batteryEvents.size() - 1).getTimestamp()), median);
+
+        returnMe.add(xySeries);
+
         return returnMe;
     }
 
@@ -354,11 +375,18 @@ public class History {
     private History() {
         // We don't want to persist the fake history
         storage = null;
+        eventsFromStorage = new ArrayList<HistoryEvent>();
+    }
+
+    /**
+     * Used for testing purposes.
+     */
+    static History createEmptyHistory() {
+        return new History();
     }
 
     public static History createFakeHistory() throws IOException {
         History history = new History();
-        history.eventsFromStorage = new ArrayList<HistoryEvent>();
         //noinspection ConstantConditions
         if (FAKE_HISTORY_DAYS_OLD_START == FAKE_HISTORY_DAYS_OLD_END) {
             return history;
@@ -426,5 +454,12 @@ public class History {
         }
 
         return history;
+    }
+
+    public int size() throws IOException {
+        if (eventsFromStorage == null) {
+            eventsFromStorage = readEventsFromStorage();
+        }
+        return eventsFromStorage.size();
     }
 }

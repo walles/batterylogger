@@ -5,6 +5,7 @@ import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeries;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -147,70 +148,11 @@ public class HistoryTest extends AndroidTestCase {
         assertEventTimestamps(new Date(8 * History.HOUR_MS), new Date(9 * History.HOUR_MS));
     }
 
-    public void testMedianLine0() {
-        XYSeries validateMe = History.medianLine(
-                new SimpleXYSeries(Arrays.asList(new Number[] {}),
-                        SimpleXYSeries.ArrayFormat.XY_VALS_INTERLEAVED, "Gris"));
-
-        assertEquals("Gris Median", validateMe.getTitle());
-        assertEquals(0, validateMe.size());
-    }
-
-    public void testMedianLine1() {
-        XYSeries validateMe = History.medianLine(
-                new SimpleXYSeries(Arrays.asList(5, 4),
-                        SimpleXYSeries.ArrayFormat.XY_VALS_INTERLEAVED, "Gris"));
-
-        assertEquals("Gris Median", validateMe.getTitle());
-        assertEquals(1, validateMe.size());
-
-        assertEquals(5, validateMe.getX(0));
-        assertEquals(4, validateMe.getY(0));
-    }
-
-    public void testMedianLine2() {
-        XYSeries validateMe = History.medianLine(
-                new SimpleXYSeries(Arrays.asList(5, 4, 6, 5),
-                        SimpleXYSeries.ArrayFormat.XY_VALS_INTERLEAVED, "Gris"));
-
-        assertEquals("Gris Median", validateMe.getTitle());
-        assertEquals(2, validateMe.size());
-
-        assertEquals(5.0, validateMe.getX(0));
-        assertEquals(4.5, validateMe.getY(0));
-
-        assertEquals(6.0, validateMe.getX(1));
-        assertEquals(4.5, validateMe.getY(1));
-    }
-
-    public void testMedianLine3() {
-        XYSeries validateMe = History.medianLine(
-                new SimpleXYSeries(Arrays.asList(1, 4, 2, 5, 3, 6),
-                        SimpleXYSeries.ArrayFormat.XY_VALS_INTERLEAVED, "Gris"));
-
-        assertEquals("Gris Median", validateMe.getTitle());
-        assertEquals(2, validateMe.size());
-
-        assertEquals(1.0, validateMe.getX(0));
-        assertEquals(5.0, validateMe.getY(0));
-
-        assertEquals(3.0, validateMe.getX(1));
-        assertEquals(5.0, validateMe.getY(1));
-    }
-
-    public void testMedianLine4() {
-        XYSeries validateMe = History.medianLine(
-                new SimpleXYSeries(Arrays.asList(1, 4, 2, 5, 3, 6, 4, 7),
-                        SimpleXYSeries.ArrayFormat.XY_VALS_INTERLEAVED, "Gris"));
-
-        assertEquals("Gris Median", validateMe.getTitle());
-        assertEquals(2, validateMe.size());
-
-        assertEquals(1.0, validateMe.getX(0));
-        assertEquals(5.5, validateMe.getY(0));
-
-        assertEquals(4.0, validateMe.getX(1));
-        assertEquals(5.5, validateMe.getY(1));
+    public void testMedian() {
+        assertEquals(4.0, History.median(Arrays.asList(4.0)));
+        assertEquals(4.5, History.median(Arrays.asList(4.0, 5.0)));
+        assertEquals(5.0, History.median(Arrays.asList(4.0, 5.0, 6.0)));
+        assertEquals(5.5, History.median(Arrays.asList(4.0, 5.0, 6.0, 7.0)));
     }
 
     public void testMaintainFileSize() throws Exception {
@@ -240,5 +182,98 @@ public class HistoryTest extends AndroidTestCase {
 
             lastFileSize = fileSize;
         }
+    }
+
+    private void assertHistory(String expected, History history) throws IOException {
+        StringBuilder builder = new StringBuilder();
+        for (XYSeries xySeries : history.getDrainLines()) {
+            assertEquals(2, xySeries.size());
+            assertEquals(xySeries.getY(0), xySeries.getY(1));
+            double y = xySeries.getY(0).doubleValue();
+            assertTrue(y >= 0);
+            if (y == 0) {
+                builder.append('_');
+            } else {
+                builder.append('-');
+            }
+        }
+
+        assertEquals(expected, builder.toString());
+    }
+
+    private void testDrainLines(String pattern) throws IOException {
+        Date now = new Date();
+        int chargePercentage = 50;
+        Date bootTimestamp = new Date(now.getTime() - 86400 * 1000);
+        SystemState previousState = new SystemState(now, chargePercentage, false, bootTimestamp);
+
+        // Create a history with one initial event matching the first pattern character
+        History history = History.createEmptyHistory();
+        history.addEvent(HistoryEvent.createBatteryLevelEvent(now, chargePercentage));
+
+        for (int i = 0; i < pattern.length(); i++) {
+            char controlChar = pattern.charAt(i);
+            now = new Date(now.getTime() + 3600 * 1000);
+            boolean charging;
+            switch (controlChar) {
+                case '-':
+                    chargePercentage -= 1;
+                    charging = false;
+                    break;
+
+                case '_':
+                    chargePercentage += 10;
+                    if (chargePercentage > 100) {
+                        chargePercentage = 100;
+                    }
+                    charging = true;
+                    break;
+
+                default:
+                    throw new IllegalArgumentException("Unsupported control char " + controlChar);
+            }
+
+            SystemState currentState =
+                    new SystemState(now, chargePercentage, charging, bootTimestamp);
+            for (HistoryEvent event : currentState.getEventsSince(previousState)) {
+                history.addEvent(event);
+            }
+            previousState = currentState;
+        }
+
+        assertEquals(pattern.length() + 1, history.size());
+
+        assertHistory(pattern, history);
+    }
+
+    public void testDrainLines() throws IOException {
+        testDrainLines("-");
+        testDrainLines("--");
+        testDrainLines("---");
+        testDrainLines("----");
+
+        testDrainLines("_");
+        testDrainLines("__");
+        testDrainLines("___");
+        testDrainLines("____");
+
+        testDrainLines(" ");
+        testDrainLines("  ");
+        testDrainLines("   ");
+        testDrainLines("    ");
+
+        testDrainLines("-_");
+        testDrainLines("_-");
+        testDrainLines("- ");
+        testDrainLines(" -");
+        testDrainLines("_ ");
+        testDrainLines(" _");
+
+        testDrainLines("--__--");
+        testDrainLines("__--__");
+        testDrainLines("  __  ");
+        testDrainLines("  --  ");
+        testDrainLines("__  __");
+        testDrainLines("--  --");
     }
 }

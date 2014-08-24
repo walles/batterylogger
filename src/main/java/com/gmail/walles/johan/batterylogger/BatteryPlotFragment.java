@@ -220,15 +220,15 @@ public class BatteryPlotFragment extends Fragment {
         });
         drainFormatter.configure(getActivity(), R.xml.drain_formatter);
 
-        LineAndPointFormatter medianFormatter = new LineAndPointFormatter();
-        medianFormatter.setPointLabelFormatter(new PointLabelFormatter());
-        medianFormatter.setPointLabeler(new PointLabeler() {
+        LineAndPointFormatter drainLinesFormatter = new LineAndPointFormatter();
+        drainLinesFormatter.setPointLabelFormatter(new PointLabelFormatter());
+        drainLinesFormatter.setPointLabeler(new PointLabeler() {
             @Override
             public String getLabel(XYSeries xySeries, int i) {
                 return "";
             }
         });
-        medianFormatter.configure(getActivity(), R.xml.median_formatter);
+        drainLinesFormatter.configure(getActivity(), R.xml.drain_lines_formatter);
 
         try {
             // Add battery drain series to the plot
@@ -241,9 +241,9 @@ public class BatteryPlotFragment extends Fragment {
                 plot.addSeries(drain, drainFormatter);
             }
 
-            final List<XYSeries> medians = history.getDrainMedians();
-            for (XYSeries median : medians) {
-                plot.addSeries(median, medianFormatter);
+            final List<XYSeries> drainLines = history.getDrainLines();
+            for (XYSeries drainLine : drainLines) {
+                plot.addSeries(drainLine, drainLinesFormatter);
             }
 
             // Add events to the plot
@@ -257,7 +257,7 @@ public class BatteryPlotFragment extends Fragment {
                 showAlertDialog(getActivity(),
                         "No Battery History Recorded",
                         "Come back in a few hours to get a graph, or in a week to be able to see patterns.");
-            } else if (medians.size() < 5) {
+            } else if (drainLines.size() < 5) {
                 showAlertDialog(getActivity(),
                         "Very Short Battery History Recorded",
                         "If you come back in a week you'll be able to see patterns much better.");

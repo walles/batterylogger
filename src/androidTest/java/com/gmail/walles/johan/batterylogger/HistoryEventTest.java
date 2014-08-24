@@ -23,7 +23,8 @@ public class HistoryEventTest extends TestCase {
     }
 
     public void testCreateSystemBootingEvent() throws Exception {
-        assertRecycling(HistoryEvent.createSystemBootingEvent(new Date(12345678)));
+        assertRecycling(HistoryEvent.createSystemBootingEvent(new Date(12345678), true));
+        assertRecycling(HistoryEvent.createSystemBootingEvent(new Date(12345678), false));
     }
 
     public void testCreateStartChargingEvent() throws Exception {

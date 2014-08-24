@@ -128,7 +128,7 @@ public class SystemState {
         boolean reboot = false;
         if (!bootTimestampsMatch(then)) {
             returnMe.add(HistoryEvent.createSystemHaltingEvent(new Date(then.timestamp.getTime() + 1)));
-            returnMe.add(HistoryEvent.createSystemBootingEvent(bootTimestamp));
+            returnMe.add(HistoryEvent.createSystemBootingEvent(bootTimestamp, charging));
             reboot = true;
         }
 
@@ -136,18 +136,17 @@ public class SystemState {
             returnMe.add(HistoryEvent.createBatteryLevelEvent(timestamp, batteryPercentage));
         }
 
-        HistoryEvent chargingEvent = null;
-        if (charging && !then.charging) {
-            chargingEvent = HistoryEvent.createStartChargingEvent(null);
-        }
-        if (then.charging && !charging) {
-            chargingEvent = HistoryEvent.createStopChargingEvent(null);
-        }
-        if (reboot && chargingEvent != null) {
-            chargingEvent.setTimestamp(between(then.bootTimestamp, timestamp, 1)[0]);
-        }
-        if (chargingEvent != null) {
-            returnMe.add(chargingEvent);
+        if (!reboot) {
+            HistoryEvent chargingEvent = null;
+            if (charging && !then.charging) {
+                chargingEvent = HistoryEvent.createStartChargingEvent(null);
+            }
+            if (then.charging && !charging) {
+                chargingEvent = HistoryEvent.createStopChargingEvent(null);
+            }
+            if (chargingEvent != null) {
+                returnMe.add(chargingEvent);
+            }
         }
 
         addPackagingEventsSince(then, returnMe);

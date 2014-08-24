@@ -306,7 +306,9 @@ public class History {
                         returnMe.add(toDouble(uncleanShutdownTimestamp), "Unclean shutdown");
                     }
 
-                    description = "System starting up";
+                    description = "System starting up (" +
+                            (event.isCharging() ? "charging" : "not charging") +
+                            ")";
                     systemDown = false;
                     break;
                 case SYSTEM_SHUTDOWN:

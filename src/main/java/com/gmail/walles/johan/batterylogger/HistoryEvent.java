@@ -27,6 +27,7 @@ class HistoryEvent implements Comparable<HistoryEvent> {
     private final Type type;
     private int percentage;
     private String message;
+    private boolean charging;
 
     public Date getTimestamp() {
         if (timestamp == null) {
@@ -69,6 +70,14 @@ class HistoryEvent implements Comparable<HistoryEvent> {
         return message;
     }
 
+    public boolean isCharging() {
+        if (type != Type.SYSTEM_BOOT) {
+            throw new UnsupportedOperationException(
+                    "Charging state only available for SYSTEM_BOOT events, but I'm a " + type);
+        }
+        return charging;
+    }
+
     private HistoryEvent(@Nullable Date timestamp, Type type) {
         this.timestamp = timestamp;
         this.type = type;
@@ -90,8 +99,10 @@ class HistoryEvent implements Comparable<HistoryEvent> {
         return new HistoryEvent(timestamp, Type.SYSTEM_SHUTDOWN);
     }
 
-    public static HistoryEvent createSystemBootingEvent(@Nullable Date timestamp) {
-        return new HistoryEvent(timestamp, Type.SYSTEM_BOOT);
+    public static HistoryEvent createSystemBootingEvent(@Nullable Date timestamp, boolean isCharging) {
+        HistoryEvent event = new HistoryEvent(timestamp, Type.SYSTEM_BOOT);
+        event.charging = isCharging;
+        return event;
     }
 
     public static HistoryEvent createStartChargingEvent(@Nullable Date timestamp) {
@@ -108,6 +119,7 @@ class HistoryEvent implements Comparable<HistoryEvent> {
                 timestamp +
                 ", " + type +
                 ", " + percentage + "%" +
+                ", " + (charging ? "charging" : "discharging") +
                 ", '" + message + '\'' +
                 '}';
     }
@@ -177,6 +189,15 @@ class HistoryEvent implements Comparable<HistoryEvent> {
             }
 
             returnMe.message = serialization.substring(secondSpaceIndex + 1);
+        } else if (type == Type.SYSTEM_BOOT) {
+            if (secondSpaceIndex == -1) {
+                throw new ParseException(
+                        "Parse failed, firstSpace=" + firstSpaceIndex
+                                + ", secondSpace=" + secondSpaceIndex
+                                + ", string: <" + serialization + ">", -1);
+            }
+
+            returnMe.charging = Boolean.valueOf(serialization.substring(secondSpaceIndex + 1));
         }
 
         return returnMe;
@@ -192,6 +213,8 @@ class HistoryEvent implements Comparable<HistoryEvent> {
                 return type.name() + " " + timestamp.getTime() + " " + message;
             case BATTERY_LEVEL:
                 return type.name() + " " + timestamp.getTime() + " " + percentage;
+            case SYSTEM_BOOT:
+                return type.name() + " " + timestamp.getTime() + " " + charging;
             default:
                 return type.name() + " " + timestamp.getTime();
         }
@@ -220,6 +243,10 @@ class HistoryEvent implements Comparable<HistoryEvent> {
         }
 
         if (type.equals(Type.INFO) && !message.equals(eventB.message)) {
+            return false;
+        }
+
+        if (type.equals(Type.SYSTEM_BOOT) && charging != eventB.charging) {
             return false;
         }
 

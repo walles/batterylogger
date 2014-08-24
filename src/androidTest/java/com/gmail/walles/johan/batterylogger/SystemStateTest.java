@@ -160,7 +160,7 @@ public class SystemStateTest extends AndroidTestCase {
 
         assertEvents(afterReboot.getEventsSince(beforeReboot),
                 HistoryEvent.createSystemHaltingEvent(new Date(sample1.getTime() + 1)),
-                HistoryEvent.createSystemBootingEvent(boot2));
+                HistoryEvent.createSystemBootingEvent(boot2, false));
     }
 
     public void testHaltAndBootAndChargeEvents() {
@@ -174,8 +174,7 @@ public class SystemStateTest extends AndroidTestCase {
 
         assertEvents(afterReboot.getEventsSince(beforeReboot),
                 HistoryEvent.createSystemHaltingEvent(new Date(sample1.getTime() + 1)),
-                HistoryEvent.createStartChargingEvent(between(sample1, boot2)),
-                HistoryEvent.createSystemBootingEvent(boot2));
+                HistoryEvent.createSystemBootingEvent(boot2, true));
     }
 
     /**

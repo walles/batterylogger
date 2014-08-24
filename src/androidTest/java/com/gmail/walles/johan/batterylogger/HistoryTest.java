@@ -107,7 +107,7 @@ public class HistoryTest extends AndroidTestCase {
 
         testMe.addEvent(HistoryEvent.createSystemHaltingEvent(new Date(5 * History.HOUR_MS)));
         testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(7 * History.HOUR_MS), 51));
-        testMe.addEvent(HistoryEvent.createSystemBootingEvent(new Date(9 * History.HOUR_MS)));
+        testMe.addEvent(HistoryEvent.createSystemBootingEvent(new Date(9 * History.HOUR_MS), true));
 
         testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(11 * History.HOUR_MS), 50));
         testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(13 * History.HOUR_MS), 47));
@@ -119,7 +119,7 @@ public class HistoryTest extends AndroidTestCase {
         assertDrainTimestamps(1, new Date(12 * History.HOUR_MS));
 
         assertEventTimestamps(new Date(5 * History.HOUR_MS), new Date(9 * History.HOUR_MS));
-        assertEventDescriptions("System shutting down", "System starting up");
+        assertEventDescriptions("System shutting down", "System starting up (charging)");
     }
 
     /**
@@ -131,7 +131,7 @@ public class HistoryTest extends AndroidTestCase {
         testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(3 * History.HOUR_MS), 50));
 
         testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(7 * History.HOUR_MS), 48));
-        testMe.addEvent(HistoryEvent.createSystemBootingEvent(new Date(9 * History.HOUR_MS)));
+        testMe.addEvent(HistoryEvent.createSystemBootingEvent(new Date(9 * History.HOUR_MS), false));
 
         testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(11 * History.HOUR_MS), 46));
         testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(13 * History.HOUR_MS), 45));
@@ -143,7 +143,7 @@ public class HistoryTest extends AndroidTestCase {
         assertValues(1, 0.5);
         assertDrainTimestamps(1, new Date(12 * History.HOUR_MS));
 
-        assertEventDescriptions("Unclean shutdown", "System starting up");
+        assertEventDescriptions("Unclean shutdown", "System starting up (not charging)");
         assertEventTimestamps(new Date(8 * History.HOUR_MS), new Date(9 * History.HOUR_MS));
     }
 

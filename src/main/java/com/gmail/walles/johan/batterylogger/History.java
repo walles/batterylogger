@@ -220,24 +220,37 @@ public class History {
             return new LinkedList<XYSeries>();
         }
 
+        Boolean charging = null;
         List<XYSeries> returnMe = new LinkedList<XYSeries>();
         List<HistoryEvent> batteryEvents = null;
         for (HistoryEvent event : eventsFromStorage) {
-            if (event.getType() != HistoryEvent.Type.BATTERY_LEVEL) {
-                continue;
+            switch (event.getType()) {
+                case START_CHARGING:
+                    charging = true;
+                    batteryEvents = new LinkedList<HistoryEvent>();
+                    batteryEvents.add(event);
+                    break;
+                case STOP_CHARGING:
+                    charging = false;
+                    batteryEvents = new LinkedList<HistoryEvent>();
+                    batteryEvents.add(event);
+                    break;
+                case BATTERY_LEVEL:
+                    if (batteryEvents != null) {
+                        batteryEvents.add(event);
+                    }
+                    break;
+                default:
+                    // Do nothing
             }
-
-            if (batteryEvents == null) {
-                // Start new line
-                batteryEvents = new LinkedList<HistoryEvent>();
-            }
-
-            batteryEvents.add(event);
         }
 
         List<Double> drainNumbers = new LinkedList<Double>();
         HistoryEvent previousEvent = null;
         for (HistoryEvent event : batteryEvents) {
+            if (event.getType() != HistoryEvent.Type.BATTERY_LEVEL) {
+                continue;
+            }
             if (previousEvent == null) {
                 previousEvent = event;
                 continue;

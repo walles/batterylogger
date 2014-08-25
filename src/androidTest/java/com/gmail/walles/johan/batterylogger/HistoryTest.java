@@ -208,6 +208,8 @@ public class HistoryTest extends AndroidTestCase {
             }
         }
 
+        // "Don't know" should render as "empty" just like downtime, where we don't know either
+        expected = expected.replace('?', ' ');
         assertEquals(expected, builder.toString());
     }
 
@@ -217,8 +219,13 @@ public class HistoryTest extends AndroidTestCase {
         Date bootTimestamp = new Date(now.getTime() - 86400 * 1000);
         SystemState previousState = new SystemState(now, chargePercentage, false, bootTimestamp);
 
-        // Create a history with one initial event matching the first pattern character
+        // Create a history with one one or two initial events matching the first pattern character
         History history = History.createEmptyHistory();
+        if (pattern.charAt(0) == '-') {
+            history.addEvent(HistoryEvent.createStopChargingEvent(now));
+        } else if (pattern.charAt(0) == '_') {
+            history.addEvent(HistoryEvent.createStartChargingEvent(now));
+        }
         history.addEvent(HistoryEvent.createBatteryLevelEvent(now, chargePercentage));
 
         for (int i = 0; i < pattern.length(); i++) {
@@ -239,6 +246,11 @@ public class HistoryTest extends AndroidTestCase {
                     charging = true;
                     break;
 
+                case '?':
+                    // Set up whatever, shouldn't matter what we do here
+                    charging = false;
+                    break;
+
                 default:
                     throw new IllegalArgumentException("Unsupported control char " + controlChar);
             }
@@ -251,8 +263,6 @@ public class HistoryTest extends AndroidTestCase {
             previousState = currentState;
         }
 
-        assertEquals(pattern.length() + 1, history.size());
-
         assertHistory(pattern, history);
     }
 
@@ -261,16 +271,19 @@ public class HistoryTest extends AndroidTestCase {
         testDrainLines("--");
         testDrainLines("---");
         testDrainLines("----");
+        testDrainLines("?-");
 
         testDrainLines("_");
         testDrainLines("__");
         testDrainLines("___");
         testDrainLines("____");
+        testDrainLines("?_");
 
         testDrainLines(" ");
         testDrainLines("  ");
         testDrainLines("   ");
         testDrainLines("    ");
+        testDrainLines("? ");
 
         testDrainLines("-_");
         testDrainLines("_-");

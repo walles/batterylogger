@@ -244,11 +244,11 @@ public class SystemStateTest extends AndroidTestCase {
         }
     }
 
-    public void testGetBootTimestamp() throws Exception {
-        SystemState.getBootTimestamp();
-        Date b0 = SystemState.getBootTimestamp();
+    public void testComputeCurrentBootTimestamp() throws Exception {
+        SystemState.computeCurrentBootTimestamp();
+        Date b0 = SystemState.computeCurrentBootTimestamp();
         Thread.sleep(1000, 0);
-        Date b1 = SystemState.getBootTimestamp();
+        Date b1 = SystemState.computeCurrentBootTimestamp();
 
         long dt = Math.abs(b1.getTime() - b0.getTime());
         assertTrue("Too much drift over one second: " + dt + "ms", dt < 200);

@@ -283,7 +283,10 @@ public class SystemState {
         }
     }
 
-    public static Date getBootTimestamp() {
+    /**
+     * When was the currently running system booted?
+     */
+    static Date computeCurrentBootTimestamp() {
         return new Date(System.currentTimeMillis() - SystemClock.elapsedRealtime());
     }
 
@@ -312,7 +315,8 @@ public class SystemState {
         }
         int batteryPercentage = (100 * batteryLevel) / batteryScale;
 
-        SystemState returnMe = new SystemState(new Date(), batteryPercentage, charging, getBootTimestamp());
+        SystemState returnMe =
+                new SystemState(new Date(), batteryPercentage, charging, computeCurrentBootTimestamp());
 
         // Add installed apps
         PackageManager packageManager = context.getPackageManager();
@@ -367,5 +371,13 @@ public class SystemState {
 
     public int getAppCount() {
         return installedApps.size();
+    }
+
+    public Date getTimestamp() {
+        return timestamp;
+    }
+
+    public Date getBootTimestamp() {
+        return bootTimestamp;
     }
 }

@@ -213,50 +213,83 @@ public class HistoryTest extends AndroidTestCase {
         assertEquals(expected, builder.toString());
     }
 
-    private void testDrainLines(String pattern) throws IOException {
-        Date now = new Date();
-        int chargePercentage = 50;
-        Date bootTimestamp = new Date(now.getTime() - 86400 * 1000);
-        SystemState previousState = new SystemState(now, chargePercentage, false, bootTimestamp);
-
-        // Create a history with one one or two initial events matching the first pattern character
-        History history = History.createEmptyHistory();
-        if (pattern.charAt(0) == '-') {
-            history.addEvent(HistoryEvent.createStopChargingEvent(now));
-        } else if (pattern.charAt(0) == '_') {
-            history.addEvent(HistoryEvent.createStartChargingEvent(now));
+    private static char firstNonQuestionmarkChar(final String pattern) {
+        char firstNonQuestionmarkChar = '\0';
+        for (int i = 0; i < pattern.length(); i++) {
+            char currentChar = pattern.charAt(i);
+            if (currentChar != '?') {
+                firstNonQuestionmarkChar = currentChar;
+                break;
+            }
         }
-        history.addEvent(HistoryEvent.createBatteryLevelEvent(now, chargePercentage));
+        if (firstNonQuestionmarkChar == '\0') {
+            throw new IllegalArgumentException("Pattern contains no non-questionmark chars: <" + pattern + ">");
+        }
+
+        return firstNonQuestionmarkChar;
+    }
+
+    private SystemState createInitialState(final String pattern, final Date t0)
+            throws IOException
+    {
+        char firstNonQuestionmarkChar = firstNonQuestionmarkChar(pattern);
+        Date bootTimestamp = new Date(t0.getTime() - 86400 * 1000);
+        if (firstNonQuestionmarkChar == '-') {
+            return new SystemState(t0, 50, false, bootTimestamp);
+        } else if (firstNonQuestionmarkChar == '_') {
+            return new SystemState(t0, 50, true, bootTimestamp);
+        } else {
+            throw new IllegalArgumentException("First non-? char must be either _ or -: " + pattern);
+        }
+    }
+
+    private History createInitialHistory(final String pattern, final Date t0) throws IOException {
+        History history = History.createEmptyHistory();
+        switch (pattern.charAt(0)) {
+            case '-':
+                history.addEvent(HistoryEvent.createStopChargingEvent(t0));
+                break;
+            case '_':
+                history.addEvent(HistoryEvent.createStartChargingEvent(t0));
+                break;
+        }
+        history.addEvent(HistoryEvent.createBatteryLevelEvent(t0, 50));
+
+        return history;
+    }
+
+    private static SystemState createNextState(SystemState previousState, char controlChar) {
+        Date nextTimestamp = new Date(previousState.getTimestamp().getTime() + 3600 * 1000);
+
+        int nextPercentage = previousState.getBatteryPercentage();
+        boolean nextCharging;
+        if (controlChar == '-') {
+            nextCharging = false;
+            nextPercentage -= 1;
+        } else if (controlChar == '_') {
+            nextCharging = true;
+            nextPercentage += 20;
+            if (nextPercentage > 100) {
+                nextPercentage = 100;
+            }
+        } else {
+            throw new UnsupportedOperationException("Unsupported control char " + controlChar);
+        }
+
+        Date nextBootTimestamp = previousState.getBootTimestamp();
+
+        return new SystemState(nextTimestamp, nextPercentage, nextCharging, nextBootTimestamp);
+    }
+
+    private void testDrainLines(String pattern) throws IOException {
+        // Create a history with one one or two initial events matching the first pattern character
+        Date t0 = new Date();
+        SystemState previousState = createInitialState(pattern, t0);
+        History history = createInitialHistory(pattern, t0);
 
         for (int i = 0; i < pattern.length(); i++) {
             char controlChar = pattern.charAt(i);
-            now = new Date(now.getTime() + 3600 * 1000);
-            boolean charging;
-            switch (controlChar) {
-                case '-':
-                    chargePercentage -= 1;
-                    charging = false;
-                    break;
-
-                case '_':
-                    chargePercentage += 10;
-                    if (chargePercentage > 100) {
-                        chargePercentage = 100;
-                    }
-                    charging = true;
-                    break;
-
-                case '?':
-                    // Set up whatever, shouldn't matter what we do here
-                    charging = false;
-                    break;
-
-                default:
-                    throw new IllegalArgumentException("Unsupported control char " + controlChar);
-            }
-
-            SystemState currentState =
-                    new SystemState(now, chargePercentage, charging, bootTimestamp);
+            SystemState currentState = createNextState(previousState, controlChar);
             for (HistoryEvent event : currentState.getEventsSince(previousState)) {
                 history.addEvent(event);
             }

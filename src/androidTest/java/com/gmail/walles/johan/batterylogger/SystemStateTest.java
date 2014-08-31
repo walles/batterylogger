@@ -77,11 +77,13 @@ public class SystemStateTest extends AndroidTestCase {
         SystemState b = new SystemState(now, 26, false, bootTimestamp);
         assertEvents(b.getEventsSince(a), HistoryEvent.createBatteryLevelEvent(now, 26));
 
-        SystemState c = new SystemState(now, 28, false, bootTimestamp);
-        assertNoEvents(c.getEventsSince(a));
+        SystemState c = new SystemState(now, 28, true, bootTimestamp);
+        assertEvents(c.getEventsSince(a),
+                HistoryEvent.createStartChargingEvent(between(then, now)),
+                HistoryEvent.createBatteryLevelEvent(now, 28));
 
-        SystemState d = new SystemState(now, 29, false, bootTimestamp);
-        assertNoEvents(d.getEventsSince(a));
+        SystemState d = new SystemState(now, 29, true, bootTimestamp);
+        assertNoEvents(d.getEventsSince(c));
     }
 
     public void testStartChargingEvent() {

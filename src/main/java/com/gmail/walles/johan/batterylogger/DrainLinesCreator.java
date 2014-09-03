@@ -143,7 +143,6 @@ public class DrainLinesCreator {
         }
     }
 
-    // FIXME: Test with one event
     public List<XYSeries> getDrainLines() {
         if (drainLines != null) {
             return drainLines;

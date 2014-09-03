@@ -4,6 +4,7 @@ import junit.framework.TestCase;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 
 public class DrainLinesCreatorTest extends TestCase {
     public void testMedianLine() {
@@ -20,8 +21,15 @@ public class DrainLinesCreatorTest extends TestCase {
         assertEquals(6.5, DrainLinesCreator.median(Arrays.asList(5.0, 6.0, 7.0, 7.5)));
     }
 
-    public void testCornerCases() {
+    public void testWithZeroEvents() {
         DrainLinesCreator testMe = new DrainLinesCreator(Collections.<HistoryEvent>emptyList());
+        assertEquals(0, testMe.getDrainLines().size());
+    }
+
+    public void testWithOneEvent() {
+        DrainLinesCreator testMe = new DrainLinesCreator(Arrays.asList(
+                HistoryEvent.createBatteryLevelEvent(new Date(), 50)
+        ));
         assertEquals(0, testMe.getDrainLines().size());
     }
 }

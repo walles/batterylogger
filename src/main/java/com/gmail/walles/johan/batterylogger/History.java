@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -188,55 +187,11 @@ public class History {
         return returnMe;
     }
 
-    static XYSeries medianLine(XYSeries series) {
-        SimpleXYSeries returnMe = new SimpleXYSeries(series.getTitle() + " Median");
-
-        if (series.size() == 0) {
-            return returnMe;
+    public List<XYSeries> getDrainLines() throws IOException {
+        if (eventsFromStorage == null) {
+            eventsFromStorage = readEventsFromStorage();
         }
-        if (series.size() == 1) {
-            returnMe.addLast(series.getX(0), series.getY(0));
-            return returnMe;
-        }
-
-        double left = Double.MAX_VALUE;
-        double right = Double.MIN_VALUE;
-        double values[] = new double[series.size()];
-        for (int i = 0; i < series.size(); i++) {
-            double x = series.getX(i).doubleValue();
-            if (x < left) {
-                left = x;
-            }
-            if (x > right) {
-                right = x;
-            }
-
-            values[i] = series.getY(i).doubleValue();
-        }
-        Arrays.sort(values);
-
-        double median;
-        if (series.size() % 2 == 1) {
-            median = values[series.size() / 2];
-        } else {
-            median = values[series.size() / 2] + values[series.size() / 2 - 1];
-            median /= 2.0;
-        }
-        returnMe.addLast(left, median);
-        returnMe.addLast(right, median);
-
-        return returnMe;
-    }
-
-    /**
-     * Calls {@link #getBatteryDrain()} and creates one median line for each series.
-     */
-    public List<XYSeries> getDrainMedians() throws IOException {
-        List<XYSeries> returnMe = new LinkedList<XYSeries>();
-        for (XYSeries drain : getBatteryDrain()) {
-            returnMe.add(medianLine(drain));
-        }
-        return returnMe;
+        return new DrainLinesCreator(eventsFromStorage).getDrainLines();
     }
 
     private ArrayList<HistoryEvent> readEventsFromStorage() throws IOException {
@@ -287,12 +242,13 @@ public class History {
             lastTimestamp = currentTimestamp;
             currentTimestamp = event.getTimestamp();
 
-            if (event.getType() == HistoryEvent.Type.BATTERY_LEVEL) {
-                continue;
-            }
-
             String description;
             switch (event.getType()) {
+                case START_CHARGING:
+                case STOP_CHARGING:
+                case BATTERY_LEVEL:
+                    continue;
+
                 case SYSTEM_BOOT:
                     if (!systemDown) {
                         // Assume an unclean shutdown and insert a fake unclean-shutdown event
@@ -311,19 +267,16 @@ public class History {
                             ")";
                     systemDown = false;
                     break;
+
                 case SYSTEM_SHUTDOWN:
                     description = "System shutting down";
                     systemDown = true;
                     break;
+
                 case INFO:
                     description = event.getMessage();
                     break;
-                case START_CHARGING:
-                    description = "Start charging";
-                    break;
-                case STOP_CHARGING:
-                    description = "Stop charging";
-                    break;
+
                 default:
                     description = "Unknown event type " + event.getType();
             }

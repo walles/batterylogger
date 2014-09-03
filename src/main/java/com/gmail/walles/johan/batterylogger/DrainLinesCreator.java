@@ -143,12 +143,16 @@ public class DrainLinesCreator {
         }
     }
 
-    // FIXME: Test with zero events
+    // FIXME: Test with one event
     public List<XYSeries> getDrainLines() {
         if (drainLines != null) {
             return drainLines;
         }
         drainLines = new LinkedList<XYSeries>();
+
+        if (history.isEmpty()) {
+            return drainLines;
+        }
 
         for (HistoryEvent event : history) {
             handleEvent(event);

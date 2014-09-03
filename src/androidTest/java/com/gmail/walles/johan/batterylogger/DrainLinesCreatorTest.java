@@ -7,6 +7,9 @@ import java.util.Collections;
 import java.util.Date;
 
 public class DrainLinesCreatorTest extends TestCase {
+    private static final Date THEN = new Date(System.currentTimeMillis() - 86400 * 1000);
+    private static final Date NOW = new Date();
+
     public void testMedianLine() {
         try {
             DrainLinesCreator.median(Collections.<Double>emptyList());
@@ -28,7 +31,14 @@ public class DrainLinesCreatorTest extends TestCase {
 
     public void testWithOneEvent() {
         DrainLinesCreator testMe = new DrainLinesCreator(Arrays.asList(
-                HistoryEvent.createBatteryLevelEvent(new Date(), 50)
+                HistoryEvent.createBatteryLevelEvent(NOW, 50)
+        ));
+        assertEquals(0, testMe.getDrainLines().size());
+    }
+
+    public void testDischargeLineWithZeroEvents() {
+        DrainLinesCreator testMe = new DrainLinesCreator(Arrays.asList(
+                HistoryEvent.createStopChargingEvent(NOW)
         ));
         assertEquals(0, testMe.getDrainLines().size());
     }

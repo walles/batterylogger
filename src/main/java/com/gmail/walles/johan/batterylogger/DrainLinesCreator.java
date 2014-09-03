@@ -3,6 +3,8 @@ package com.gmail.walles.johan.batterylogger;
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeries;
 
+import junit.framework.Test;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -83,11 +85,10 @@ public class DrainLinesCreator {
         return median(numbers);
     }
 
-    // FIXME: Test with charging = false and zero currentDrainEvents
     // FIXME: Test with charging = false and one currentDrainEvent
     // FIXME: Test with charging = false and two currentDrainEvents
     private void finishLine(Date lineEnd) {
-        if (charging == null || lineStart == null) {
+        if (charging == null || lineStart == null || currentDrainEvents == null) {
             // Don't draw anything
         } else if (charging) {
             // Draw a line at y=0

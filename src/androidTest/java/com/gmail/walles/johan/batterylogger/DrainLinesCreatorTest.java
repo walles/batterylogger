@@ -1,5 +1,7 @@
 package com.gmail.walles.johan.batterylogger;
 
+import com.androidplot.xy.XYSeries;
+
 import junit.framework.TestCase;
 
 import java.util.Arrays;
@@ -41,5 +43,31 @@ public class DrainLinesCreatorTest extends TestCase {
                 HistoryEvent.createStopChargingEvent(NOW)
         ));
         assertEquals(0, testMe.getDrainLines().size());
+    }
+
+    public void testDischargeLineWithOneEvent() {
+        DrainLinesCreator testMe = new DrainLinesCreator(Arrays.asList(
+                HistoryEvent.createStopChargingEvent(NOW),
+                HistoryEvent.createBatteryLevelEvent(THEN, 50)
+        ));
+        assertEquals(0, testMe.getDrainLines().size());
+    }
+
+    public void testDischargeLineWithTwoEvents() {
+        Date dates[] = SystemState.between(THEN, NOW, 3);
+        DrainLinesCreator testMe = new DrainLinesCreator(Arrays.asList(
+                HistoryEvent.createStopChargingEvent(dates[0]),
+                HistoryEvent.createBatteryLevelEvent(dates[1], 50),
+                HistoryEvent.createBatteryLevelEvent(dates[2], 40)
+        ));
+        assertEquals(1, testMe.getDrainLines().size());
+
+        XYSeries drainLine = testMe.getDrainLines().get(0);
+        assertEquals(2, drainLine.size());
+
+        Number y = drainLine.getY(0);
+        assertEquals(y, drainLine.getY(1));
+        assertEquals(drainLine.getX(0).doubleValue(), History.toDouble(dates[0]));
+        assertEquals(drainLine.getX(1).doubleValue(), History.toDouble(dates[2]));
     }
 }

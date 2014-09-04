@@ -132,7 +132,9 @@ public class SystemState {
             reboot = true;
         }
 
-        if (batteryPercentage < then.batteryPercentage) {
+        boolean discharging = !charging;
+        boolean wasDischarging = !then.charging;
+        if ((discharging || wasDischarging) && batteryPercentage != then.batteryPercentage) {
             returnMe.add(HistoryEvent.createBatteryLevelEvent(timestamp, batteryPercentage));
         }
 

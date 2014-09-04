@@ -11,9 +11,6 @@ TODO Before Releasing to the Public
 boot timestamps, the system sampling's reboot detection and the timestamp
 logging in general.
 
-* Replace the start/stop-charging messages by green lines at Y=0 while
-charging?
-
 * Make an icon.
 
 TODO Misc
@@ -144,3 +141,6 @@ trace in a world readable file in a world readable directory.
 
 * Make History.createHistory() create its history by synthetic SystemStates
 rather than just adding history events.
+
+* Replace the start/stop-charging messages by green lines at Y=0 while
+charging?

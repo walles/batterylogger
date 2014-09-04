@@ -241,7 +241,7 @@ public class BatteryPlotFragment extends Fragment {
                 plot.addSeries(drain, drainFormatter);
             }
 
-            final List<XYSeries> medians = history.getDrainMedians();
+            final List<XYSeries> medians = history.getDrainLines();
             for (XYSeries median : medians) {
                 plot.addSeries(median, medianFormatter);
             }

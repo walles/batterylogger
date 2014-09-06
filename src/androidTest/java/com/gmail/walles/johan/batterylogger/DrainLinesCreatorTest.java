@@ -7,6 +7,8 @@ import junit.framework.TestCase;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 public class DrainLinesCreatorTest extends TestCase {
     private static final Date BEFORE = new Date(System.currentTimeMillis() - 86400 * 1000);
@@ -67,9 +69,30 @@ public class DrainLinesCreatorTest extends TestCase {
 
         Number y = drainLine.getY(0);
         assertTrue(y.doubleValue() > 0.0);
+        assertFalse(Double.isInfinite(y.doubleValue()));
+
         assertEquals(y, drainLine.getY(1));
         assertEquals(drainLine.getX(0).doubleValue(), History.toDouble(dates[0]));
         assertEquals(drainLine.getX(1).doubleValue(), History.toDouble(dates[2]));
+    }
+
+    public void testZeroPercentDischarge() {
+        Date dates[] = SystemState.between(BEFORE, NOW, 6);
+        Date bootTimestamp = dates[0];
+        SystemState a = new SystemState(dates[1], 50, true, bootTimestamp);
+        SystemState b = new SystemState(dates[2], 50, false, bootTimestamp);
+        SystemState c = new SystemState(dates[3], 50, false, bootTimestamp);
+        SystemState d = new SystemState(dates[4], 50, false, bootTimestamp);
+        SystemState e = new SystemState(dates[5], 50, false, bootTimestamp);
+
+        List<HistoryEvent> events = new LinkedList<HistoryEvent>();
+        events.addAll(b.getEventsSince(a));
+        events.addAll(c.getEventsSince(b));
+        events.addAll(d.getEventsSince(c));
+        events.addAll(e.getEventsSince(c));
+
+        DrainLinesCreator testMe = new DrainLinesCreator(events);
+        assertEquals(0, testMe.getDrainLines().size());
     }
 
     public void testCharging() {

@@ -11,9 +11,10 @@ public class EventReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (isSystemBoot(intent)) {
+            Log.i(TAG, "System is booting, got intent action " + intent.getAction());
             SystemSamplingService.enable(context);
         } else {
-            Log.i(TAG, "Ignoring unknown intent action: " + intent.getAction());
+            Log.i(TAG, "Ignoring unknown intent action " + intent.getAction());
         }
     }
 

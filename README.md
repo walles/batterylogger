@@ -7,16 +7,24 @@ find out what makes battery usage increase.
 
 TODO Before Releasing to the Public
 -----------------------------------
-* If we change the system clock, think about how that would affect
-boot timestamps, the system sampling's reboot detection and the timestamp
-logging in general.
+* Verify that sampling actually starts after rebooting the device.
+
+* Find out why we don't get any lines on the device (but we do get dots)
 
 * Make an icon.
 
 TODO Misc
 ---------
-* Make sure we support one-finger scaling. Maybe there's an appcompat
-ScaleGestureDetector that supports this?
+* Make sure the y=0 lines are visible
+
+* Profile app startup, it feels slow
+
+* When drawing the drain lines, try to guess the initial charging state by
+counting backwards from the first change in charging state.
+
+* If we change the system clock, think about how that would affect
+boot timestamps, the system sampling's reboot detection and the timestamp
+logging in general, and the drawing of median lines.
 
 * Replace the medians by something else? Averages? Least square approximated
 lines?
@@ -25,8 +33,6 @@ lines?
 that. Or maybe when services start / stop in general?
 
 * Make a preference for disabling the service.
-
-* Startup feels slow on my phone, profile that maybe?
 
 * Make sure there's room for displaying a text event at the far left of
 the graph. Right now, any leftmost event is printed mostly outside of the

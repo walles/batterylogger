@@ -9,8 +9,6 @@ TODO Before Releasing to the Public
 -----------------------------------
 * Verify that sampling actually starts after rebooting the device.
 
-* Find out why we don't get any lines on the device (but we do get dots)
-
 * Make an icon.
 
 TODO Misc
@@ -150,3 +148,5 @@ rather than just adding history events.
 
 * Replace the start/stop-charging messages by green lines at Y=0 while
 charging?
+
+* Find out why we don't get any lines on the device (but we do get dots)

@@ -83,28 +83,48 @@ public class DrainLinesCreator {
         return median(numbers);
     }
 
-    private void finishLine(Date lineEnd) {
+    @Nullable
+    private XYSeries createDrainLine(Date lineEnd) {
         if (charging == null) {
             // Don't know whether we're charging, don't draw anything
-        } else if (lineStart == null) {
+            return null;
+        }
+
+        if (lineStart == null) {
             // Don't know when the current run started, don't draw anything
-        } else if (currentDrainEvents == null) {
-            // No drain events, can't draw anything
-        } else if (currentDrainEvents.size() < 2) {
-            // Too few drain events to be able to compute a drain speed, don't draw anything
-        } else if (charging) {
+            return null;
+        }
+
+        if (charging) {
             // Draw a line at y=0
             SimpleXYSeries line = new SimpleXYSeries("don't show this string");
             line.addLast(History.toDouble(lineStart), 0);
             line.addLast(History.toDouble(lineEnd), 0);
             drainLines.add(line);
-        } else {
-            // We're draining
-            double y = getMedianDrain();
-            SimpleXYSeries line = new SimpleXYSeries("don't show this string");
-            line.addLast(History.toDouble(lineStart), y);
-            line.addLast(History.toDouble(lineEnd), y);
-            drainLines.add(line);
+        }
+
+        if (currentDrainEvents == null) {
+            // No drain events, can't draw anything
+            return null;
+        }
+
+        if (currentDrainEvents.size() < 2) {
+            // Too few drain events to be able to compute a drain speed, don't draw anything
+            return null;
+        }
+
+        // We're draining
+        double y = getMedianDrain();
+        SimpleXYSeries line = new SimpleXYSeries("don't show this string");
+        line.addLast(History.toDouble(lineStart), y);
+        line.addLast(History.toDouble(lineEnd), y);
+        return line;
+    }
+
+    private void finishLine(Date lineEnd) {
+        XYSeries drainLine = createDrainLine(lineEnd);
+        if (drainLine != null) {
+            drainLines.add(drainLine);
         }
 
         currentDrainEvents = null;

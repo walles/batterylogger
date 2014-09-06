@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.Date;
 
 public class DrainLinesCreatorTest extends TestCase {
-    private static final Date THEN = new Date(System.currentTimeMillis() - 86400 * 1000);
+    private static final Date BEFORE = new Date(System.currentTimeMillis() - 86400 * 1000);
     private static final Date NOW = new Date();
 
     public void testMedianLine() {
@@ -48,13 +48,13 @@ public class DrainLinesCreatorTest extends TestCase {
     public void testDischargeLineWithOneEvent() {
         DrainLinesCreator testMe = new DrainLinesCreator(Arrays.asList(
                 HistoryEvent.createStopChargingEvent(NOW),
-                HistoryEvent.createBatteryLevelEvent(THEN, 50)
+                HistoryEvent.createBatteryLevelEvent(BEFORE, 50)
         ));
         assertEquals(0, testMe.getDrainLines().size());
     }
 
     public void testDischargeLineWithTwoEvents() {
-        Date dates[] = SystemState.between(THEN, NOW, 3);
+        Date dates[] = SystemState.between(BEFORE, NOW, 3);
         DrainLinesCreator testMe = new DrainLinesCreator(Arrays.asList(
                 HistoryEvent.createStopChargingEvent(dates[0]),
                 HistoryEvent.createBatteryLevelEvent(dates[1], 50),
@@ -66,8 +66,27 @@ public class DrainLinesCreatorTest extends TestCase {
         assertEquals(2, drainLine.size());
 
         Number y = drainLine.getY(0);
+        assertTrue(y.doubleValue() > 0.0);
         assertEquals(y, drainLine.getY(1));
         assertEquals(drainLine.getX(0).doubleValue(), History.toDouble(dates[0]));
         assertEquals(drainLine.getX(1).doubleValue(), History.toDouble(dates[2]));
+    }
+
+    public void testCharging() {
+        DrainLinesCreator testMe = new DrainLinesCreator(Arrays.asList(
+                HistoryEvent.createStartChargingEvent(BEFORE),
+                HistoryEvent.createBatteryLevelEvent(NOW, 50)
+        ));
+
+        assertEquals(1, testMe.getDrainLines().size());
+
+        XYSeries drainLine = testMe.getDrainLines().get(0);
+        assertEquals(2, drainLine.size());
+
+        Number y = drainLine.getY(0);
+        assertEquals(0.0, y.doubleValue());
+        assertEquals(y, drainLine.getY(1));
+        assertEquals(drainLine.getX(0).doubleValue(), History.toDouble(BEFORE));
+        assertEquals(drainLine.getX(1).doubleValue(), History.toDouble(NOW));
     }
 }

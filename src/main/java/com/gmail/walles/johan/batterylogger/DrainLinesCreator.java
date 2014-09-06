@@ -76,7 +76,14 @@ public class DrainLinesCreator {
                 double percentPerHour = percentDischarge / dHours;
 
                 if (percentPerHour <= 0) {
-                    throw new IllegalStateException("Impo");
+                    throw new IllegalStateException(String.format(
+                            "Discharging at %f%% per hour, t0=%s, t1=%s, %%0=%d%%, %%1=%d%%",
+                            percentPerHour,
+                            previous.getTimestamp(),
+                            drainEvent.getTimestamp(),
+                            previous.getPercentage(),
+                            drainEvent.getPercentage()
+                    ));
                 }
 
                 numbers.add(percentPerHour);

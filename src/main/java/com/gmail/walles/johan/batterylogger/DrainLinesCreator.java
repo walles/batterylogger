@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,12 +55,25 @@ public class DrainLinesCreator {
         return median;
     }
 
-    private double getMedianDrain() {
+    static double average(Collection<Double> numbers) {
+        if (numbers.size() == 0) {
+            throw new IllegalArgumentException("Must get at least one number to compute average");
+        }
+
+        double sum = 0.0;
+        for (double number : numbers) {
+            sum += number;
+        }
+
+        return sum / numbers.size();
+    }
+
+    private double getDrainLineLevel() {
         if (currentDrainEvents == null) {
-            throw new IllegalStateException("No drain events => median undefined");
+            throw new IllegalStateException("No drain events => level undefined");
         }
         if (currentDrainEvents.size() < 2) {
-            throw new IllegalStateException("Need at least two drain events to compute median, got "
+            throw new IllegalStateException("Need at least two drain events to compute a level, got "
                     + currentDrainEvents.size());
         }
 
@@ -91,6 +105,7 @@ public class DrainLinesCreator {
             previous = drainEvent;
         }
 
+        // Feel free to call average() here instead if you like averages better than medians
         return median(numbers);
     }
 
@@ -130,8 +145,8 @@ public class DrainLinesCreator {
         }
 
         // We're draining
-        double y = getMedianDrain();
-        Log.v(TAG, "Drawing median line at " + y);
+        double y = getDrainLineLevel();
+        Log.v(TAG, "Drawing drain line at " + y);
         SimpleXYSeries line = new SimpleXYSeries("don't show this string");
         line.addLast(History.toDouble(lineStart), y);
         line.addLast(History.toDouble(lineEnd), y);

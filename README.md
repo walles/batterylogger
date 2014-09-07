@@ -9,10 +9,11 @@ TODO Before Releasing to the Public
 -----------------------------------
 * Make an icon.
 
+* Remove the Settings thing.
+
+
 TODO Misc
 ---------
-* Make sure the y=0 lines are visible
-
 * Profile app startup, it feels slow
 
 * When drawing the drain lines, try to guess the initial charging state by
@@ -150,3 +151,5 @@ charging?
 * Find out why we don't get any lines on the device (but we do get dots)
 
 * Verify that sampling actually starts after rebooting the device.
+
+* Make sure the y=0 lines are visible

@@ -112,4 +112,10 @@ public class DrainLinesCreatorTest extends TestCase {
         assertEquals(drainLine.getX(0).doubleValue(), History.toDouble(BEFORE));
         assertEquals(drainLine.getX(1).doubleValue(), History.toDouble(NOW));
     }
+
+    public void testAverage() {
+        assertEquals(4.0, DrainLinesCreator.average(Arrays.asList(4.0)));
+        assertEquals(4.5, DrainLinesCreator.average(Arrays.asList(4.0, 5.0)));
+        assertEquals(5.0, DrainLinesCreator.average(Arrays.asList(4.0, 4.0, 7.0)));
+    }
 }

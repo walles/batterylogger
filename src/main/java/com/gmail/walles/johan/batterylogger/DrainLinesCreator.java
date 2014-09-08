@@ -105,8 +105,9 @@ public class DrainLinesCreator {
             previous = drainEvent;
         }
 
-        // Feel free to call average() here instead if you like averages better than medians
-        return median(numbers);
+        // No matter how much I like medians, the input here is quantized and averages will give
+        // us a much better representation of what the drain has actually been over a period.
+        return average(numbers);
     }
 
     @Nullable

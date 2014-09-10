@@ -8,9 +8,11 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
 
+        androidPlot.rangeLabel="Battery Drain (%/h)"
+        androidPlot.rangeLabelWidget.labelPaint.textSize="@dimen/range_label_font_size"
+
         androidPlot.titleWidget.visible="false"
-        androitPlot.domainLabelWidget.visible="false"
-        androitPlot.rangeLabelWidget.visible="false"
+        androidPlot.domainLabelWidget.visible="false"
         androidPlot.legendWidget.visible="false"
 
         androidPlot.graphWidget.marginTop="20dp"

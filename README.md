@@ -13,9 +13,9 @@ convert gfx/logo.xcf into icon resources.
 
 TODO Before Releasing to the Public
 -----------------------------------
-* Remove the Settings thing.
+* Find out why the simulator doesn't show any data.
 
-* Make sure the Y axis has units
+* Make sure the Y axis has units.
 
 
 TODO Misc
@@ -161,3 +161,5 @@ charging?
 * Make sure the y=0 lines are visible
 
 * Make an icon.
+
+* Remove the Settings thing, it's empty.

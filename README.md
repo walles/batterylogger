@@ -14,22 +14,17 @@ convert gfx/logo.xcf into icon resources.
 
 TODO Before Releasing to the Public
 -----------------------------------
-* Find out why the simulator doesn't show any data.
+* Profile app startup, it feels slow
 
 
 TODO Misc
 ---------
-* Profile app startup, it feels slow
-
 * When drawing the drain lines, try to guess the initial charging state by
 counting backwards from the first change in charging state.
 
 * If we change the system clock, think about how that would affect
 boot timestamps, the system sampling's reboot detection and the timestamp
 logging in general, and the drawing of median lines.
-
-* Replace the medians by something else? Averages? Least square approximated
-lines?
 
 * See if we can detect enabling / disabling of Google Now and log
 that. Or maybe when services start / stop in general?
@@ -164,3 +159,9 @@ charging?
 * Remove the Settings thing, it's empty.
 
 * Make sure the Y axis has units.
+
+* Replace the medians by something else? Averages? Least square approximated
+lines?
+
+* Find out why the simulator doesn't show any data. It was because there were
+one or more samples, and then we showed them instead.

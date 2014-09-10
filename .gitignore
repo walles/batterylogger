@@ -5,3 +5,6 @@
 .DS_Store
 /build
 *~
+/gfx/logo.png
+/gfx/sv
+/src/main/res/drawable-*dpi/

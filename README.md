@@ -5,11 +5,17 @@ upgrades have happened.
 The idea then is that using this information it should be possible to
 find out what makes battery usage increase.
 
+Building
+--------
+Before building the project you need to run render-graphics.sh to
+convert gfx/logo.xcf into icon resources.
+
+
 TODO Before Releasing to the Public
 -----------------------------------
-* Make an icon.
-
 * Remove the Settings thing.
+
+* Make sure the Y axis has units
 
 
 TODO Misc
@@ -153,3 +159,5 @@ charging?
 * Verify that sampling actually starts after rebooting the device.
 
 * Make sure the y=0 lines are visible
+
+* Make an icon.

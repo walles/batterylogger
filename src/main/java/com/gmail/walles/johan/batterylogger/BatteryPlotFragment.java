@@ -3,6 +3,7 @@ package com.gmail.walles.johan.batterylogger;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
@@ -10,6 +11,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -108,7 +110,10 @@ public class BatteryPlotFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+            Bundle savedInstanceState)
+    {
+        long t0 = System.currentTimeMillis();
+
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         if (rootView == null) {
             throw new RuntimeException("Got a null root view");
@@ -122,10 +127,41 @@ public class BatteryPlotFragment extends Fragment {
         setUpPlotLayout(plot);
         redrawPlot(plot);
 
+        long t1 = System.currentTimeMillis();
+        long dMillis = t1 - t0;
+        Log.i(TAG, "Setting up view took " + dMillis + "ms");
+
         return rootView;
     }
 
+    private float dpToPixels(int pixels) {
+        Resources r = getResources();
+        return TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                pixels,
+                r.getDisplayMetrics());
+    }
+
     private void setUpPlotLayout(final XYPlot plot) {
+        // Note that we have to set text size before label text, otherwise the label gets clipped,
+        // with AndroidPlot 0.6.2-SNAPSHOT on 2014sep12 /Johan
+        plot.getRangeLabelWidget().getLabelPaint().setTextSize(dpToPixels(15));
+        plot.setRangeLabel("Battery Drain (%/h)");
+
+        plot.getTitleWidget().setVisible(false);
+        plot.getDomainLabelWidget().setVisible(false);
+        plot.getLegendWidget().setVisible(false);
+
+        plot.getGraphWidget().setMarginTop(dpToPixels(15));
+        plot.getGraphWidget().setMarginBottom(dpToPixels(10));
+        plot.getGraphWidget().setMarginLeft(dpToPixels(20));
+        plot.getGraphWidget().setMarginRight(dpToPixels(10));
+
+        plot.getGraphWidget().getRangeLabelPaint().setTextSize(dpToPixels(15));
+        plot.getGraphWidget().getRangeOriginLabelPaint().setTextSize(dpToPixels(15));
+        plot.getGraphWidget().getDomainLabelPaint().setTextSize(dpToPixels(15));
+        plot.getGraphWidget().getDomainOriginLabelPaint().setTextSize(dpToPixels(15));
+
         plot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 1);
         plot.setTicksPerRangeLabel(5);
 
@@ -210,25 +246,8 @@ public class BatteryPlotFragment extends Fragment {
     }
 
     private void addPlotData(final XYPlot plot) {
-        LineAndPointFormatter drainFormatter = new LineAndPointFormatter();
-        drainFormatter.setPointLabelFormatter(new PointLabelFormatter());
-        drainFormatter.setPointLabeler(new PointLabeler() {
-            @Override
-            public String getLabel(XYSeries xySeries, int i) {
-                return "";
-            }
-        });
-        drainFormatter.configure(getActivity(), R.xml.drain_formatter);
-
-        LineAndPointFormatter medianFormatter = new LineAndPointFormatter();
-        medianFormatter.setPointLabelFormatter(new PointLabelFormatter());
-        medianFormatter.setPointLabeler(new PointLabeler() {
-            @Override
-            public String getLabel(XYSeries xySeries, int i) {
-                return "";
-            }
-        });
-        medianFormatter.configure(getActivity(), R.xml.median_formatter);
+        LineAndPointFormatter drainFormatter = getDrainFormatter();
+        LineAndPointFormatter medianFormatter = getMedianFormatter();
 
         try {
             // Add battery drain series to the plot
@@ -267,6 +286,39 @@ public class BatteryPlotFragment extends Fragment {
             showAlertDialog(getActivity(),
                     "Reading Battery History Failed", e.getMessage());
         }
+    }
+
+    private LineAndPointFormatter getMedianFormatter() {
+        LineAndPointFormatter medianFormatter = new LineAndPointFormatter();
+        medianFormatter.setPointLabelFormatter(new PointLabelFormatter());
+        medianFormatter.setPointLabeler(new PointLabeler() {
+            @Override
+            public String getLabel(XYSeries xySeries, int i) {
+                return "";
+            }
+        });
+        medianFormatter.getLinePaint().setStrokeWidth(3);
+        medianFormatter.getLinePaint().setColor(Color.GREEN);
+        medianFormatter.getVertexPaint().setColor(Color.TRANSPARENT);
+        medianFormatter.getFillPaint().setColor(Color.TRANSPARENT);
+        return medianFormatter;
+    }
+
+    private LineAndPointFormatter getDrainFormatter() {
+        LineAndPointFormatter drainFormatter = new LineAndPointFormatter();
+        drainFormatter.setPointLabelFormatter(new PointLabelFormatter());
+        drainFormatter.setPointLabeler(new PointLabeler() {
+            @Override
+            public String getLabel(XYSeries xySeries, int i) {
+                return "";
+            }
+        });
+        drainFormatter.getLinePaint().setStrokeWidth(0);
+        drainFormatter.getLinePaint().setColor(Color.TRANSPARENT);
+        drainFormatter.getVertexPaint().setColor(Color.rgb(0x00, 0x44, 0x00));
+        drainFormatter.getFillPaint().setColor(Color.TRANSPARENT);
+        drainFormatter.getPointLabelFormatter().getTextPaint().setColor(Color.WHITE);
+        return drainFormatter;
     }
 
     private View.OnTouchListener getOnTouchListener(final XYPlot plot) {

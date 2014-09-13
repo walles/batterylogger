@@ -5,35 +5,49 @@ import android.os.Bundle;
 import android.os.Debug;
 import android.os.SystemClock;
 import android.support.v7.app.ActionBarActivity;
+import android.util.Log;
+
+import java.io.File;
 
 public class MainActivity extends ActionBarActivity {
     /**
      * Enable this to generate a trace file from when the widget is added to when it is removed.
      *
-     * @see #TRACE_FILE_NAME
+     * @see #getTraceFileName()
      */
     private static final boolean GENERATE_TRACEFILES = false;
-
-    /**
-     * This path needs to be hard coded since {@link #getCacheDir()} returns null when called from the constructor
-     * where this is used.
-     *
-     * @see #GENERATE_TRACEFILES
-     */
-    @SuppressWarnings("FieldCanBeLocal")
-    @SuppressLint("SdCardPath")
-    private final String TRACE_FILE_NAME = "/data/data/com.gmail.walles.johan.batterylogger/johan.trace";
 
     public static final String TAG = "BatteryLogger";
     public static final int REFRESH_PLOT_EVERY_MINUTES = 60;
 
     private long lastShown = -(24 * 60 * 60 * 1000);
 
+    @SuppressLint("SdCardPath")
+    private static String getTraceFileName() {
+        if (BatteryPlotFragment.isRunningOnEmulator()) {
+            // This path needs to be hard coded since {@link #getCacheDir()} returns null when called
+            // from the constructor where this is used.
+            return "/data/data/com.gmail.walles.johan.batterylogger/johan.trace";
+        }
+
+        if (new File("/storage/sdcard").isDirectory()) {
+            return "/storage/sdcard/batterylogger.trace";
+        }
+
+        if (new File("/storage/extSdCard").isDirectory()) {
+            return "/storage/extSdCard/batterylogger.trace";
+        }
+
+        throw new RuntimeException("Don't know where the external SD card is");
+    }
+
     public MainActivity() {
         super();
 
         if (GENERATE_TRACEFILES) {
-            Debug.startMethodTracing(TRACE_FILE_NAME);
+            String traceFileName = getTraceFileName();
+            Log.i(TAG, "Traces will be saved to " + traceFileName);
+            Debug.startMethodTracing(traceFileName);
         }
     }
 

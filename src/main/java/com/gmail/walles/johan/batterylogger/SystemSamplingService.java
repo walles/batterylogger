@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Environment;
 import android.os.IBinder;
+import android.os.SystemClock;
 import android.util.Log;
 
 import java.io.File;
@@ -41,7 +42,9 @@ public class SystemSamplingService extends Service {
         AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.setInexactRepeating(
                 AlarmManager.ELAPSED_REALTIME,
-                AlarmManager.INTERVAL_FIFTEEN_MINUTES,
+                // Don't start sampling immediately, this makes us not sample during startup,
+                // and thus improves app startup performance a lot.
+                SystemClock.elapsedRealtime() + 30 * 1000,
                 AlarmManager.INTERVAL_FIFTEEN_MINUTES,
                 pendingIntent);
     }

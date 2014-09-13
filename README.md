@@ -12,13 +12,8 @@ Before building the project you need to run render-graphics.sh to
 convert gfx/logo.xcf into icon resources.
 
 
-TODO Before Releasing to the Public
------------------------------------
-* Profile app startup, it feels slow
-
-
-TODO Misc
----------
+TODO
+----
 * When drawing the drain lines, try to guess the initial charging state by
 counting backwards from the first change in charging state.
 

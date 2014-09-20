@@ -42,11 +42,14 @@ import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 public class BatteryPlotFragment extends Fragment {
     public static final int IN_GRAPH_TEXT_SIZE_SP = 12;
 
+    private static final long ONE_DAY_MS = 86400 * 1000;
+
     private double minX;
     private double maxX;
 
     private double originalMinX;
     private double originalMaxX;
+    private EventFormatter eventFormatter;
 
     private void zoom(double factor, double pivot) {
         double leftSpan = pivot - minX;
@@ -86,9 +89,21 @@ public class BatteryPlotFragment extends Fragment {
         }
     }
 
+    /**
+     * We only want to show text events if we're zoomed in enough; otherwise the display becomes
+     * too cluttered when showing a month of data.
+     *
+     * @return True if we should show text events, false otherwise.
+     */
+    private boolean isShowingEvents() {
+        long visibleMs = History.toDate(maxX).getTime() - History.toDate(minX).getTime();
+        return visibleMs <= 3 * ONE_DAY_MS;
+    }
+
     private void redrawPlot(final XYPlot plot) {
         // FIXME: Call plot.setDomainStep() with some good value
 
+        eventFormatter.setVisible(isShowingEvents());
         plot.redraw();
     }
 
@@ -270,7 +285,9 @@ public class BatteryPlotFragment extends Fragment {
             labelPaint.setAntiAlias(true);
             labelPaint.setColor(Color.WHITE);
             labelPaint.setTextSize(spToPixels(IN_GRAPH_TEXT_SIZE_SP));
-            plot.addSeries(history.getEvents(), new EventFormatter(labelPaint));
+
+            eventFormatter = new EventFormatter(labelPaint);
+            plot.addSeries(history.getEvents(), eventFormatter);
 
             if (history.isEmpty()) {
                 showAlertDialog(getActivity(),

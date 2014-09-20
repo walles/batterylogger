@@ -12,6 +12,20 @@ Before building the project you need to run render-graphics.sh to
 convert gfx/logo.xcf into icon resources.
 
 
+TODO before public release
+--------------------------
+* Try turning the phone with an almost-empty history. Note how you get
+  the same dialog over and over. Fix that so that the dialog only
+  shows up once.
+
+* Make sure there's enough room for the tick labels at the bottom;
+there wasn't on one of the beta devices.
+
+* Make dots less visible; either smaller or with alpha. The point is 
+that we want the drain lines to be more visible than the dots, even
+with a lot of data in the graph.
+
+
 TODO
 ----
 * When drawing the drain lines, try to guess the initial charging state by
@@ -160,3 +174,6 @@ lines?
 
 * Find out why the simulator doesn't show any data. It was because there were
 one or more samples, and then we showed them instead.
+
+* Only show text events if we're zoomed in enough, either by the
+number of visible events or by a certain amount of time (one day?).

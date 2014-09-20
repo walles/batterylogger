@@ -12,6 +12,7 @@ import com.androidplot.xy.XYSeries;
 
 public class EventRenderer extends LineAndPointRenderer<EventFormatter> {
     private final Paint textPaint;
+    private boolean visible = true;
 
     public EventRenderer(XYPlot plot, Paint textPaint) {
         super(plot);
@@ -20,6 +21,10 @@ public class EventRenderer extends LineAndPointRenderer<EventFormatter> {
 
     @Override
     protected void drawSeries(Canvas canvas, RectF plotArea, XYSeries xySeries, LineAndPointFormatter formatter) {
+        if (!visible) {
+            return;
+        }
+
         EventSeries eventSeries = (EventSeries)xySeries;
         for (int i = 0; i < eventSeries.size(); i++) {
             Number x = eventSeries.getX(i);
@@ -68,5 +73,9 @@ public class EventRenderer extends LineAndPointRenderer<EventFormatter> {
 
         // restore the canvas state:
         canvas.restore();
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 }

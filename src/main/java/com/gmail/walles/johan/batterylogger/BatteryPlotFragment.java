@@ -314,7 +314,7 @@ public class BatteryPlotFragment extends Fragment {
                 return "";
             }
         });
-        medianFormatter.getLinePaint().setStrokeWidth(3);
+        medianFormatter.getLinePaint().setStrokeWidth(7);
         medianFormatter.getLinePaint().setColor(Color.GREEN);
         medianFormatter.getVertexPaint().setColor(Color.TRANSPARENT);
         medianFormatter.getFillPaint().setColor(Color.TRANSPARENT);
@@ -333,6 +333,7 @@ public class BatteryPlotFragment extends Fragment {
         drainFormatter.getLinePaint().setStrokeWidth(0);
         drainFormatter.getLinePaint().setColor(Color.TRANSPARENT);
         drainFormatter.getVertexPaint().setColor(Color.rgb(0x00, 0x44, 0x00));
+        drainFormatter.getVertexPaint().setStrokeWidth(4);
         drainFormatter.getFillPaint().setColor(Color.TRANSPARENT);
         drainFormatter.getPointLabelFormatter().getTextPaint().setColor(Color.WHITE);
         return drainFormatter;

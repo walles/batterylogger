@@ -14,10 +14,6 @@ convert gfx/logo.xcf into icon resources.
 
 TODO before public release
 --------------------------
-* Try turning the phone with an almost-empty history. Note how you get
-  the same dialog over and over. Fix that so that the dialog only
-  shows up once.
-
 * Make sure there's enough room for the tick labels at the bottom;
 there wasn't on one of the beta devices.
 
@@ -177,3 +173,7 @@ number of visible events or by a certain amount of time (one day?).
 * Make dots less visible; either smaller or with alpha. The point is 
 that we want the drain lines to be more visible than the dots, even
 with a lot of data in the graph.
+
+* Try turning the phone with an almost-empty history. Note how you get
+  the same dialog over and over. Fix that so that the dialog only
+  shows up once.

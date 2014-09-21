@@ -3,6 +3,7 @@ package com.gmail.walles.johan.batterylogger;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -114,13 +115,35 @@ public class BatteryPlotFragment extends Fragment {
         }
     };
 
-    private static void showAlertDialog(Context context, CharSequence title, CharSequence message) {
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(context);
+    private void showAlertDialog(String title, String message,
+                                 DialogInterface.OnClickListener dismisser)
+    {
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
         dialogBuilder.setTitle(title);
         dialogBuilder.setMessage(message);
         dialogBuilder.setIcon(android.R.drawable.ic_dialog_alert);
-        dialogBuilder.setPositiveButton(android.R.string.ok, DIALOG_DISMISSER);
+        dialogBuilder.setPositiveButton(android.R.string.ok, dismisser);
         dialogBuilder.show();
+    }
+
+    private void showAlertDialogOnce(String title, String message) {
+        final String shownTag = title + ": " + message + " shown";
+        final SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+        if (preferences.getBoolean(shownTag, false)) {
+            return;
+        }
+
+        showAlertDialog(title, message, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                preferences.edit().putBoolean(shownTag, true).commit();
+                dialogInterface.dismiss();
+            }
+        });
+    }
+
+    private void showAlertDialog(String title, String message) {
+        showAlertDialog(title, message, DIALOG_DISMISSER);
     }
 
     @Override
@@ -290,18 +313,17 @@ public class BatteryPlotFragment extends Fragment {
             plot.addSeries(history.getEvents(), eventFormatter);
 
             if (history.isEmpty()) {
-                showAlertDialog(getActivity(),
+                showAlertDialogOnce(
                         "No Battery History Recorded",
                         "Come back in a few hours to get a graph, or in a week to be able to see patterns.");
             } else if (medians.size() < 5) {
-                showAlertDialog(getActivity(),
+                showAlertDialogOnce(
                         "Very Short Battery History Recorded",
                         "If you come back in a week you'll be able to see patterns much better.");
             }
         } catch (IOException e) {
             Log.e(TAG, "Reading battery history failed", e);
-            showAlertDialog(getActivity(),
-                    "Reading Battery History Failed", e.getMessage());
+            showAlertDialog("Reading Battery History Failed", e.getMessage());
         }
     }
 

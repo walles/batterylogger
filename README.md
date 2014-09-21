@@ -17,6 +17,9 @@ TODO before public release
 * Make sure there's enough room for the tick labels at the bottom;
 there wasn't on one of the beta devices.
 
+* Add affordance for two finger zoom and that it gives you the
+details back.
+
 
 TODO
 ----

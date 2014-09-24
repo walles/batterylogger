@@ -36,7 +36,9 @@ import java.text.Format;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 
@@ -51,6 +53,9 @@ public class BatteryPlotFragment extends Fragment {
     private double originalMinX;
     private double originalMaxX;
     private EventFormatter eventFormatter;
+
+    // Cache shown dialogs so we don't flood SharedPreferences with calls while zooming
+    private final Set<String> shownDialogs = new HashSet<String>();
 
     private void zoom(double factor, double pivot) {
         double leftSpan = pivot - minX;
@@ -104,6 +109,12 @@ public class BatteryPlotFragment extends Fragment {
     private void redrawPlot(final XYPlot plot) {
         // FIXME: Call plot.setDomainStep() with some good value
 
+        // First time we hide events here we display an alert about that you can get them back by
+        // two-finger zooming in
+        if (!isShowingEvents()) {
+            showAlertDialogOnce("Events Hidden", "Zoom in with two fingers to see hidden events");
+        }
+
         eventFormatter.setVisible(isShowingEvents());
         plot.redraw();
     }
@@ -128,8 +139,13 @@ public class BatteryPlotFragment extends Fragment {
 
     private void showAlertDialogOnce(String title, String message) {
         final String shownTag = title + ": " + message + " shown";
+        if (shownDialogs.contains(shownTag)) {
+            return;
+        }
+
         final SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
         if (preferences.getBoolean(shownTag, false)) {
+            shownDialogs.add(shownTag);
             return;
         }
 
@@ -137,6 +153,7 @@ public class BatteryPlotFragment extends Fragment {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 preferences.edit().putBoolean(shownTag, true).commit();
+                shownDialogs.add(shownTag);
                 dialogInterface.dismiss();
             }
         });

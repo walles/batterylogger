@@ -12,12 +12,6 @@ Before building the project you need to run render-graphics.sh to
 convert gfx/logo.xcf into icon resources.
 
 
-TODO before public release
---------------------------
-* Add affordance for two finger zoom and that it gives you the
-details back.
-
-
 TODO
 ----
 * When drawing the drain lines, try to guess the initial charging state by
@@ -180,3 +174,5 @@ with a lot of data in the graph.
 
 * Make sure there's enough room for the tick labels at the bottom;
 there wasn't on one of the beta devices.
+
+* Hint people about using two finger zoom get the details back.

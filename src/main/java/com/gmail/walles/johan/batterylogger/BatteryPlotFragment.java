@@ -172,33 +172,49 @@ public class BatteryPlotFragment extends Fragment {
         return rootView;
     }
 
-    private float dpToPixels(int pixels) {
+    private float spToPixels(int sp) {
         Resources r = getResources();
         return TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                pixels,
+                TypedValue.COMPLEX_UNIT_SP,
+                sp,
                 r.getDisplayMetrics());
     }
 
     private void setUpPlotLayout(final XYPlot plot) {
+        final float labelHeightPixels = spToPixels(15);
+
         // Note that we have to set text size before label text, otherwise the label gets clipped,
         // with AndroidPlot 0.6.2-SNAPSHOT on 2014sep12 /Johan
-        plot.getRangeLabelWidget().getLabelPaint().setTextSize(dpToPixels(15));
+        plot.getRangeLabelWidget().getLabelPaint().setTextSize(labelHeightPixels);
         plot.setRangeLabel("Battery Drain (%/h)");
 
         plot.getTitleWidget().setVisible(false);
         plot.getDomainLabelWidget().setVisible(false);
         plot.getLegendWidget().setVisible(false);
 
-        plot.getGraphWidget().setMarginTop(dpToPixels(15));
-        plot.getGraphWidget().setMarginBottom(dpToPixels(10));
-        plot.getGraphWidget().setMarginLeft(dpToPixels(20));
-        plot.getGraphWidget().setMarginRight(dpToPixels(10));
+        plot.getGraphWidget().getRangeLabelPaint().setTextSize(labelHeightPixels);
+        plot.getGraphWidget().getDomainLabelPaint().setTextSize(labelHeightPixels);
 
-        plot.getGraphWidget().getRangeLabelPaint().setTextSize(dpToPixels(15));
-        plot.getGraphWidget().getRangeOriginLabelPaint().setTextSize(dpToPixels(15));
-        plot.getGraphWidget().getDomainLabelPaint().setTextSize(dpToPixels(15));
-        plot.getGraphWidget().getDomainOriginLabelPaint().setTextSize(dpToPixels(15));
+        // Tell the widget about how much space we should reserve for the range label widgets
+        final float maxRangeLabelWidth = plot.getGraphWidget().getRangeLabelPaint().measureText("25.0");
+        plot.getGraphWidget().setRangeLabelWidth(maxRangeLabelWidth);
+
+        // Need room for top scale label
+        plot.getGraphWidget().setMarginTop(labelHeightPixels);
+
+        // Need room for domain labels
+        plot.getGraphWidget().setMarginBottom(labelHeightPixels);
+
+        // Need room for the range label
+        plot.getGraphWidget().setMarginLeft(labelHeightPixels);
+
+        // Prevent the leftmost part of the range labels from being clipped
+        // FIXME: I don't know where the clipping comes from, fixing it properly would be better
+        plot.getGraphWidget().setClippingEnabled(false);
+
+        // Symmetry with upper and bottom
+        //noinspection SuspiciousNameCombination
+        plot.getGraphWidget().setMarginRight(labelHeightPixels);
 
         plot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 1);
         plot.setTicksPerRangeLabel(5);
@@ -257,12 +273,6 @@ public class BatteryPlotFragment extends Fragment {
         }
 
         plot.setRangeBoundaries(0, maxY, BoundaryMode.FIXED);
-    }
-
-    @SuppressWarnings("SameParameterValue")
-    private float spToPixels(float sp) {
-        float scaledDensity = getActivity().getResources().getDisplayMetrics().scaledDensity;
-        return sp * scaledDensity;
     }
 
     public static boolean isRunningOnEmulator() {

@@ -193,11 +193,11 @@ public class BatteryPlotFragment extends Fragment {
         plot.getLegendWidget().setVisible(false);
 
         plot.getGraphWidget().getRangeLabelPaint().setTextSize(labelHeightPixels);
-        plot.getGraphWidget().getRangeOriginLabelPaint().setTextSize(labelHeightPixels);
         plot.getGraphWidget().getDomainLabelPaint().setTextSize(labelHeightPixels);
-        plot.getGraphWidget().getDomainOriginLabelPaint().setTextSize(labelHeightPixels);
 
+        // Tell the widget about how much space we should reserve for the range label widgets
         final float maxRangeLabelWidth = plot.getGraphWidget().getRangeLabelPaint().measureText("25.0");
+        plot.getGraphWidget().setRangeLabelWidth(maxRangeLabelWidth);
 
         // Need room for top scale label
         plot.getGraphWidget().setMarginTop(labelHeightPixels);
@@ -205,8 +205,12 @@ public class BatteryPlotFragment extends Fragment {
         // Need room for domain labels
         plot.getGraphWidget().setMarginBottom(labelHeightPixels);
 
-        // FIXME: Don't know what to put here
-        plot.getGraphWidget().setMarginLeft(labelHeightPixels + maxRangeLabelWidth);
+        // Need room for the range label
+        plot.getGraphWidget().setMarginLeft(labelHeightPixels);
+
+        // Prevent the leftmost part of the range labels from being clipped
+        // FIXME: I don't know where the clipping comes from, fixing it properly would be better
+        plot.getGraphWidget().setClippingEnabled(false);
 
         // Symmetry with upper and bottom
         //noinspection SuspiciousNameCombination

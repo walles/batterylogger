@@ -14,9 +14,6 @@ convert gfx/logo.xcf into icon resources.
 
 TODO before public release
 --------------------------
-* Make sure there's enough room for the tick labels at the bottom;
-there wasn't on one of the beta devices.
-
 * Add affordance for two finger zoom and that it gives you the
 details back.
 
@@ -180,3 +177,6 @@ with a lot of data in the graph.
 * Try turning the phone with an almost-empty history. Note how you get
   the same dialog over and over. Fix that so that the dialog only
   shows up once.
+
+* Make sure there's enough room for the tick labels at the bottom;
+there wasn't on one of the beta devices.

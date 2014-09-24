@@ -206,6 +206,7 @@ public class BatteryPlotFragment extends Fragment {
         plot.getGraphWidget().setMarginBottom(labelHeightPixels);
 
         // Need room for the range label
+        //noinspection SuspiciousNameCombination
         plot.getGraphWidget().setMarginLeft(labelHeightPixels);
 
         // Prevent the leftmost part of the range labels from being clipped

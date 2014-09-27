@@ -29,12 +29,15 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.util.TypedValue;
+import android.util.Xml;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
+
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.PointLabelFormatter;
@@ -54,6 +57,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 
 import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
@@ -190,7 +194,13 @@ public class BatteryPlotFragment extends Fragment {
             throw new RuntimeException("Got a null root view");
         }
 
-        // initialize our XYPlot view reference:
+        // Initialize our WebView legend
+        WebView legend = (WebView)rootView.findViewById(R.id.legend);
+        // From: http://stackoverflow.com/questions/6068197/utils-read-resource-text-file-to-string-java#answer-18897411
+        String html = new Scanner(this.getClass().getResourceAsStream("/legend.html"), "UTF-8").useDelimiter("\\A").next();
+        legend.loadData(html, "text/html", Xml.Encoding.US_ASCII.toString());
+
+        // Initialize our XYPlot view reference:
         XYPlot plot = (XYPlot)rootView.findViewById(R.id.mySimpleXYPlot);
 
         addPlotData(plot);

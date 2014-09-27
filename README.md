@@ -12,11 +12,16 @@ Before building the project you need to run render-graphics.sh to
 convert gfx/logo.xcf into icon resources.
 
 
+TODO before releasing to the public
+-----------------------------------
+* Add a legend
+
+* When starting the app, animate a zoom out from about 24h to max to hint users
+that zoom affects which in-graph labels are visible.
+
+
 TODO
 ----
-* When drawing the drain lines, try to guess the initial charging state by
-counting backwards from the first change in charging state.
-
 * If we change the system clock, think about how that would affect
 boot timestamps, the system sampling's reboot detection and the timestamp
 logging in general, and the drawing of median lines.
@@ -24,21 +29,17 @@ logging in general, and the drawing of median lines.
 * See if we can detect enabling / disabling of Google Now and log
 that. Or maybe when services start / stop in general?
 
-* Make a preference for disabling the service.
-
 * Make sure there's room for displaying a text event at the far left of
 the graph. Right now, any leftmost event is printed mostly outside of the
 visible area.
 
 * Collect application-data-cleared events if possible.
 
-* Force landscape mode? Drain patterns are more visible if the Y axis
-is more compressed.
-
-* Make the points in the graph real big, bigger than the line thickness.
-Ref: <http://stackoverflow.com/questions/10169080/custom-points-on-graph-using-androidplot>
+* When drawing the drain lines, try to guess the initial charging state by
+counting backwards from the first change in charging state.
 
 * Make the Y axis labels look good.
+
 
 DONE
 ----

@@ -17,15 +17,20 @@
 package com.gmail.walles.johan.batterylogger;
 
 import android.annotation.SuppressLint;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.SystemClock;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import java.io.File;
 
 public class MainActivity extends ActionBarActivity {
+    public static final String PREF_SHOW_LEGEND = "show legend";
+
     /**
      * Enable this to generate a trace file from when the widget is added to when it is removed.
      *
@@ -86,10 +91,14 @@ public class MainActivity extends ActionBarActivity {
             return;
         }
 
+        refreshBatteryPlotFragment();
+    }
+
+    private void refreshBatteryPlotFragment() {
         getSupportFragmentManager().beginTransaction()
                 .replace(R.id.container, new BatteryPlotFragment())
                 .commit();
-        lastShown = now;
+        lastShown = SystemClock.elapsedRealtime();
     }
 
     @Override
@@ -111,5 +120,43 @@ public class MainActivity extends ActionBarActivity {
         if (savedInstanceState == null) {
             refreshBatteryPlotFragmentIfNeeded();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+
+        // Set the legend checkbox to the correct state
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        MenuItem toggleLegend = menu.findItem(R.id.toggle_legend);
+        boolean showLegend = preferences.getBoolean(PREF_SHOW_LEGEND, true);
+        toggleLegend.setChecked(showLegend);
+
+        return true;
+    }
+
+    private void toggleLegend(MenuItem toggleLegend) {
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        boolean showLegend = preferences.getBoolean(PREF_SHOW_LEGEND, true);
+        showLegend = !showLegend;
+        preferences.edit().putBoolean(PREF_SHOW_LEGEND, showLegend).commit();
+
+        toggleLegend.setChecked(showLegend);
+
+        refreshBatteryPlotFragment();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+        if (id == R.id.toggle_legend) {
+            toggleLegend(item);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

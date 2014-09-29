@@ -183,6 +183,17 @@ public class BatteryPlotFragment extends Fragment {
         showAlertDialog(title, message, DIALOG_DISMISSER);
     }
 
+    private void initializeLegend(final WebView legend) {
+        // From: http://stackoverflow.com/questions/6068197/utils-read-resource-text-file-to-string-java#answer-18897411
+        String html = new Scanner(this.getClass().getResourceAsStream("/legend.html"), "UTF-8").useDelimiter("\\A").next();
+        legend.loadData(html, "text/html", Xml.Encoding.US_ASCII.toString());
+
+        // Check MainActivity.PREF_SHOW_LEGEND and set legend visibility from that
+        SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+        boolean showLegend = preferences.getBoolean(MainActivity.PREF_SHOW_LEGEND, true);
+        legend.setVisibility(showLegend ? View.VISIBLE : View.GONE);
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState)
@@ -196,9 +207,7 @@ public class BatteryPlotFragment extends Fragment {
 
         // Initialize our WebView legend
         WebView legend = (WebView)rootView.findViewById(R.id.legend);
-        // From: http://stackoverflow.com/questions/6068197/utils-read-resource-text-file-to-string-java#answer-18897411
-        String html = new Scanner(this.getClass().getResourceAsStream("/legend.html"), "UTF-8").useDelimiter("\\A").next();
-        legend.loadData(html, "text/html", Xml.Encoding.US_ASCII.toString());
+        initializeLegend(legend);
 
         // Initialize our XYPlot view reference:
         XYPlot plot = (XYPlot)rootView.findViewById(R.id.mySimpleXYPlot);

@@ -105,10 +105,41 @@ public class DrainLinesCreatorTest extends TestCase {
         events.addAll(b.getEventsSince(a));
         events.addAll(c.getEventsSince(b));
         events.addAll(d.getEventsSince(c));
-        events.addAll(e.getEventsSince(c));
+        events.addAll(e.getEventsSince(d));
 
         DrainLinesCreator testMe = new DrainLinesCreator(events);
         assertEquals(0, testMe.getDrainLines().size());
+    }
+
+    /**
+     * Regression test for https://github.com/walles/batterylogger/issues/1
+     */
+    public void testNegativeDischarge() {
+        Date dates[] = SystemState.between(BEFORE, NOW, 6);
+        Date bootTimestamp = dates[0];
+        SystemState a = new SystemState(dates[1], 50, true, bootTimestamp);
+        SystemState b = new SystemState(dates[2], 50, false, bootTimestamp);
+        // b -> c = charging
+        SystemState c = new SystemState(dates[3], 51, false, bootTimestamp);
+        // c -> d = draining
+        SystemState d = new SystemState(dates[4], 50, false, bootTimestamp);
+        // d -> e = charging
+        SystemState e = new SystemState(dates[5], 51, false, bootTimestamp);
+
+        List<HistoryEvent> events = new LinkedList<HistoryEvent>();
+        events.addAll(b.getEventsSince(a));
+        events.addAll(c.getEventsSince(b));
+        events.addAll(d.getEventsSince(c));
+        events.addAll(e.getEventsSince(d));
+
+        DrainLinesCreator testMe = new DrainLinesCreator(events);
+
+        // Expect one draining line; the charging parts should just be ignored
+        assertEquals(1, testMe.getDrainLines().size());
+        final XYSeries drainLine = testMe.getDrainLines().get(0);
+        assertEquals(drainLine.getY(0), drainLine.getY(1));
+        assertTrue(drainLine.getY(0).doubleValue() > 0.0);
+        assertTrue(drainLine.getY(1).doubleValue() > 0.0);
     }
 
     public void testCharging() {

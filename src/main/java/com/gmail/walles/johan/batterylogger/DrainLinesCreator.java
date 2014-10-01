@@ -106,14 +106,11 @@ public class DrainLinesCreator {
                 double percentPerHour = percentDischarge / dHours;
 
                 if (percentPerHour <= 0) {
-                    throw new IllegalStateException(String.format(
-                            "Discharging at %f%% per hour, t0=%s, t1=%s, %%0=%d%%, %%1=%d%%",
-                            percentPerHour,
-                            previous.getTimestamp(),
-                            drainEvent.getTimestamp(),
-                            previous.getPercentage(),
-                            drainEvent.getPercentage()
-                    ));
+                    // This is an edge case that we choose to ignore. You get here by charging
+                    // your phone short enough time that both the before and after samples says
+                    // "draining", but long enough that the after sample has higher charge
+                    // percentage than the before one.
+                    continue;
                 }
 
                 numbers.add(percentPerHour);
@@ -201,7 +198,7 @@ public class DrainLinesCreator {
                 charging = null;
                 break;
 
-            case  SYSTEM_BOOT:
+            case SYSTEM_BOOT:
                 finishLine(event.getTimestamp());
                 charging = event.isCharging();
                 break;

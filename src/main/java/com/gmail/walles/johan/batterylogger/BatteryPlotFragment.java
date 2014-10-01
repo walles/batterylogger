@@ -20,6 +20,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -30,6 +31,7 @@ import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.util.TypedValue;
 import android.util.Xml;
+import android.view.Display;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -66,6 +68,7 @@ public class BatteryPlotFragment extends Fragment {
     public static final int IN_GRAPH_TEXT_SIZE_SP = 12;
 
     private static final long ONE_DAY_MS = 86400 * 1000;
+    public static final int LEGEND_WIDTH_LANDSCAPE_SP = 300;
 
     private double minX;
     private double maxX;
@@ -192,6 +195,20 @@ public class BatteryPlotFragment extends Fragment {
         SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
         boolean showLegend = preferences.getBoolean(MainActivity.PREF_SHOW_LEGEND, true);
         legend.setVisibility(showLegend ? View.VISIBLE : View.GONE);
+
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            int width = (int)spToPixels(LEGEND_WIDTH_LANDSCAPE_SP);
+
+            // Put an upper bound on the legend width at 40% landscape screen width
+            Display display = getActivity().getWindowManager().getDefaultDisplay();
+            //noinspection deprecation
+            int landscapeWidth = Math.max(display.getWidth(), display.getHeight());
+            if (width > landscapeWidth * 0.4) {
+                width = (int)(landscapeWidth * 0.4);
+            }
+
+            legend.getLayoutParams().width = width;
+        }
     }
 
     @Override

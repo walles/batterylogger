@@ -38,6 +38,7 @@ import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.webkit.WebView;
 
 import com.androidplot.xy.BoundaryMode;
@@ -47,6 +48,10 @@ import com.androidplot.xy.PointLabeler;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
 import com.androidplot.xy.XYStepMode;
+import com.nineoldandroids.animation.Animator;
+import com.nineoldandroids.animation.AnimatorListenerAdapter;
+import com.nineoldandroids.animation.PropertyValuesHolder;
+import com.nineoldandroids.animation.ValueAnimator;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -69,7 +74,9 @@ public class BatteryPlotFragment extends Fragment {
 
     private static final long ONE_DAY_MS = 86400 * 1000;
     public static final int LEGEND_WIDTH_LANDSCAPE_SP = 300;
+    public static final int ANIMATION_DURATION_MS = 500;
 
+    private ValueAnimator animator;
     private double minX;
     private double maxX;
 
@@ -456,6 +463,68 @@ public class BatteryPlotFragment extends Fragment {
         };
     }
 
+    /**
+     * Animate minX and maxX to new values.
+     */
+    private void animateXrange(final XYPlot plot, double targetMinX, double targetMaxX) {
+        // Cancel any running animation
+        if (animator != null) {
+            animator.cancel();
+        }
+
+        if (targetMinX < originalMinX) {
+            targetMinX = originalMinX;
+        }
+        if (targetMaxX > originalMaxX) {
+            targetMaxX = originalMaxX;
+        }
+        if (targetMaxX <= targetMinX) {
+            throw new IllegalArgumentException("Max target must be > min target");
+        }
+        if (targetMaxX == maxX && targetMinX == minX) {
+            // We're already there, nothing to animate
+            return;
+        }
+
+        animator = ValueAnimator.ofPropertyValuesHolder(
+                PropertyValuesHolder.ofFloat("minX", (float) minX, (float) targetMinX),
+                PropertyValuesHolder.ofFloat("maxX", (float) maxX, (float) targetMaxX));
+        animator.setInterpolator(new AccelerateDecelerateInterpolator());
+        animator.setDuration(ANIMATION_DURATION_MS);
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                minX = (double) (Float) animation.getAnimatedValue("minX");
+                maxX = (double) (Float) animation.getAnimatedValue("maxX");
+
+                plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
+                redrawPlot(plot);
+            }
+        });
+        final double finalMinX = targetMinX;
+        final double finalMaxX = targetMaxX;
+        animator.addListener(new AnimatorListenerAdapter() {
+            boolean cancelled = false;
+
+            @Override
+            public void onAnimationCancel(Animator animation) {
+                cancelled = true;
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (cancelled) {
+                    return;
+                }
+
+                // Avoid any float -> double rounding errors
+                minX = finalMinX;
+                maxX = finalMaxX;
+            }
+        });
+        animator.start();
+    }
+
     private GestureDetector getOneFingerGestureDetector(final XYPlot plot) {
         GestureDetector.SimpleOnGestureListener gestureListener =
                 new GestureDetector.SimpleOnGestureListener()
@@ -469,21 +538,19 @@ public class BatteryPlotFragment extends Fragment {
 
                     @Override
                     public boolean onDoubleTap(MotionEvent e) {
+                        double targetMinX;
+                        double targetMaxX;
                         if (minX == originalMinX && maxX == originalMaxX) {
                             // Reset zoom to two most recent days
-                            maxX = originalMaxX;
-                            minX = maxX - History.toDouble(new Date(86400 * 1000 * 2));
-                            if (minX < originalMinX) {
-                                minX = originalMinX;
-                            }
+                            targetMaxX = originalMaxX;
+                            targetMinX = targetMaxX - History.toDouble(new Date(86400 * 1000 * 2));
                         } else {
                             // Reset zoom to max out
-                            minX = originalMinX;
-                            maxX = originalMaxX;
+                            targetMinX = originalMinX;
+                            targetMaxX = originalMaxX;
                         }
 
-                        plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
-                        redrawPlot(plot);
+                        animateXrange(plot, targetMinX, targetMaxX);
 
                         return true;
                     }

@@ -469,9 +469,19 @@ public class BatteryPlotFragment extends Fragment {
 
                     @Override
                     public boolean onDoubleTap(MotionEvent e) {
-                        // Reset zoom to max out
-                        minX = originalMinX;
-                        maxX = originalMaxX;
+                        if (minX == originalMinX && maxX == originalMaxX) {
+                            // Reset zoom to two most recent days
+                            maxX = originalMaxX;
+                            minX = maxX - History.toDouble(new Date(86400 * 1000 * 2));
+                            if (minX < originalMinX) {
+                                minX = originalMinX;
+                            }
+                        } else {
+                            // Reset zoom to max out
+                            minX = originalMinX;
+                            maxX = originalMaxX;
+                        }
+
                         plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
                         redrawPlot(plot);
 

@@ -17,8 +17,8 @@ TODO before releasing to the public
 * When starting the app, animate a zoom out from about 24h to max to hint users
 that zoom affects which in-graph labels are visible.
 
-* Double tapping should zoom out fully, or if we're already zoomed out fully we
-should zoom in to two days resolution.
+* Double tapping should animate the zoom operation so that it's obvious to the
+user what's happening.
 
 
 TODO
@@ -180,3 +180,6 @@ there wasn't on one of the beta devices.
 * Hint people about using two finger zoom get the details back.
 
 * Add a legend
+
+* Double tapping should zoom out fully, or if we're already zoomed out fully we
+should zoom in to two days resolution.

@@ -14,10 +14,11 @@ convert gfx/logo.xcf into icon resources.
 
 TODO before releasing to the public
 -----------------------------------
-* Add a legend
-
 * When starting the app, animate a zoom out from about 24h to max to hint users
 that zoom affects which in-graph labels are visible.
+
+* Double tapping should zoom out fully, or if we're already zoomed out fully we
+should zoom in to two days resolution.
 
 
 TODO
@@ -177,3 +178,5 @@ with a lot of data in the graph.
 there wasn't on one of the beta devices.
 
 * Hint people about using two finger zoom get the details back.
+
+* Add a legend

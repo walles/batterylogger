@@ -20,6 +20,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -29,12 +30,16 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.util.TypedValue;
+import android.util.Xml;
+import android.view.Display;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
+
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.PointLabelFormatter;
@@ -54,6 +59,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Scanner;
 import java.util.Set;
 
 import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
@@ -62,6 +68,7 @@ public class BatteryPlotFragment extends Fragment {
     public static final int IN_GRAPH_TEXT_SIZE_SP = 12;
 
     private static final long ONE_DAY_MS = 86400 * 1000;
+    public static final int LEGEND_WIDTH_LANDSCAPE_SP = 300;
 
     private double minX;
     private double maxX;
@@ -179,6 +186,31 @@ public class BatteryPlotFragment extends Fragment {
         showAlertDialog(title, message, DIALOG_DISMISSER);
     }
 
+    private void initializeLegend(final WebView legend) {
+        // From: http://stackoverflow.com/questions/6068197/utils-read-resource-text-file-to-string-java#answer-18897411
+        String html = new Scanner(this.getClass().getResourceAsStream("/legend.html"), "UTF-8").useDelimiter("\\A").next();
+        legend.loadData(html, "text/html", Xml.Encoding.US_ASCII.toString());
+
+        // Check MainActivity.PREF_SHOW_LEGEND and set legend visibility from that
+        SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+        boolean showLegend = preferences.getBoolean(MainActivity.PREF_SHOW_LEGEND, true);
+        legend.setVisibility(showLegend ? View.VISIBLE : View.GONE);
+
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            int width = (int)spToPixels(LEGEND_WIDTH_LANDSCAPE_SP);
+
+            // Put an upper bound on the legend width at 40% landscape screen width
+            Display display = getActivity().getWindowManager().getDefaultDisplay();
+            //noinspection deprecation
+            int landscapeWidth = Math.max(display.getWidth(), display.getHeight());
+            if (width > landscapeWidth * 0.4) {
+                width = (int)(landscapeWidth * 0.4);
+            }
+
+            legend.getLayoutParams().width = width;
+        }
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState)
@@ -190,7 +222,11 @@ public class BatteryPlotFragment extends Fragment {
             throw new RuntimeException("Got a null root view");
         }
 
-        // initialize our XYPlot view reference:
+        // Initialize our WebView legend
+        WebView legend = (WebView)rootView.findViewById(R.id.legend);
+        initializeLegend(legend);
+
+        // Initialize our XYPlot view reference:
         XYPlot plot = (XYPlot)rootView.findViewById(R.id.mySimpleXYPlot);
 
         addPlotData(plot);

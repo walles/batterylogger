@@ -15,10 +15,19 @@
   ~ limitations under the License.
   -->
 
-<resources>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="horizontal">
 
-    <string name="app_name">Battery Logger</string>
-    <string name="toggle_legend">Show legend</string>
-    <string name="toggle_legend_condensed">Legend</string>
+    <WebView
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:id="@+id/legend"/>
 
-</resources>
+    <com.androidplot.xy.XYPlot
+        android:id="@+id/mySimpleXYPlot"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"/>
+
+</LinearLayout>

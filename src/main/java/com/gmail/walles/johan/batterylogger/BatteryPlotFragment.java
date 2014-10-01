@@ -28,9 +28,9 @@ import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.Html;
 import android.util.Log;
 import android.util.TypedValue;
-import android.util.Xml;
 import android.view.Display;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
@@ -39,7 +39,7 @@ import android.view.ScaleGestureDetector;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.webkit.WebView;
+import android.widget.TextView;
 
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.LineAndPointFormatter;
@@ -193,10 +193,22 @@ public class BatteryPlotFragment extends Fragment {
         showAlertDialog(title, message, DIALOG_DISMISSER);
     }
 
-    private void initializeLegend(final WebView legend) {
+    // From: http://stackoverflow.com/a/10187511/473672
+    private static CharSequence trimTrailingWhitespace(CharSequence source) {
+        int i = source.length();
+
+        // loop back to the first non-whitespace character
+        while(--i >= 0 && Character.isWhitespace(source.charAt(i))) {
+            // This block intentionally left blank
+        }
+
+        return source.subSequence(0, i+1);
+    }
+
+    private void initializeLegend(final TextView legend) {
         // From: http://stackoverflow.com/questions/6068197/utils-read-resource-text-file-to-string-java#answer-18897411
         String html = new Scanner(this.getClass().getResourceAsStream("/legend.html"), "UTF-8").useDelimiter("\\A").next();
-        legend.loadData(html, "text/html", Xml.Encoding.US_ASCII.toString());
+        legend.setText(trimTrailingWhitespace(Html.fromHtml(html)));
 
         // Check MainActivity.PREF_SHOW_LEGEND and set legend visibility from that
         SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
@@ -230,7 +242,7 @@ public class BatteryPlotFragment extends Fragment {
         }
 
         // Initialize our WebView legend
-        WebView legend = (WebView)rootView.findViewById(R.id.legend);
+        TextView legend = (TextView)rootView.findViewById(R.id.legend);
         initializeLegend(legend);
 
         // Initialize our XYPlot view reference:

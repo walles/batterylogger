@@ -20,9 +20,6 @@ that zoom affects which in-graph labels are visible.
 
 TODO
 ----
-* Make sure the legend is visible at once during startup. Right now it pops
-into view a bit late, forcing a resize of the plot.
-
 * If we change the system clock, think about how that would affect
 boot timestamps, the system sampling's reboot detection and the timestamp
 logging in general, and the drawing of median lines.
@@ -186,3 +183,6 @@ should zoom in to two days resolution.
 
 * Double tapping should animate the zoom operation so that it's obvious to the
 user what's happening.
+
+* Make sure the legend is visible at once during startup. Right now it pops
+into view a bit late, forcing a resize of the plot.

@@ -74,7 +74,7 @@ public class BatteryPlotFragment extends Fragment {
 
     private static final long ONE_DAY_MS = 86400 * 1000;
     public static final int LEGEND_WIDTH_LANDSCAPE_SP = 300;
-    public static final int ANIMATION_DURATION_MS = 500;
+    public static final int ANIMATION_DURATION_MS = 1000;
 
     private ValueAnimator animator;
     private double minX;

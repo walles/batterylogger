@@ -12,12 +12,6 @@ Before building the project you need to run render-graphics.sh to
 convert gfx/logo.xcf into icon resources.
 
 
-TODO before releasing to the public
------------------------------------
-* When starting the app, animate a zoom out from about 24h to max to hint users
-that zoom affects which in-graph labels are visible.
-
-
 TODO
 ----
 * If we change the system clock, think about how that would affect
@@ -186,3 +180,6 @@ user what's happening.
 
 * Make sure the legend is visible at once during startup. Right now it pops
 into view a bit late, forcing a resize of the plot.
+
+* When starting the app, animate a zoom out from about 24h to max to hint users
+that zoom affects which in-graph labels are visible.

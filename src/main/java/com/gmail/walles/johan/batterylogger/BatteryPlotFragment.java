@@ -16,6 +16,7 @@
 
 package com.gmail.walles.johan.batterylogger;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -137,8 +138,6 @@ public class BatteryPlotFragment extends Fragment {
     }
 
     private void redrawPlot(final XYPlot plot) {
-        // FIXME: Call plot.setDomainStep() with some good value
-
         // First time we hide events here we display an alert about that you can get them back by
         // two-finger zooming in
         if (!isShowingEvents()) {
@@ -159,7 +158,11 @@ public class BatteryPlotFragment extends Fragment {
     private void showAlertDialog(String title, String message,
                                  DialogInterface.OnClickListener dismisser)
     {
-        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getActivity());
+        final Activity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+        AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
         dialogBuilder.setTitle(title);
         dialogBuilder.setMessage(message);
         dialogBuilder.setIcon(android.R.drawable.ic_dialog_alert);
@@ -173,7 +176,11 @@ public class BatteryPlotFragment extends Fragment {
             return;
         }
 
-        final SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
+        final Activity activity = getActivity();
+        if (activity == null) {
+            return;
+        }
+        final SharedPreferences preferences = activity.getPreferences(Context.MODE_PRIVATE);
         if (preferences.getBoolean(shownTag, false)) {
             shownDialogs.add(shownTag);
             return;
@@ -251,7 +258,15 @@ public class BatteryPlotFragment extends Fragment {
         addPlotData(plot);
         plot.setOnTouchListener(getOnTouchListener(plot));
         setUpPlotLayout(plot);
-        redrawPlot(plot);
+
+        // Animate to max zoomed out
+        minX = maxX - History.toDouble(new Date(86400 * 1000));
+        if (minX < originalMinX) {
+            minX = originalMinX;
+        }
+        if (!animateXrange(plot, originalMinX, originalMaxX)) {
+            redrawPlot(plot);
+        }
 
         long t1 = System.currentTimeMillis();
         long dMillis = t1 - t0;
@@ -477,8 +492,10 @@ public class BatteryPlotFragment extends Fragment {
 
     /**
      * Animate minX and maxX to new values.
+     *
+     * @return true if an animation was started, false if we're already at the target values
      */
-    private void animateXrange(final XYPlot plot, double targetMinX, double targetMaxX) {
+    private boolean animateXrange(final XYPlot plot, double targetMinX, double targetMaxX) {
         // Cancel any running animation
         if (animator != null) {
             animator.cancel();
@@ -495,7 +512,7 @@ public class BatteryPlotFragment extends Fragment {
         }
         if (targetMaxX == maxX && targetMinX == minX) {
             // We're already there, nothing to animate
-            return;
+            return false;
         }
 
         animator = ValueAnimator.ofPropertyValuesHolder(
@@ -535,6 +552,8 @@ public class BatteryPlotFragment extends Fragment {
             }
         });
         animator.start();
+
+        return true;
     }
 
     private GestureDetector getOneFingerGestureDetector(final XYPlot plot) {

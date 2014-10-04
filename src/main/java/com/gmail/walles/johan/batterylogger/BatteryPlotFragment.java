@@ -85,6 +85,9 @@ public class BatteryPlotFragment extends Fragment {
     private double originalMaxX;
     private EventFormatter eventFormatter;
 
+    @Nullable
+    private AlertDialog visibleDialog;
+
     // Cache shown dialogs so we don't flood SharedPreferences with calls while zooming
     private final Set<String> shownDialogs = new HashSet<String>();
 
@@ -155,22 +158,32 @@ public class BatteryPlotFragment extends Fragment {
         }
     };
 
-    private void showAlertDialog(String title, String message,
+    @Nullable
+    private AlertDialog showAlertDialog(String title, String message,
                                  DialogInterface.OnClickListener dismisser)
     {
         final Activity activity = getActivity();
         if (activity == null) {
-            return;
+            return null;
         }
+
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(activity);
         dialogBuilder.setTitle(title);
         dialogBuilder.setMessage(message);
         dialogBuilder.setIcon(android.R.drawable.ic_dialog_alert);
         dialogBuilder.setPositiveButton(android.R.string.ok, dismisser);
-        dialogBuilder.show();
+
+        AlertDialog dialog = dialogBuilder.create();
+        dialog.show();
+        return dialog;
     }
 
     private void showAlertDialogOnce(String title, String message) {
+        // Don't show more than one dialog at a time
+        if (visibleDialog != null && visibleDialog.isShowing()) {
+            return;
+        }
+
         final String shownTag = title + ": " + message + " shown";
         if (shownDialogs.contains(shownTag)) {
             return;
@@ -186,7 +199,7 @@ public class BatteryPlotFragment extends Fragment {
             return;
         }
 
-        showAlertDialog(title, message, new DialogInterface.OnClickListener() {
+        visibleDialog = showAlertDialog(title, message, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
                 preferences.edit().putBoolean(shownTag, true).commit();

@@ -273,7 +273,7 @@ public class BatteryPlotFragment extends Fragment {
         setUpPlotLayout(plot);
 
         // Animate to max zoomed out
-        minX = maxX - History.toDouble(new Date(86400 * 1000));
+        minX = maxX - History.deltaMsToDouble(86400 * 1000);
         if (minX < originalMinX) {
             minX = originalMinX;
         }
@@ -587,7 +587,7 @@ public class BatteryPlotFragment extends Fragment {
                         if (minX == originalMinX && maxX == originalMaxX) {
                             // Reset zoom to two most recent days
                             targetMaxX = originalMaxX;
-                            targetMinX = targetMaxX - History.toDouble(new Date(86400 * 1000 * 2));
+                            targetMinX = targetMaxX - History.deltaMsToDouble(86400 * 1000 * 2);
                         } else {
                             // Reset zoom to max out
                             targetMinX = originalMinX;

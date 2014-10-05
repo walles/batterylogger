@@ -48,6 +48,9 @@ public class History {
     public static final long HOUR_MS = 3600 * 1000;
     public static final long FIVE_MINUTES_MS = 5 * 60 * 1000;
 
+    private static final long EPOCH_MS =
+            new GregorianCalendar(2014, Calendar.JANUARY, 1).getTimeInMillis();
+
     @Nullable
     private List<HistoryEvent> eventsFromStorage;
 
@@ -302,11 +305,15 @@ public class History {
     }
 
     public static Date toDate(Number x) {
-        return new Date(x.intValue() * 1000L);
+        return new Date(x.intValue() * 1000L + EPOCH_MS);
     }
 
     public static double toDouble(Date timestamp) {
-        return timestamp.getTime() / 1000L;
+        return (timestamp.getTime() - EPOCH_MS) / 1000L;
+    }
+
+    public static double deltaMsToDouble(long deltaMs) {
+        return deltaMs / 1000.0;
     }
 
     public boolean isEmpty() throws IOException {

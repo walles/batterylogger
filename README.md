@@ -14,6 +14,12 @@ convert gfx/logo.xcf into icon resources.
 
 TODO
 ----
+* When the zoom animation is done, log the time, number of frames and
+frames per second.
+
+* Try removing the sample series while zooming and see if that improves
+zoom performance.
+
 * If we change the system clock, think about how that would affect
 boot timestamps, the system sampling's reboot detection and the timestamp
 logging in general, and the drawing of median lines.

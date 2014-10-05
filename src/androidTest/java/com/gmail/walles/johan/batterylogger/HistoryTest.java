@@ -190,4 +190,32 @@ public class HistoryTest extends AndroidTestCase {
             lastFileSize = fileSize;
         }
     }
+
+    public void testDateToDouble() {
+        Date now = new Date();
+
+        double dateAsDouble = History.toDouble(now);
+        Date dateFromDouble = History.toDate(dateAsDouble);
+
+        long msDiff = Math.abs(now.getTime() - dateFromDouble.getTime());
+        assertTrue("Ms diff too large: " + msDiff, msDiff < 1000);
+
+        // We want to keep the amount of bits used down in the hope that this will rid us of some
+        // cases of the event labels flickering in and out of visibility.
+        assertTrue("Double representation too large: " + dateAsDouble,
+                dateAsDouble < 1024 * 1024 * 100);
+    }
+
+    public void testDeltaMsToDouble() {
+        final long WANTED_DELTA = 3600 * 1000;
+
+        Date now = new Date();
+        double nowAsDouble = History.toDouble(now);
+        double delta1h = History.deltaMsToDouble(WANTED_DELTA);
+        double beforeAsDouble = nowAsDouble - delta1h;
+        Date before = History.toDate(beforeAsDouble);
+
+        long actualDeltaMs = now.getTime() - before.getTime();
+        assertTrue("Delta ms: " + actualDeltaMs, Math.abs(actualDeltaMs - WANTED_DELTA) < 1000);
+    }
 }

@@ -28,6 +28,7 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.text.Html;
 import android.util.Log;
@@ -533,9 +534,24 @@ public class BatteryPlotFragment extends Fragment {
                 PropertyValuesHolder.ofFloat("maxX", (float) maxX, (float) targetMaxX));
         animator.setInterpolator(new AccelerateDecelerateInterpolator());
         animator.setDuration(ANIMATION_DURATION_MS);
+        final int nFrames[] = new int[1];
+        final long longestGapMs[] = new long[1];
+        final int longestGapBeforeFrame[] = new int[1];
+        final long lastFrameStart[] = new long[1];
         animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
+                long frameStart = SystemClock.elapsedRealtime();
+                if (lastFrameStart[0] > 0) {
+                    long gapMs = frameStart - lastFrameStart[0];
+                    if (gapMs > longestGapMs[0]) {
+                        longestGapMs[0] = gapMs;
+                        longestGapBeforeFrame[0] = nFrames[0];
+                    }
+                }
+                lastFrameStart[0] = frameStart;
+
+                nFrames[0]++;
                 minX = (double) (Float) animation.getAnimatedValue("minX");
                 maxX = (double) (Float) animation.getAnimatedValue("maxX");
 
@@ -547,6 +563,7 @@ public class BatteryPlotFragment extends Fragment {
         final double finalMaxX = targetMaxX;
         animator.addListener(new AnimatorListenerAdapter() {
             boolean cancelled = false;
+            long t0;
 
             @Override
             public void onAnimationCancel(Animator animation) {
@@ -554,9 +571,38 @@ public class BatteryPlotFragment extends Fragment {
             }
 
             @Override
+            public void onAnimationStart(Animator animation) {
+                t0 = SystemClock.elapsedRealtime();
+            }
+
+            @Override
             public void onAnimationEnd(Animator animation) {
                 if (cancelled) {
                     return;
+                }
+
+                long t1 = SystemClock.elapsedRealtime();
+                long durationMs = t1 - t0;
+                if (nFrames[0] == 0 || durationMs == 0) {
+                    Log.w(TAG,
+                            "Animation had "
+                                    + nFrames[0] + " frames, done in "
+                                    + durationMs + "ms, longest gap was "
+                                    + longestGapMs[0] + "ms at frames "
+                                    + (longestGapBeforeFrame[0] - 1)
+                                    + "-"
+                                    + longestGapBeforeFrame[0]);
+                } else {
+                    double fps = nFrames[0] / (durationMs / 1000.0);
+                    double msPerFrame = durationMs / ((double)nFrames[0]);
+                    Log.i(TAG, String.format("Animation of %d frames took %dms at %.1ffps or %.1fms/frame, longest time was %dms at frames %d-%d",
+                            nFrames[0],
+                            durationMs,
+                            fps,
+                            msPerFrame,
+                            longestGapMs[0],
+                            (longestGapBeforeFrame[0] - 1),
+                            longestGapBeforeFrame[0]));
                 }
 
                 // Avoid any float -> double rounding errors

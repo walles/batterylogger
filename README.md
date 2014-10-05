@@ -14,9 +14,6 @@ convert gfx/logo.xcf into icon resources.
 
 TODO
 ----
-* When the zoom animation is done, log the time, number of frames and
-frames per second.
-
 * Try removing the sample series while zooming and see if that improves
 zoom performance.
 
@@ -189,3 +186,6 @@ into view a bit late, forcing a resize of the plot.
 
 * When starting the app, animate a zoom out from about 24h to max to hint users
 that zoom affects which in-graph labels are visible.
+
+* When the zoom animation is done, log the time, number of frames and
+frames per second.

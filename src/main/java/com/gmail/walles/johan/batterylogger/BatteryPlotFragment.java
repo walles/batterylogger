@@ -28,6 +28,7 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.text.Html;
@@ -267,7 +268,7 @@ public class BatteryPlotFragment extends Fragment {
         initializeLegend(legend);
 
         // Initialize our XYPlot view reference:
-        XYPlot plot = (XYPlot)rootView.findViewById(R.id.mySimpleXYPlot);
+        final XYPlot plot = (XYPlot)rootView.findViewById(R.id.mySimpleXYPlot);
 
         addPlotData(plot);
         plot.setOnTouchListener(getOnTouchListener(plot));
@@ -278,9 +279,14 @@ public class BatteryPlotFragment extends Fragment {
         if (minX < originalMinX) {
             minX = originalMinX;
         }
-        if (!animateXrange(plot, originalMinX, originalMaxX)) {
-            redrawPlot(plot);
-        }
+        // Delaying startup animation 250ms makes it smoother in the simulator at least; my guess is
+        // the delay makes it not interfere with other startup tasks.
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                animateXrange(plot, originalMinX, originalMaxX);
+            }
+        }, 250);
 
         long t1 = System.currentTimeMillis();
         long dMillis = t1 - t0;

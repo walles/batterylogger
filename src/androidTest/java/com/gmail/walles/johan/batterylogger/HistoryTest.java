@@ -40,8 +40,8 @@ public class HistoryTest extends AndroidTestCase {
         assertTrue(testStorage.delete());
     }
 
-    private void assertValues(int index, double ... expectedValues) throws Exception {
-        XYSeries batteryDrain = new History(testStorage).getBatteryDrain().get(index);
+    private void assertValues(double ... expectedValues) throws Exception {
+        XYSeries batteryDrain = new History(testStorage).getBatteryDrain();
         double actualValues[] = new double[batteryDrain.size()];
         for (int i = 0; i < batteryDrain.size(); i++) {
             actualValues[i] = batteryDrain.getY(i).doubleValue();
@@ -49,8 +49,8 @@ public class HistoryTest extends AndroidTestCase {
         assertEquals(Arrays.toString(expectedValues), Arrays.toString(actualValues));
     }
 
-    private void assertDrainTimestamps(int index, Date ... expectedTimestamps) throws Exception {
-        XYSeries series = new History(testStorage).getBatteryDrain().get(index);
+    private void assertDrainTimestamps(Date ... expectedTimestamps) throws Exception {
+        XYSeries series = new History(testStorage).getBatteryDrain();
         Date actualTimestamps[] = new Date[series.size()];
         for (int i = 0; i < series.size(); i++) {
             actualTimestamps[i] = History.toDate(series.getX(i));
@@ -81,38 +81,30 @@ public class HistoryTest extends AndroidTestCase {
         assertEventDescriptions(/* Empty */);
     }
 
-    private void assertBatteryDrainSize(int expectedSize) throws Exception {
-        assertEquals(expectedSize, new History(testStorage).getBatteryDrain().size());
-    }
-
     public void testBlank() throws Exception {
-        assertBatteryDrainSize(0);
         assertNoEvents();
     }
 
     public void testOnlyBatteryEvents() throws Exception {
         History testMe = new History(testStorage);
         testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(1 * History.HOUR_MS), 100));
-        assertBatteryDrainSize(0);
         assertNoEvents();
 
         testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(3 * History.HOUR_MS), 98));
-        assertBatteryDrainSize(1);
         assertNoEvents();
 
         // Drain timestamp should be between the sample timestamps
-        assertDrainTimestamps(0, new Date(2 * History.HOUR_MS));
+        assertDrainTimestamps(new Date(2 * History.HOUR_MS));
         // From 100% to 98% in two hours = 1%/h
-        assertValues(0, 1.0);
+        assertValues(1.0);
 
         testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(5 * History.HOUR_MS), 94));
-        assertBatteryDrainSize(1);
         assertNoEvents();
 
-        assertDrainTimestamps(0, new Date(2 * History.HOUR_MS), new Date(4 * History.HOUR_MS));
+        assertDrainTimestamps(new Date(2 * History.HOUR_MS), new Date(4 * History.HOUR_MS));
         // From 100% to 98% in two hours = 1%/h
         // From 98% to 94% in two hours = 2%/h
-        assertValues(0, 1.0, 2.0);
+        assertValues(1.0, 2.0);
     }
 
     public void testRebootEvents() throws Exception {
@@ -127,11 +119,8 @@ public class HistoryTest extends AndroidTestCase {
         testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(11 * History.HOUR_MS), 50));
         testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(13 * History.HOUR_MS), 47));
 
-        assertBatteryDrainSize(2);
-        assertValues(0, 0.5);
-        assertDrainTimestamps(0, new Date(2 * History.HOUR_MS));
-        assertValues(1, 1.5);
-        assertDrainTimestamps(1, new Date(12 * History.HOUR_MS));
+        assertValues(0.5, 1.5);
+        assertDrainTimestamps(new Date(2 * History.HOUR_MS), new Date(12 * History.HOUR_MS));
 
         assertEventTimestamps(new Date(5 * History.HOUR_MS), new Date(9 * History.HOUR_MS));
         assertEventDescriptions("System shutting down", "System starting up (charging)");
@@ -152,11 +141,8 @@ public class HistoryTest extends AndroidTestCase {
         testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(13 * History.HOUR_MS), 45));
 
         // Assume unclean shutdown between last known event before the boot event and the boot event
-        assertBatteryDrainSize(2);
-        assertValues(0, 0.5, 0.5);
-        assertDrainTimestamps(0, new Date(2 * History.HOUR_MS), new Date(5 * History.HOUR_MS));
-        assertValues(1, 0.5);
-        assertDrainTimestamps(1, new Date(12 * History.HOUR_MS));
+        assertValues(0.5, 0.5, 0.5);
+        assertDrainTimestamps(new Date(2 * History.HOUR_MS), new Date(5 * History.HOUR_MS), new Date(12 * History.HOUR_MS));
 
         assertEventDescriptions("Unclean shutdown", "System starting up (not charging)");
         assertEventTimestamps(new Date(8 * History.HOUR_MS), new Date(9 * History.HOUR_MS));

@@ -33,14 +33,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
 import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 
 public class History {
-    private static final int FAKE_HISTORY_DAYS_OLD_START = 10;
+    private static final int FAKE_HISTORY_DAYS_OLD_START = 30;
     private static final int FAKE_HISTORY_DAYS_OLD_END = 0;
 
     private static final long MAX_HISTORY_FILE_SIZE = 400 * 1024;
@@ -134,11 +133,10 @@ public class History {
     }
 
     /**
-     * Add these series to a plot and you'll see how battery drain speed has changed over time.
+     * Add this series to a plot and you'll see how battery drain speed has changed over time.
      */
-    public List<XYSeries> getBatteryDrain() throws IOException {
-        List<XYSeries> returnMe = new LinkedList<XYSeries>();
-        SimpleXYSeries xySeries = null;
+    public XYSeries getBatteryDrain() throws IOException {
+        SimpleXYSeries returnMe = new SimpleXYSeries("Battery drain");
 
         boolean systemDown = false;
         HistoryEvent lastLevelEvent = null;
@@ -150,13 +148,11 @@ public class History {
                 case SYSTEM_SHUTDOWN:
                     systemDown = true;
                     lastLevelEvent = null;
-                    xySeries = null;
                     continue;
                 case SYSTEM_BOOT:
                     if (!systemDown) {
-                        // Missing shutdown event; assume an unclean shutdown and start on a new series
+                        // Missing shutdown event; assume an unclean shutdown and reset aggregation
                         lastLevelEvent = null;
-                        xySeries = null;
                     }
                     systemDown = false;
                     continue;
@@ -186,19 +182,14 @@ public class History {
             double drain = (lastLevelEvent.getPercentage() - event.getPercentage()) / deltaHours;
 
             if (drain <= 0) {
-                // This happens while charging, start on a new series
+                // This happens while charging, reset aggregation
                 lastLevelEvent = event;
-                xySeries = null;
                 continue;
             }
 
             Date drainTimestamp = new Date((event.getTimestamp().getTime() + lastLevelEvent.getTimestamp().getTime()) / 2);
 
-            if (xySeries == null) {
-                xySeries = new SimpleXYSeries("Battery drain");
-                returnMe.add(xySeries);
-            }
-            xySeries.addLast(toDouble(drainTimestamp), drain);
+            returnMe.addLast(toDouble(drainTimestamp), drain);
 
             lastLevelEvent = event;
         }

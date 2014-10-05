@@ -428,9 +428,7 @@ public class BatteryPlotFragment extends Fragment {
                 history = History.createFakeHistory();
             }
 
-            for (XYSeries drain : history.getBatteryDrain()) {
-                plot.addSeries(drain, drainFormatter);
-            }
+            plot.addSeries(history.getBatteryDrain(), drainFormatter);
 
             final List<XYSeries> medians = history.getDrainLines();
             for (XYSeries median : medians) {

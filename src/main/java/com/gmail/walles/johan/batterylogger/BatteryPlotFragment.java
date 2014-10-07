@@ -87,6 +87,8 @@ public class BatteryPlotFragment extends Fragment {
     private double originalMaxX;
     private EventFormatter eventFormatter;
 
+    private XYSeries drainDots;
+
     @Nullable
     private AlertDialog visibleDialog;
 
@@ -417,8 +419,16 @@ public class BatteryPlotFragment extends Fragment {
         return false;
     }
 
+    private void enableDrainDots(XYPlot plot) {
+        plot.removeSeries(drainDots);
+        plot.addSeries(drainDots, getDrainFormatter());
+    }
+
+    private void disableDrainDots(XYPlot plot) {
+        plot.removeSeries(drainDots);
+    }
+
     private void addPlotData(final XYPlot plot) {
-        LineAndPointFormatter drainFormatter = getDrainFormatter();
         LineAndPointFormatter medianFormatter = getMedianFormatter();
 
         try {
@@ -428,7 +438,8 @@ public class BatteryPlotFragment extends Fragment {
                 history = History.createFakeHistory();
             }
 
-            plot.addSeries(history.getBatteryDrain(), drainFormatter);
+            drainDots = history.getBatteryDrain();
+            enableDrainDots(plot);
 
             final List<XYSeries> medians = history.getDrainLines();
             for (XYSeries median : medians) {
@@ -577,10 +588,12 @@ public class BatteryPlotFragment extends Fragment {
             @Override
             public void onAnimationStart(Animator animation) {
                 t0 = SystemClock.elapsedRealtime();
+                disableDrainDots(plot);
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
+                enableDrainDots(plot);
                 if (cancelled) {
                     return;
                 }

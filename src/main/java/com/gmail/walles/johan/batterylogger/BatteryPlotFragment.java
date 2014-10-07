@@ -349,7 +349,7 @@ public class BatteryPlotFragment extends Fragment {
             @Override
             public StringBuffer format(Object o, @NotNull StringBuffer toAppendTo, @NotNull FieldPosition position) {
                 Date timestamp = History.toDate((Number) o);
-                long domainWidthSeconds = History.toDate(maxX - minX).getTime() / 1000;
+                long domainWidthSeconds = History.doubleToDeltaMs(maxX - minX) / 1000;
                 SimpleDateFormat format;
                 if (domainWidthSeconds < 5 * 60) {
                     format = new SimpleDateFormat("HH:mm:ss");

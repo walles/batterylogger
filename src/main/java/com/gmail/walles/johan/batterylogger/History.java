@@ -307,6 +307,10 @@ public class History {
         return deltaMs / 1000.0;
     }
 
+    public static long doubleToDeltaMs(Number x) {
+        return Math.round(x.doubleValue() * 1000.0);
+    }
+
     public boolean isEmpty() throws IOException {
         if (eventsFromStorage == null) {
             eventsFromStorage = readEventsFromStorage();

@@ -204,4 +204,9 @@ public class HistoryTest extends AndroidTestCase {
         long actualDeltaMs = now.getTime() - before.getTime();
         assertTrue("Delta ms: " + actualDeltaMs, Math.abs(actualDeltaMs - WANTED_DELTA) < 1000);
     }
+
+    public void testDoubleToDeltaMs() {
+        double number = 123456789;
+        assertEquals(number, History.deltaMsToDouble(History.doubleToDeltaMs(number)), 500.0);
+    }
 }

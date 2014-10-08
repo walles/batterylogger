@@ -47,8 +47,7 @@ public class History {
     public static final long HOUR_MS = 3600 * 1000;
     public static final long FIVE_MINUTES_MS = 5 * 60 * 1000;
 
-    private static final long EPOCH_MS =
-            new GregorianCalendar(2014, Calendar.JANUARY, 1).getTimeInMillis();
+    private static final long EPOCH_MS = System.currentTimeMillis();
 
     @Nullable
     private List<HistoryEvent> eventsFromStorage;

@@ -189,7 +189,7 @@ public class HistoryTest extends AndroidTestCase {
         // We want to keep the amount of bits used down in the hope that this will rid us of some
         // cases of the event labels flickering in and out of visibility.
         assertTrue("Double representation too large: " + dateAsDouble,
-                dateAsDouble < 1024 * 1024 * 100);
+                dateAsDouble < 1024 * 1024 * 5);
     }
 
     public void testDeltaMsToDouble() {

@@ -14,6 +14,8 @@ convert gfx/logo.xcf into icon resources.
 
 TODO
 ----
+* Auto generate version code and version number from git describe.
+
 * Try removing the sample series while zooming and see if that improves
 zoom performance.
 
@@ -160,7 +162,7 @@ one or more samples, and then we showed them instead.
 * Only show text events if we're zoomed in enough, either by the
 number of visible events or by a certain amount of time (one day?).
 
-* Make dots less visible; either smaller or with alpha. The point is 
+* Make dots less visible; either smaller or with alpha. The point is
 that we want the drain lines to be more visible than the dots, even
 with a lot of data in the graph.
 

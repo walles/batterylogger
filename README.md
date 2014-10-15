@@ -14,10 +14,11 @@ convert gfx/logo.xcf into icon resources.
 
 TODO
 ----
-* Auto generate version code and version number from git describe.
+* Mark restarts by vertical red lines. That would make the
+  increasing-battery-use-until-reboot pattern on my phone more
+  visible.
 
-* Try removing the sample series while zooming and see if that improves
-zoom performance.
+* Auto generate version code and version number from git describe.
 
 * If we change the system clock, think about how that would affect
 boot timestamps, the system sampling's reboot detection and the timestamp
@@ -191,3 +192,6 @@ that zoom affects which in-graph labels are visible.
 
 * When the zoom animation is done, log the time, number of frames and
 frames per second.
+
+* Try removing the sample series while zooming and see if that improves
+zoom performance.

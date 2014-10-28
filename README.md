@@ -6,6 +6,13 @@ The idea then is that using this information it should be possible to
 find out what makes battery usage increase.
 
 
+Installing
+----------
+Easiest way is to get it from Google Play:
+
+https://play.google.com/store/apps/details?id=com.gmail.walles.johan.batterylogger
+
+
 Building
 --------
 Before building the project you need to run render-graphics.sh to

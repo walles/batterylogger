@@ -64,6 +64,7 @@ import java.text.FieldPosition;
 import java.text.Format;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -404,19 +405,23 @@ public class BatteryPlotFragment extends Fragment {
     public static boolean isRunningOnEmulator() {
         // Inspired by
         // http://stackoverflow.com/questions/2799097/how-can-i-detect-when-an-android-application-is-running-in-the-emulator
-        if ("sdk".equals(Build.PRODUCT)) {
-            return true;
+        if (Build.PRODUCT == null) {
+            return false;
         }
 
-        if ("google_sdk".equals(Build.PRODUCT)) {
-            return true;
+        Set<String> parts = new HashSet<String>(Arrays.asList(Build.PRODUCT.split("_")));
+        if (parts.size() == 0) {
+            return false;
         }
 
-        if ("google_sdk_x86".equals(Build.PRODUCT)) {
-            return true;
-        }
+        parts.remove("sdk");
+        parts.remove("google");
+        parts.remove("x86");
+        parts.remove("phone");
 
-        return false;
+        // If the build identifier contains only the above keywords in some order, then we're
+        // in an emulator
+        return parts.size() == 0;
     }
 
     private void enableDrainDots(XYPlot plot) {

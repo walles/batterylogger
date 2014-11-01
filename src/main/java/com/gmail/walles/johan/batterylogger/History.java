@@ -268,7 +268,7 @@ public class History {
                             uncleanShutdownTimestamp = new Date((event.getTimestamp().getTime() + lastTimestamp.getTime()) / 2);
                         }
 
-                        returnMe.add(toDouble(uncleanShutdownTimestamp), "Unclean shutdown");
+                        returnMe.add(toDouble(uncleanShutdownTimestamp), "Unclean shutdown", event.getType());
                     }
 
                     description = "System starting up (" +
@@ -289,7 +289,7 @@ public class History {
                 default:
                     description = "Unknown event type " + event.getType();
             }
-            returnMe.add(toDouble(event.getTimestamp()), description);
+            returnMe.add(toDouble(event.getTimestamp()), description, event.getType());
         }
         return returnMe;
     }

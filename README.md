@@ -21,9 +21,10 @@ convert gfx/logo.xcf into icon resources.
 
 TODO
 ----
-* Mark restarts by vertical red lines. That would make the
-  increasing-battery-use-until-reboot pattern on my phone more
-  visible.
+* Hide individual samples if we're zoomed out enough. Otherwise, when
+samples are plotted really close together they form lines that stand
+out more than the averages that people are supposed to look at
+primarily.
 
 * Auto generate version code and version number from git describe.
 
@@ -202,3 +203,7 @@ frames per second.
 
 * Try removing the sample series while zooming and see if that improves
 zoom performance.
+
+* Mark restarts by vertical red lines. That would make the
+  increasing-battery-use-until-reboot pattern on my phone more
+  visible.

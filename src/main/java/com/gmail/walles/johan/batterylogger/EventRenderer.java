@@ -26,13 +26,13 @@ import com.androidplot.xy.LineAndPointRenderer;
 import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeries;
 
-public class EventRenderer extends LineAndPointRenderer<EventFormatter> {
-    private final Paint textPaint;
+public abstract class EventRenderer extends LineAndPointRenderer<EventFormatter> {
+    protected final Paint paint;
     private boolean visible = true;
 
-    public EventRenderer(XYPlot plot, Paint textPaint) {
+    public EventRenderer(XYPlot plot, Paint paint) {
         super(plot);
-        this.textPaint = textPaint;
+        this.paint = paint;
     }
 
     @Override
@@ -58,38 +58,11 @@ public class EventRenderer extends LineAndPointRenderer<EventFormatter> {
                     getPlot().getCalculatedMinY(),
                     getPlot().getCalculatedMaxY());
 
-            String text = eventSeries.getDescription(i);
-            if (text == null || text.length() == 0) {
-                continue;
-            }
-
-            drawVerticalText(canvas, textPaint, text, point.x, point.y);
+            drawEvent(canvas, eventSeries.getType(i), eventSeries.getDescription(i), point.x, point.y);
         }
     }
 
-    /**
-     * From http://stackoverflow.com/questions/24091390/androidplot-labels-and-text/24092382#24092382
-     * @param paint paint used to draw the text
-     * @param text the text to be drawn
-     * @param x x-coordinate of where the text should be drawn
-     * @param y y-coordinate of where the text should be drawn
-     */
-    private static void drawVerticalText(Canvas canvas, Paint paint, String text, float x, float y) {
-        // record the state of the canvas before the draw:
-        canvas.save(Canvas.ALL_SAVE_FLAG);
-
-        // center the canvas on our drawing coordinates:
-        canvas.translate(x, y);
-
-        // rotate into the desired "vertical" orientation:
-        canvas.rotate(-90);
-
-        // draw the text; note that we are drawing at 0, 0 and *not* x, y.
-        canvas.drawText(text, 0, 0, paint);
-
-        // restore the canvas state:
-        canvas.restore();
-    }
+    protected abstract void drawEvent(Canvas canvas, HistoryEvent.Type type, String text, float x, float y);
 
     public void setVisible(boolean visible) {
         this.visible = visible;

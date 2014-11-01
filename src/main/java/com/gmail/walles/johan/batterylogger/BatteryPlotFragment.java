@@ -306,6 +306,14 @@ public class BatteryPlotFragment extends Fragment {
                 r.getDisplayMetrics());
     }
 
+    private float dpToPixels(int dp) {
+        Resources r = getResources();
+        return TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                dp,
+                r.getDisplayMetrics());
+    }
+
     private void setUpPlotLayout(final XYPlot plot) {
         final float labelHeightPixels = spToPixels(15);
 
@@ -450,6 +458,13 @@ public class BatteryPlotFragment extends Fragment {
             for (XYSeries median : medians) {
                 plot.addSeries(median, medianFormatter);
             }
+
+            // Add red restart lines to the plot
+            Paint restartPaint = new Paint();
+            restartPaint.setAntiAlias(true);
+            restartPaint.setColor(Color.RED);
+            restartPaint.setStrokeWidth(dpToPixels(1));
+            plot.addSeries(history.getEvents(), new RestartFormatter(restartPaint));
 
             // Add events to the plot
             Paint labelPaint = new Paint();

@@ -306,7 +306,7 @@ public class BatteryPlotFragment extends Fragment {
                 r.getDisplayMetrics());
     }
 
-    private float dpToPixels(int dp) {
+    private float dpToPixels(float dp) {
         Resources r = getResources();
         return TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
@@ -463,7 +463,7 @@ public class BatteryPlotFragment extends Fragment {
             Paint restartPaint = new Paint();
             restartPaint.setAntiAlias(true);
             restartPaint.setColor(Color.RED);
-            restartPaint.setStrokeWidth(dpToPixels(1));
+            restartPaint.setStrokeWidth(dpToPixels(0.5f));
             plot.addSeries(history.getEvents(), new RestartFormatter(restartPaint));
 
             // Add events to the plot

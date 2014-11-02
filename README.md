@@ -26,6 +26,10 @@ samples are plotted really close together they form lines that stand
 out more than the averages that people are supposed to look at
 primarily.
 
+* Make sure we're actually removing samples older than one month
+
+* Add a .travis.yml to run the unit tests on pull requests and pushes.
+
 * Auto generate version code and version number from git describe.
 
 * If we change the system clock, think about how that would affect

@@ -19,11 +19,9 @@ package com.gmail.walles.johan.batterylogger;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 
-import com.androidplot.ui.SeriesRenderer;
-import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.XYPlot;
 
-public class RestartFormatter extends LineAndPointFormatter {
+public class RestartFormatter extends HidableLineAndPointFormatter {
     private static class RestartEventRenderer extends EventRenderer {
         public RestartEventRenderer(XYPlot plot, Paint paint) {
             super(plot, paint);
@@ -41,17 +39,16 @@ public class RestartFormatter extends LineAndPointFormatter {
     private final Paint paint;
 
     public RestartFormatter(Paint paint) {
-        super();
         this.paint = paint;
     }
 
     @Override
-    public Class<? extends SeriesRenderer> getRendererClass() {
+    public Class<? extends EventRenderer> getRendererClass() {
         return RestartEventRenderer.class;
     }
 
     @Override
-    public SeriesRenderer getRendererInstance(XYPlot plot) {
+    public EventRenderer createRendererInstance(XYPlot plot) {
         return new RestartEventRenderer(plot, paint);
     }
 }

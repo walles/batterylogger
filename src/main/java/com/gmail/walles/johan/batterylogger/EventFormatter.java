@@ -18,14 +18,9 @@ package com.gmail.walles.johan.batterylogger;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import com.androidplot.ui.SeriesRenderer;
-import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.XYPlot;
 
-import java.util.HashSet;
-import java.util.Set;
-
-public class EventFormatter extends LineAndPointFormatter {
+public class EventFormatter extends HidableLineAndPointFormatter {
     private static class TextEventRenderer extends EventRenderer {
         public TextEventRenderer(XYPlot plot, Paint paint) {
             super(plot, paint);
@@ -59,29 +54,19 @@ public class EventFormatter extends LineAndPointFormatter {
         }
     }
 
-    private final Set<EventRenderer> eventRenderers = new HashSet<EventRenderer>();
     private final Paint textPaint;
 
     public EventFormatter(Paint textPaint) {
-        super();
         this.textPaint = textPaint;
     }
 
     @Override
-    public Class<? extends SeriesRenderer> getRendererClass() {
+    public Class<? extends EventRenderer> getRendererClass() {
         return EventRenderer.class;
     }
 
     @Override
-    public SeriesRenderer getRendererInstance(XYPlot plot) {
-        EventRenderer eventRenderer = new TextEventRenderer(plot, textPaint);
-        eventRenderers.add(eventRenderer);
-        return eventRenderer;
-    }
-
-    public void setVisible(boolean visible) {
-        for (EventRenderer eventRenderer : eventRenderers) {
-            eventRenderer.setVisible(visible);
-        }
+    protected EventRenderer createRendererInstance(XYPlot plot) {
+        return new TextEventRenderer(plot, textPaint);
     }
 }

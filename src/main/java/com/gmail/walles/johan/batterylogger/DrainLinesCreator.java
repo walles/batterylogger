@@ -71,9 +71,10 @@ public class DrainLinesCreator {
         return median;
     }
 
-    static double average(Collection<Double> numbers) {
+    @Nullable
+    static Double average(Collection<Double> numbers) {
         if (numbers.size() == 0) {
-            throw new IllegalArgumentException("Must get at least one number to compute average");
+            return null;
         }
 
         double sum = 0.0;
@@ -84,7 +85,8 @@ public class DrainLinesCreator {
         return sum / numbers.size();
     }
 
-    private double getDrainLineLevel() {
+    @Nullable
+    private Double getDrainLineLevel() {
         if (currentDrainEvents == null) {
             throw new IllegalStateException("No drain events => level undefined");
         }
@@ -159,7 +161,12 @@ public class DrainLinesCreator {
         }
 
         // We're draining
-        double y = getDrainLineLevel();
+        Double y = getDrainLineLevel();
+        if (y == null) {
+            // No we aren't
+            return null;
+        }
+
         Log.v(TAG, "Drawing drain line at " + y);
         SimpleXYSeries line = new SimpleXYSeries("don't show this string");
         line.addLast(History.toDouble(lineStart), y);

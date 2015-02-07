@@ -87,21 +87,26 @@ public class HistoryTest extends AndroidTestCase {
 
     public void testOnlyBatteryEvents() throws Exception {
         History testMe = new History(testStorage);
-        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(1 * History.HOUR_MS), 100));
+        long now = System.currentTimeMillis();
+        testMe.addEvent(
+                HistoryEvent.createBatteryLevelEvent(new Date(now + 1 * History.HOUR_MS), 100));
         assertNoEvents();
 
-        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(3 * History.HOUR_MS), 98));
+        testMe.addEvent(
+                HistoryEvent.createBatteryLevelEvent(new Date(now + 3 * History.HOUR_MS), 98));
         assertNoEvents();
 
         // Drain timestamp should be between the sample timestamps
-        assertDrainTimestamps(new Date(2 * History.HOUR_MS));
+        assertDrainTimestamps(new Date(now + 2 * History.HOUR_MS));
         // From 100% to 98% in two hours = 1%/h
         assertValues(1.0);
 
-        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(5 * History.HOUR_MS), 94));
+        testMe.addEvent(
+                HistoryEvent.createBatteryLevelEvent(new Date(now + 5 * History.HOUR_MS), 94));
         assertNoEvents();
 
-        assertDrainTimestamps(new Date(2 * History.HOUR_MS), new Date(4 * History.HOUR_MS));
+        assertDrainTimestamps(
+                new Date(now + 2 * History.HOUR_MS), new Date(now + 4 * History.HOUR_MS));
         // From 100% to 98% in two hours = 1%/h
         // From 98% to 94% in two hours = 2%/h
         assertValues(1.0, 2.0);
@@ -109,20 +114,32 @@ public class HistoryTest extends AndroidTestCase {
 
     public void testRebootEvents() throws Exception {
         History testMe = new History(testStorage);
-        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(1 * History.HOUR_MS), 51));
-        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(3 * History.HOUR_MS), 50));
+        long now = System.currentTimeMillis();
+        testMe.addEvent(
+                HistoryEvent.createBatteryLevelEvent(new Date(now + 1 * History.HOUR_MS), 51));
+        testMe.addEvent(
+                HistoryEvent.createBatteryLevelEvent(new Date(now + 3 * History.HOUR_MS), 50));
 
-        testMe.addEvent(HistoryEvent.createSystemHaltingEvent(new Date(5 * History.HOUR_MS)));
-        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(7 * History.HOUR_MS), 51));
-        testMe.addEvent(HistoryEvent.createSystemBootingEvent(new Date(9 * History.HOUR_MS), true));
+        testMe.addEvent(
+                HistoryEvent.createSystemHaltingEvent(new Date(now + 5 * History.HOUR_MS)));
+        testMe.addEvent(
+                HistoryEvent.createBatteryLevelEvent(new Date(now + 7 * History.HOUR_MS), 51));
+        testMe.addEvent(
+                HistoryEvent.createSystemBootingEvent(new Date(now + 9 * History.HOUR_MS), true));
 
-        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(11 * History.HOUR_MS), 50));
-        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(13 * History.HOUR_MS), 47));
+        testMe.addEvent(
+                HistoryEvent.createBatteryLevelEvent(new Date(now + 11 * History.HOUR_MS), 50));
+        testMe.addEvent(
+                HistoryEvent.createBatteryLevelEvent(new Date(now + 13 * History.HOUR_MS), 47));
 
         assertValues(0.5, 1.5);
-        assertDrainTimestamps(new Date(2 * History.HOUR_MS), new Date(12 * History.HOUR_MS));
+        assertDrainTimestamps(
+                new Date(now + 2 * History.HOUR_MS),
+                new Date(now + 12 * History.HOUR_MS));
 
-        assertEventTimestamps(new Date(5 * History.HOUR_MS), new Date(9 * History.HOUR_MS));
+        assertEventTimestamps(
+                new Date(now + 5 * History.HOUR_MS),
+                new Date(now + 9 * History.HOUR_MS));
         assertEventDescriptions("System shutting down", "System starting up (charging)");
     }
 
@@ -131,21 +148,27 @@ public class HistoryTest extends AndroidTestCase {
      */
     public void testMissingShutdownEvent() throws Exception {
         History testMe = new History(testStorage);
-        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(1 * History.HOUR_MS), 51));
-        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(3 * History.HOUR_MS), 50));
+        long now = System.currentTimeMillis();
+        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(now + 1 * History.HOUR_MS), 51));
+        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(now + 3 * History.HOUR_MS), 50));
 
-        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(7 * History.HOUR_MS), 48));
-        testMe.addEvent(HistoryEvent.createSystemBootingEvent(new Date(9 * History.HOUR_MS), false));
+        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(now + 7 * History.HOUR_MS), 48));
+        testMe.addEvent(HistoryEvent.createSystemBootingEvent(new Date(now + 9 * History.HOUR_MS), false));
 
-        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(11 * History.HOUR_MS), 46));
-        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(13 * History.HOUR_MS), 45));
+        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(now + 11 * History.HOUR_MS), 46));
+        testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(now + 13 * History.HOUR_MS), 45));
 
         // Assume unclean shutdown between last known event before the boot event and the boot event
         assertValues(0.5, 0.5, 0.5);
-        assertDrainTimestamps(new Date(2 * History.HOUR_MS), new Date(5 * History.HOUR_MS), new Date(12 * History.HOUR_MS));
+        assertDrainTimestamps(
+                new Date(now + 2 * History.HOUR_MS),
+                new Date(now + 5 * History.HOUR_MS),
+                new Date(now + 12 * History.HOUR_MS));
 
         assertEventDescriptions("Unclean shutdown", "System starting up (not charging)");
-        assertEventTimestamps(new Date(8 * History.HOUR_MS), new Date(9 * History.HOUR_MS));
+        assertEventTimestamps(
+                new Date(now + 8 * History.HOUR_MS),
+                new Date(now + 9 * History.HOUR_MS));
     }
 
     public void testMaintainFileSize() throws Exception {
@@ -175,6 +198,39 @@ public class HistoryTest extends AndroidTestCase {
 
             lastFileSize = fileSize;
         }
+    }
+
+    /**
+     * Verify history file truncation by event age.
+     */
+    public void testMaintainHistoryAge() throws Exception {
+        History testMe = new History(testStorage);
+        assertEquals(0, testMe.getHistoryAgeDays());
+
+        Date now = new Date();
+
+        // Log 34 events into a History file, with 24h between each
+        for (long i = 34; i >= 0; i--) {
+            Date then = new Date(now.getTime() - i * 86400 * 1000);
+            testMe.addEvent(HistoryEvent.createInfoEvent(then, "Something happened"));
+        }
+
+        assertEquals(34, testMe.getHistoryAgeDays());
+        assertEquals(34, new History(testStorage).getHistoryAgeDays());
+
+        // Record the size of the history file
+        long fileSize0 = testStorage.length();
+
+        // Truncate the file
+        testMe.dropOldHistory();
+
+        // Verify that the file has shrunk
+        assertTrue(String.format("Old size=%d, new size=%d", fileSize0, testStorage.length()),
+                testStorage.length() < fileSize0);
+
+        // Verify that the age of the oldest event in the file is what we expect
+        assertEquals(27, testMe.getHistoryAgeDays());
+        assertEquals(27, new History(testStorage).getHistoryAgeDays());
     }
 
     public void testDateToDouble() {

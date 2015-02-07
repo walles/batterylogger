@@ -26,8 +26,6 @@ samples are plotted really close together they form lines that stand
 out more than the averages that people are supposed to look at
 primarily.
 
-* Make sure we're actually removing samples older than one month
-
 * Add a .travis.yml to run the unit tests on pull requests and pushes.
 
 * Auto generate version code and version number from git describe.
@@ -211,3 +209,5 @@ zoom performance.
 * Mark restarts by vertical red lines. That would make the
   increasing-battery-use-until-reboot pattern on my phone more
   visible.
+
+* Make sure we're actually removing samples older than one month

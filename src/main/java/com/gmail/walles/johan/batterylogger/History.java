@@ -43,6 +43,7 @@ public class History {
     private static final int FAKE_HISTORY_DAYS_OLD_END = 0;
 
     private static final long MAX_HISTORY_FILE_SIZE = 400 * 1024;
+    private static final long MAX_HISTORY_EVENT_AGE_DAYS = 34;
 
     public static final long HOUR_MS = 3600 * 1000;
     public static final long FIVE_MINUTES_MS = 5 * 60 * 1000;
@@ -69,14 +70,14 @@ public class History {
         this.storage = new File(context.getFilesDir(), "events.log");
     }
 
-    private void dropOldHistory() throws IOException {
+    void dropOldHistory() throws IOException {
         if (eventsFromStorage == null) {
             eventsFromStorage = readEventsFromStorage();
         }
 
-        // Skip the first quarter of the list
+        // Skip the first 20% of the list
         List<HistoryEvent> truncated =
-                eventsFromStorage.subList(eventsFromStorage.size() / 4, eventsFromStorage.size() - 1);
+                eventsFromStorage.subList(eventsFromStorage.size() / 5, eventsFromStorage.size() - 1);
 
         if (storage == null) {
             return;
@@ -127,6 +128,9 @@ public class History {
         }
 
         if (storage.length() > MAX_HISTORY_FILE_SIZE) {
+            dropOldHistory();
+        }
+        if (getHistoryAgeDays() > MAX_HISTORY_EVENT_AGE_DAYS) {
             dropOldHistory();
         }
     }
@@ -233,6 +237,39 @@ public class History {
         Log.i(TAG, returnMe.size() + " events read from " + storage.getAbsolutePath());
 
         return returnMe;
+    }
+
+    /**
+     * @return The first HistoryEvent, or null if no events could be read.
+     */
+    @Nullable
+    private HistoryEvent readFirstEventFromStorage() throws IOException {
+        if (storage == null || !storage.exists()) {
+            return null;
+        }
+
+        BufferedReader reader = null;
+        int lineNumber = 1;
+        try {
+            reader = new BufferedReader(new FileReader(storage), 200);
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                try {
+                    return HistoryEvent.deserializeFromString(line);
+                } catch (ParseException e) {
+                    // Log this but keep going and hope we get the gist of it
+                    Log.w(TAG, "Reading storage file failed at line " + lineNumber + ": " + storage.getAbsolutePath(), e);
+                }
+                lineNumber++;
+            }
+        } finally {
+            if (reader != null) {
+                reader.close();
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -396,5 +433,32 @@ public class History {
         }
 
         return history;
+    }
+
+    public int getHistoryAgeDays() {
+        HistoryEvent firstEvent;
+
+        if (eventsFromStorage != null) {
+            if (eventsFromStorage.isEmpty()) {
+                return 0;
+            }
+
+            firstEvent = eventsFromStorage.get(0);
+        } else {
+            try {
+                firstEvent = readFirstEventFromStorage();
+            } catch (IOException e) {
+                Log.e(TAG, "Unable to read first event from storage file", e);
+                return 0;
+            }
+        }
+
+        if (firstEvent == null) {
+            return 0;
+        }
+
+        long ageMs = System.currentTimeMillis() - firstEvent.getTimestamp().getTime();
+
+        return (int)(ageMs / (86400 * 1000));
     }
 }

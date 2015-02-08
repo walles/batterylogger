@@ -21,6 +21,11 @@ convert gfx/logo.xcf into icon resources.
 
 TODO
 ----
+* Add a tab where we list installed apps and the average drain speed
+over the time each app has been installed (much like the built-in
+battery app). Clicking on an app should expand that line and show
+per-app-version stats, as well as not-installed stats if available.
+
 * Hide individual samples if we're zoomed out enough. Otherwise, when
 samples are plotted really close together they form lines that stand
 out more than the averages that people are supposed to look at

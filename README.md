@@ -19,6 +19,15 @@ Before building the project you need to run render-graphics.sh to
 convert gfx/logo.xcf into icon resources.
 
 
+Releasing
+---------
+1. Do ```git tag``` and think about what the next version number should be.
+2. Do ```git tag version-1.2.3``` to set the next version number.
+3. ```env JAVA_OPTS=-Xmx512m ./gradlew --no-daemon build```
+4. ```git push --tags```
+5. Upload ```build/outputs/apk/BatteryLogger-release.apk``` to Google Play
+
+
 TODO
 ----
 * Add a tab where we list installed apps and the average drain speed
@@ -32,8 +41,6 @@ out more than the averages that people are supposed to look at
 primarily.
 
 * Add a .travis.yml to run the unit tests on pull requests and pushes.
-
-* Auto generate version code and version number from git describe.
 
 * If we change the system clock, think about how that would affect
 boot timestamps, the system sampling's reboot detection and the timestamp
@@ -216,3 +223,5 @@ zoom performance.
   visible.
 
 * Make sure we're actually removing samples older than one month
+
+* Auto generate version code and version number from git describe.

@@ -70,7 +70,7 @@ public class SystemState {
         return installedApps.values();
     }
 
-    private final Map<String, InstalledApp> installedApps = new HashMap<String, InstalledApp>();
+    private final Map<String, InstalledApp> installedApps = new HashMap<>();
 
     public SystemState(Date timestamp, int batteryPercentage, boolean charging, Date bootTimestamp) {
         if (timestamp.before(bootTimestamp)) {
@@ -103,7 +103,7 @@ public class SystemState {
      * @param events Packaging events will be added to this collection
      */
     private void addPackagingEventsSince(SystemState then, Collection<HistoryEvent> events) {
-        Set<String> added = new HashSet<String>(installedApps.keySet());
+        Set<String> added = new HashSet<>(installedApps.keySet());
         added.removeAll(then.installedApps.keySet());
         for (String dottedName : added) {
             InstalledApp installedApp = installedApps.get(dottedName);
@@ -111,7 +111,7 @@ public class SystemState {
                     installedApp.displayName + " " + installedApp.versionName + " installed"));
         }
 
-        Set<String> removed = new HashSet<String>(then.installedApps.keySet());
+        Set<String> removed = new HashSet<>(then.installedApps.keySet());
         removed.removeAll(installedApps.keySet());
         for (String dottedName : removed) {
             InstalledApp installedApp = then.installedApps.get(dottedName);
@@ -119,7 +119,7 @@ public class SystemState {
                     installedApp.displayName + " " + installedApp.versionName + " uninstalled"));
         }
 
-        Set<String> retained = new HashSet<String>(installedApps.keySet());
+        Set<String> retained = new HashSet<>(installedApps.keySet());
         retained.retainAll(then.installedApps.keySet());
         for (String dottedName : retained) {
             InstalledApp installedThen = then.installedApps.get(dottedName);
@@ -139,7 +139,7 @@ public class SystemState {
             throw new IllegalArgumentException("Timestamp of other state must be older than mine");
         }
 
-        List<HistoryEvent> returnMe = new LinkedList<HistoryEvent>();
+        List<HistoryEvent> returnMe = new LinkedList<>();
 
         boolean reboot = false;
         if (!bootTimestampsMatch(then)) {

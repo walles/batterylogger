@@ -21,9 +21,9 @@ import com.androidplot.xy.XYSeries;
 import java.util.ArrayList;
 
 public class EventSeries implements XYSeries {
-    private final ArrayList<Double> xCoordinates = new ArrayList<Double>();
-    private final ArrayList<String> descriptions = new ArrayList<String>();
-    private final ArrayList<HistoryEvent.Type> types = new ArrayList<HistoryEvent.Type>();
+    private final ArrayList<Double> xCoordinates = new ArrayList<>();
+    private final ArrayList<String> descriptions = new ArrayList<>();
+    private final ArrayList<HistoryEvent.Type> types = new ArrayList<>();
 
     public void add(double x, String description, HistoryEvent.Type type) {
         xCoordinates.add(x);

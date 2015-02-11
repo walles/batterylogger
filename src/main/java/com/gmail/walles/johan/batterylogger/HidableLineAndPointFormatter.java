@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public abstract class HidableLineAndPointFormatter extends LineAndPointFormatter {
-    private final Set<EventRenderer> eventRenderers = new HashSet<EventRenderer>();
+    private final Set<EventRenderer> eventRenderers = new HashSet<>();
 
     @Override
     public Class<? extends EventRenderer> getRendererClass() {

@@ -95,7 +95,7 @@ public class DrainLinesCreator {
                     + currentDrainEvents.size());
         }
 
-        List<Double> numbers = new ArrayList<Double>(currentDrainEvents.size() - 1);
+        List<Double> numbers = new ArrayList<>(currentDrainEvents.size() - 1);
 
         HistoryEvent previous = null;
         for (HistoryEvent drainEvent : currentDrainEvents) {
@@ -212,7 +212,7 @@ public class DrainLinesCreator {
 
             case BATTERY_LEVEL:
                 if (currentDrainEvents == null) {
-                    currentDrainEvents = new LinkedList<HistoryEvent>();
+                    currentDrainEvents = new LinkedList<>();
                 }
                 currentDrainEvents.add(event);
                 break;
@@ -223,7 +223,7 @@ public class DrainLinesCreator {
         if (drainLines != null) {
             return drainLines;
         }
-        drainLines = new LinkedList<XYSeries>();
+        drainLines = new LinkedList<>();
 
         if (history.isEmpty()) {
             return drainLines;

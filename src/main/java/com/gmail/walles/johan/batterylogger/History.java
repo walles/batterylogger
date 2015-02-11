@@ -208,7 +208,7 @@ public class History {
     }
 
     private ArrayList<HistoryEvent> readEventsFromStorage() throws IOException {
-        ArrayList<HistoryEvent> returnMe = new ArrayList<HistoryEvent>();
+        ArrayList<HistoryEvent> returnMe = new ArrayList<>();
 
         if (storage == null || !storage.exists()) {
             return returnMe;
@@ -365,7 +365,7 @@ public class History {
 
     public static History createFakeHistory() throws IOException {
         History history = new History();
-        history.eventsFromStorage = new ArrayList<HistoryEvent>();
+        history.eventsFromStorage = new ArrayList<>();
         //noinspection ConstantConditions
         if (FAKE_HISTORY_DAYS_OLD_START == FAKE_HISTORY_DAYS_OLD_END) {
             return history;

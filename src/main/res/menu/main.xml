@@ -1,7 +1,6 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.gmail.walles.johan.batterylogger.MainActivity" >
+    tools:context="com.gmail.walles.johan.batterylogger.MainActivity">
     <item android:id="@+id/toggle_legend"
         android:title="@string/toggle_legend"
         android:titleCondensed="@string/toggle_legend_condensed"

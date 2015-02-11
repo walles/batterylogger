@@ -101,7 +101,7 @@ public class DrainLinesCreatorTest extends TestCase {
         SystemState d = new SystemState(dates[4], 50, false, bootTimestamp);
         SystemState e = new SystemState(dates[5], 50, false, bootTimestamp);
 
-        List<HistoryEvent> events = new LinkedList<HistoryEvent>();
+        List<HistoryEvent> events = new LinkedList<>();
         events.addAll(b.getEventsSince(a));
         events.addAll(c.getEventsSince(b));
         events.addAll(d.getEventsSince(c));
@@ -126,7 +126,7 @@ public class DrainLinesCreatorTest extends TestCase {
         // d -> e = charging
         SystemState e = new SystemState(dates[5], 51, false, bootTimestamp);
 
-        List<HistoryEvent> events = new LinkedList<HistoryEvent>();
+        List<HistoryEvent> events = new LinkedList<>();
         events.addAll(b.getEventsSince(a));
         events.addAll(c.getEventsSince(b));
         events.addAll(d.getEventsSince(c));
@@ -157,7 +157,7 @@ public class DrainLinesCreatorTest extends TestCase {
         // d -> e = charging
         SystemState e = new SystemState(dates[5], 51, false, bootTimestamp);
 
-        List<HistoryEvent> events = new LinkedList<HistoryEvent>();
+        List<HistoryEvent> events = new LinkedList<>();
         events.addAll(b.getEventsSince(a));
         events.addAll(d.getEventsSince(c));
         events.addAll(e.getEventsSince(d));

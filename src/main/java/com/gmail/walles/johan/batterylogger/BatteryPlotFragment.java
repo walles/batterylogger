@@ -94,7 +94,7 @@ public class BatteryPlotFragment extends Fragment {
     private AlertDialog visibleDialog;
 
     // Cache shown dialogs so we don't flood SharedPreferences with calls while zooming
-    private final Set<String> shownDialogs = new HashSet<String>();
+    private final Set<String> shownDialogs = new HashSet<>();
 
     private void zoom(double factor, double pivot) {
         double leftSpan = pivot - minX;
@@ -417,7 +417,7 @@ public class BatteryPlotFragment extends Fragment {
             return false;
         }
 
-        Set<String> parts = new HashSet<String>(Arrays.asList(Build.PRODUCT.split("_")));
+        Set<String> parts = new HashSet<>(Arrays.asList(Build.PRODUCT.split("_")));
         if (parts.size() == 0) {
             return false;
         }
@@ -541,10 +541,8 @@ public class BatteryPlotFragment extends Fragment {
 
     /**
      * Animate minX and maxX to new values.
-     *
-     * @return true if an animation was started, false if we're already at the target values
      */
-    private boolean animateXrange(final XYPlot plot, double targetMinX, double targetMaxX) {
+    private void animateXrange(final XYPlot plot, double targetMinX, double targetMaxX) {
         // Cancel any running animation
         if (animator != null) {
             animator.cancel();
@@ -561,7 +559,7 @@ public class BatteryPlotFragment extends Fragment {
         }
         if (targetMaxX == maxX && targetMinX == minX) {
             // We're already there, nothing to animate
-            return false;
+            return;
         }
 
         animator = ValueAnimator.ofPropertyValuesHolder(
@@ -587,8 +585,8 @@ public class BatteryPlotFragment extends Fragment {
                 lastFrameStart[0] = frameStart;
 
                 nFrames[0]++;
-                minX = (double) (Float) animation.getAnimatedValue("minX");
-                maxX = (double) (Float) animation.getAnimatedValue("maxX");
+                minX = (double) animation.getAnimatedValue("minX");
+                maxX = (double) animation.getAnimatedValue("maxX");
 
                 plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
                 redrawPlot(plot);
@@ -649,7 +647,6 @@ public class BatteryPlotFragment extends Fragment {
         });
         animator.start();
 
-        return true;
     }
 
     private GestureDetector getOneFingerGestureDetector(final XYPlot plot) {

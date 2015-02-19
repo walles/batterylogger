@@ -25,12 +25,16 @@ import java.util.Date;
 
 public class HistoryTest extends AndroidTestCase {
     private File testStorage;
+    private long now;
+    private History testMe;
 
     @Override
     protected void setUp() throws Exception {
         super.setUp();
 
+        now = System.currentTimeMillis();
         testStorage = File.createTempFile("historytest", ".txt");
+        testMe = new History(testStorage);
     }
 
     @Override
@@ -55,7 +59,7 @@ public class HistoryTest extends AndroidTestCase {
         for (int i = 0; i < series.size(); i++) {
             actualTimestamps[i] = History.toDate(series.getX(i));
         }
-        assertEquals(Arrays.toString(expectedTimestamps), Arrays.toString(actualTimestamps));
+        assertEquals("now: " + now, Arrays.toString(expectedTimestamps), Arrays.toString(actualTimestamps));
     }
 
     private void assertEventTimestamps(Date ... expectedTimestamps) throws Exception {
@@ -86,8 +90,6 @@ public class HistoryTest extends AndroidTestCase {
     }
 
     public void testOnlyBatteryEvents() throws Exception {
-        History testMe = new History(testStorage);
-        long now = System.currentTimeMillis();
         testMe.addEvent(
                 HistoryEvent.createBatteryLevelEvent(new Date(now + 1 * History.HOUR_MS), 100));
         assertNoEvents();
@@ -113,8 +115,6 @@ public class HistoryTest extends AndroidTestCase {
     }
 
     public void testRebootEvents() throws Exception {
-        History testMe = new History(testStorage);
-        long now = System.currentTimeMillis();
         testMe.addEvent(
                 HistoryEvent.createBatteryLevelEvent(new Date(now + 1 * History.HOUR_MS), 51));
         testMe.addEvent(
@@ -147,8 +147,6 @@ public class HistoryTest extends AndroidTestCase {
      * This would happen at unclean shutdowns; device crashes, battery runs out or is removed.
      */
     public void testMissingShutdownEvent() throws Exception {
-        History testMe = new History(testStorage);
-        long now = System.currentTimeMillis();
         testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(now + 1 * History.HOUR_MS), 51));
         testMe.addEvent(HistoryEvent.createBatteryLevelEvent(new Date(now + 3 * History.HOUR_MS), 50));
 
@@ -172,7 +170,6 @@ public class HistoryTest extends AndroidTestCase {
     }
 
     public void testMaintainFileSize() throws Exception {
-        History testMe = new History(testStorage);
         Date now = new Date();
         long lastFileSize = 0;
 
@@ -204,7 +201,6 @@ public class HistoryTest extends AndroidTestCase {
      * Verify history file truncation by event age.
      */
     public void testMaintainHistoryAge() throws Exception {
-        History testMe = new History(testStorage);
         assertEquals(0, testMe.getHistoryAgeDays());
 
         Date now = new Date();

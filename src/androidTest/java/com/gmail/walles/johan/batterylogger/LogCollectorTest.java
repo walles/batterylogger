@@ -19,14 +19,17 @@ package com.gmail.walles.johan.batterylogger;
 import android.test.AndroidTestCase;
 
 public class LogCollectorTest extends AndroidTestCase {
-    public void testLogCollector() {
+    public void testLogCollector() throws Exception {
         LogCollector.kill(getContext());        
         assertFalse(LogCollector.isAlive(getContext()));
         
         LogCollector.keepAlive(getContext());
-        assertTrue(LogCollector.isAlive(getContext()));
+        Thread.sleep(500);
+        assertTrue("Log collector should be alive after calling keepAlive()",
+                LogCollector.isAlive(getContext()));
         
         LogCollector.kill(getContext());
+        Thread.sleep(500);
         assertFalse(LogCollector.isAlive(getContext()));
     }
 }

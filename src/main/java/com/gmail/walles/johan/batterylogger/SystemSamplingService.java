@@ -88,6 +88,8 @@ public class SystemSamplingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        LogCollector.keepAlive(this);
+
         final Intent finalIntent = intent;
 
         Thread thread = new Thread("Sampling Thread " + new Date()) {

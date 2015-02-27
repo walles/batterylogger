@@ -77,13 +77,16 @@ public class LogCollector {
 
     static boolean isAlive(Context context) {
         if (getLogCollectorPids(context).isEmpty()) {
+            Log.v(TAG,
+                    "No log collector processes found, assuming dead");
             return false;
         }
 
         long latestLogMessageAgeMs =
                 System.currentTimeMillis() - getLatestLogMessageTimestamp(context).getTime();
         if (latestLogMessageAgeMs < 10000) {
-            // We recently caught a message
+            Log.v(TAG,
+                "Log collector last collected " + latestLogMessageAgeMs + "ms ago, assuming alive");
             return true;
         }
 

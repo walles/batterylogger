@@ -585,8 +585,10 @@ public class BatteryPlotFragment extends Fragment {
                 lastFrameStart[0] = frameStart;
 
                 nFrames[0]++;
-                minX = (double) animation.getAnimatedValue("minX");
-                maxX = (double) animation.getAnimatedValue("maxX");
+                //noinspection RedundantCast
+                minX = (double)(Float)animation.getAnimatedValue("minX");
+                //noinspection RedundantCast
+                maxX = (double)(Float)animation.getAnimatedValue("maxX");
 
                 plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
                 redrawPlot(plot);

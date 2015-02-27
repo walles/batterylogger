@@ -53,22 +53,33 @@ public class HistoryTest extends AndroidTestCase {
         assertEquals(Arrays.toString(expectedValues), Arrays.toString(actualValues));
     }
 
-    private void assertDrainTimestamps(Date ... expectedTimestamps) throws Exception {
-        XYSeries series = new History(testStorage).getBatteryDrain();
-        Date actualTimestamps[] = new Date[series.size()];
-        for (int i = 0; i < series.size(); i++) {
-            actualTimestamps[i] = History.toDate(series.getX(i));
+    private void assertTimestampEquals(Date expectedTimestamps[], XYSeries actualTimestamps) {
+        Date actualTimestampsArray[] = new Date[actualTimestamps.size()];
+        for (int i = 0; i < actualTimestamps.size(); i++) {
+            actualTimestampsArray[i] = History.toDate(actualTimestamps.getX(i));
         }
-        assertEquals("now: " + now, Arrays.toString(expectedTimestamps), Arrays.toString(actualTimestamps));
+
+        String diff =
+                "Expected: " + Arrays.toString(expectedTimestamps) + "\n" +
+                "  Actual: " + Arrays.toString(actualTimestampsArray);
+
+        // Fuzzy compare the arrays, accepting some time diff
+        assertEquals(diff, expectedTimestamps.length, actualTimestampsArray.length);
+        for (int i = 0; i < expectedTimestamps.length; i++) {
+            Date expected = expectedTimestamps[i];
+            Date actual = actualTimestampsArray[i];
+            long diffMs = Math.abs(expected.getTime() - actual.getTime());
+
+            assertTrue(diff, diffMs < 1000L);
+        }
+    }
+    
+    private void assertDrainTimestamps(Date ... expectedTimestamps) throws Exception {
+        assertTimestampEquals(expectedTimestamps, new History(testStorage).getBatteryDrain());
     }
 
     private void assertEventTimestamps(Date ... expectedTimestamps) throws Exception {
-        XYSeries series = new History(testStorage).getEvents();
-        Date actualTimestamps[] = new Date[series.size()];
-        for (int i = 0; i < series.size(); i++) {
-            actualTimestamps[i] = History.toDate(series.getX(i));
-        }
-        assertEquals(Arrays.toString(expectedTimestamps), Arrays.toString(actualTimestamps));
+        assertTimestampEquals(expectedTimestamps, new History(testStorage).getEvents());
     }
 
     private void assertEventDescriptions(String... expectedDescriptions) throws Exception {

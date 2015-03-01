@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Date;
 
 import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 
@@ -87,11 +88,20 @@ public class SystemSamplingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        try {
-            handleIntent(intent);
-        } catch (Exception e) {
-            logError(e);
-        }
+        final Intent finalIntent = intent;
+
+        Thread thread = new Thread("Sampling Thread " + new Date()) {
+            @Override
+            public void run() {
+                try {
+                    handleIntent(finalIntent);
+                } catch (Exception e) {
+                    logError(e);
+                }
+            }
+        };
+        thread.start();
+
         return START_NOT_STICKY;
     }
 

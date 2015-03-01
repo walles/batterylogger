@@ -306,6 +306,8 @@ public class SystemState {
     }
 
     public static SystemState readFromSystem(Context context) throws IOException {
+        long t0 = System.currentTimeMillis();
+
         IntentFilter filter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         Intent batteryStatus = context.registerReceiver(null, filter);
         if (batteryStatus == null) {
@@ -375,7 +377,9 @@ public class SystemState {
                 "Android OS",
                 Build.FINGERPRINT);
 
-        Log.v(TAG, String.format("System state sampled: %s, %d%%, %d apps",
+        long t1 = System.currentTimeMillis();
+        Log.v(TAG, String.format("System state sampled in %dms: %s, %d%%, %d apps",
+                (t1 - t0),
                 charging ? "charging" : "not charging",
                 batteryPercentage,
                 returnMe.getAppCount()));

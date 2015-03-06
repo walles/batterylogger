@@ -20,5 +20,7 @@
     <string name="app_name">Battery Logger</string>
     <string name="toggle_legend">Show legend</string>
     <string name="toggle_legend_condensed">Legend</string>
+    <string name="contact_developer">Contact Developer</string>
+    <string name="contact_developer_condensed">Support</string>
 
 </resources>

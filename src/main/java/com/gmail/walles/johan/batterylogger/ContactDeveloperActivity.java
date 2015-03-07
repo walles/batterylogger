@@ -31,7 +31,7 @@ public class ContactDeveloperActivity extends ActionBarActivity {
         setContentView(R.layout.contact_developer_layout);
 
         TextView logView = (TextView)findViewById(R.id.logView);
-        logView.setText("Important log messages");
+        logView.setText(LogCollector.readLogs(this));
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);

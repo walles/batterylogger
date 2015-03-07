@@ -24,10 +24,15 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Scanner;
 
 /**
  * Functionality for recording and accessing events logged by the app.
@@ -209,5 +214,43 @@ public class LogCollector {
 
         long t1 = System.currentTimeMillis();
         Log.i(TAG, "Killed " + killCount + " old logcats in " + (t1 - t0) + "ms");
+    }
+
+    public static CharSequence readLogs(Context context) {
+        File[] allFiles = getLogDir(context).listFiles();
+        List<File> logFiles = new LinkedList<>();
+        for (File file : allFiles) {
+            if (!file.isFile()) {
+                continue;
+            }
+
+            if (!file.getName().startsWith("log")) {
+                continue;
+            }
+
+            logFiles.add(file);
+        }
+
+        Collections.sort(logFiles);
+        Collections.reverse(logFiles);
+
+        StringBuilder returnMe = new StringBuilder();
+        for (File logFile : logFiles) {
+            returnMe.append("Log file: ");
+            returnMe.append(logFile.getAbsolutePath());
+            returnMe.append("\n");
+            try {
+                // Scanner trick to read whole file into string from:
+                // http://stackoverflow.com/a/7449797/473672
+                returnMe.append(new Scanner(logFile).useDelimiter("\\A").next());
+            } catch (FileNotFoundException e) {
+                Log.e(TAG, "Reading log file failed: " + logFile.getAbsolutePath(), e);
+
+                StringWriter stringWriter = new StringWriter();
+                e.printStackTrace(new PrintWriter(stringWriter));
+                returnMe.append(stringWriter.getBuffer());
+            }
+        }
+        return returnMe;
     }
 }

@@ -23,4 +23,13 @@ import android.support.v7.app.ActionBarActivity;
 /**
  * Show collected system logs and offer user to compose an e-mail to the developer.
  */
-public class ContactDeveloperActivity extends ActionBarActivity {}
+public class ContactDeveloperActivity extends ActionBarActivity {
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // FIXME: setContentView(R.layout.contact_developer_layout);
+
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+    }
+}

@@ -19,9 +19,9 @@
     package="com.gmail.walles.johan.batterylogger" >
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <!-- For writing trace files on real devices during development
+    
+    <!-- Needed for attaching logs to emails to developer -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    -->
 
     <application
         android:allowBackup="true"

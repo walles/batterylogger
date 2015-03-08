@@ -20,6 +20,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBar;
@@ -52,8 +53,19 @@ public class ContactDeveloperActivity extends ActionBarActivity {
         setContentView(R.layout.contact_developer_layout);
 
         logView = (TextView)findViewById(R.id.logView);
-        // FIXME: Read the logs in the background; we get warnings in the logs otherwise
-        logView.setText(LogCollector.readLogs(this));
+
+        logView.setText("Reading logs, please stand by...");
+        new AsyncTask<Void, Void, CharSequence>() {
+            @Override
+            protected void onPostExecute(CharSequence logText) {
+                logView.setText(logText);
+            }
+
+            @Override
+            protected CharSequence doInBackground(Void... voids) {
+                return LogCollector.readLogs(ContactDeveloperActivity.this);
+            }
+        }.execute();
 
         ActionBar actionBar = getSupportActionBar();
         actionBar.setDisplayHomeAsUpEnabled(true);

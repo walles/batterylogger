@@ -172,6 +172,6 @@ public class ContactDeveloperActivity extends ActionBarActivity {
         emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(externalFile));
 
         // finally start the activity
-        startActivity(Intent.createChooser(emailIntent, getString(R.string.contact_developer)));
+        startActivity(emailIntent);
     }
 }

@@ -141,8 +141,7 @@ public class MainActivity extends ActionBarActivity {
         contactDeveloper.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
-                MainActivity.this.startActivity(
-                        new Intent(MainActivity.this, ContactDeveloperActivity.class));
+                ContactDeveloperUtil.sendMail(MainActivity.this);
                 return true;
             }
         });

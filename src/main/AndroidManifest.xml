@@ -19,7 +19,7 @@
     package="com.gmail.walles.johan.batterylogger" >
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    
+
     <!-- Needed for attaching logs to emails to developer -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
@@ -38,9 +38,8 @@
         </activity>
 
         <activity
-            android:name="com.gmail.walles.johan.batterylogger.ContactDeveloperActivity"
-            android:label="@string/contact_developer">
-            <!-- Parent activity meta-data to support 4.0 and lower -->
+            android:name=".LogViewerActivity"
+            android:label="@string/app_name">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.gmail.walles.johan.batterylogger.MainActivity" />

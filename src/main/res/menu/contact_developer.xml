@@ -17,7 +17,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:yourapp="http://schemas.android.com/apk/res-auto"
-    tools:context="com.gmail.walles.johan.batterylogger.ContactDeveloperActivity">
+    tools:context="com.gmail.walles.johan.batterylogger.LogViewerActivity">
     <item android:id="@+id/contact_developer"
         android:title="@string/contact_developer"
         android:titleCondensed="@string/contact_developer_condensed"

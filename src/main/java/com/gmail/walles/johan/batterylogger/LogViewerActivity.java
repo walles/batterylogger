@@ -28,7 +28,7 @@ import android.widget.TextView;
 /**
  * Show collected system logs and offer user to compose an e-mail to the developer.
  */
-public class ContactDeveloperActivity extends ActionBarActivity {
+public class LogViewerActivity extends ActionBarActivity {
     TextView logView = null;
 
     @Override
@@ -47,7 +47,7 @@ public class ContactDeveloperActivity extends ActionBarActivity {
 
             @Override
             protected CharSequence doInBackground(Void... voids) {
-                return LogCollector.readLogs(ContactDeveloperActivity.this);
+                return LogCollector.readLogs(LogViewerActivity.this);
             }
         }.execute();
 
@@ -65,7 +65,7 @@ public class ContactDeveloperActivity extends ActionBarActivity {
         contactDeveloper.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
-                ContactDeveloperUtil.sendMail(ContactDeveloperActivity.this,
+                ContactDeveloperUtil.sendMail(LogViewerActivity.this,
                         logView.getText());
 
                 return true;

@@ -146,6 +146,17 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
+        // Set up View Application Logs callback
+        MenuItem viewAppLogs = menu.findItem(R.id.view_app_logs);
+        viewAppLogs.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                MainActivity.this.startActivity(
+                        new Intent(MainActivity.this, LogViewerActivity.class));
+                return true;
+            }
+        });
+
         return true;
     }
 

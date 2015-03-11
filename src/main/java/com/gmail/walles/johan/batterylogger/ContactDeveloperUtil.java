@@ -20,10 +20,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
+import android.view.MenuItem;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -31,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 public class ContactDeveloperUtil {
     private static final String TAG = "ContactDeveloper";
@@ -81,14 +85,22 @@ public class ContactDeveloperUtil {
         return appName + " " + versionName;
     }
 
-    // Inspired by
-    // http://answers.unity3d.com/questions/725503/how-to-send-an-email-with-an-attachment-on-android.html
     private static void sendMail(Context context,
                                  String address,
                                  String subject,
                                  String message,
                                  CharSequence attachmentText)
     {
+        final Intent emailIntent = getSendMailIntent(address, subject, message, attachmentText);
+        if (emailIntent == null) return;
+
+        context.startActivity(emailIntent);
+    }
+
+    // Inspired by
+    // http://answers.unity3d.com/questions/725503/how-to-send-an-email-with-an-attachment-on-android.html
+    @Nullable
+    private static Intent getSendMailIntent(String address, String subject, String message, CharSequence attachmentText) {
         // Create the intent
         final Intent emailIntent = new Intent(Intent.ACTION_SEND);
 
@@ -112,7 +124,7 @@ public class ContactDeveloperUtil {
             writer.print(attachmentText);
         } catch (IOException e) {
             Log.e(TAG, "Failed to write attachment to " + externalFile.getAbsolutePath(), e);
-            return;
+            return null;
         } finally {
             if (writer != null) {
                 writer.close();
@@ -121,9 +133,7 @@ public class ContactDeveloperUtil {
 
         // Get the Uri from the external file and add it to the intent
         emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(externalFile));
-
-        // finally start the activity
-        context.startActivity(emailIntent);
+        return emailIntent;
     }
 
     public static void sendMail(Context context, CharSequence attachmentText) {
@@ -142,5 +152,31 @@ public class ContactDeveloperUtil {
                 return LogCollector.readLogs(context);
             }
         }.execute();
+    }
+
+    public static void setUpMenuItem(Context context, MenuItem contactDeveloper) {
+        Intent sendMailIntent = getSendMailIntent(DEVELOPER_EMAIL, "", "", "");
+        if (sendMailIntent == null) {
+            contactDeveloper.setEnabled(false);
+            return;
+        }
+
+        PackageManager packageManager = context.getPackageManager();
+        ResolveInfo sendMailActivity = packageManager.resolveActivity(
+                sendMailIntent, PackageManager.MATCH_DEFAULT_ONLY);
+        if (sendMailActivity == null) {
+            contactDeveloper.setEnabled(false);
+            return;
+        }
+
+        Log.i(TAG, "E-mail app is " + sendMailActivity.activityInfo.name);
+        if (sendMailActivity.activityInfo.name.endsWith("ResolverActivity")) {
+            // This is the resolver activity, don't set an icon
+            return;
+        }
+
+        Drawable icon = sendMailActivity.loadIcon(packageManager);
+        contactDeveloper.setIcon(icon);
+        return;
     }
 }

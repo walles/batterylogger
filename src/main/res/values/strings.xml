@@ -21,7 +21,7 @@
     <string name="toggle_legend">Show legend</string>
     <string name="toggle_legend_condensed">Legend</string>
     <string name="contact_developer">Contact Developer</string>
-    <string name="contact_developer_condensed">Support</string>
+    <string name="contact_developer_condensed">E-mail dev</string>
     <string name="view_app_logs">View Application Logs</string>
     <string name="view_app_logs_condensed">App Logs</string>
 

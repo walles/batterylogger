@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 /**
@@ -243,7 +244,7 @@ public class LogCollector {
                 // Scanner trick to read whole file into string from:
                 // http://stackoverflow.com/a/7449797/473672
                 returnMe.append(new Scanner(logFile).useDelimiter("\\A").next());
-            } catch (FileNotFoundException e) {
+            } catch (FileNotFoundException | NoSuchElementException e) {
                 Log.e(TAG, "Reading log file failed: " + logFile.getAbsolutePath(), e);
 
                 StringWriter stringWriter = new StringWriter();

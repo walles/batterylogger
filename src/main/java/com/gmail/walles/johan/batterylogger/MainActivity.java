@@ -145,6 +145,7 @@ public class MainActivity extends ActionBarActivity {
                 return true;
             }
         });
+        ContactDeveloperUtil.setUpMenuItem(this, contactDeveloper);
 
         // Set up View Application Logs callback
         MenuItem viewAppLogs = menu.findItem(R.id.view_app_logs);

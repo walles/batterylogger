@@ -71,6 +71,7 @@ public class LogViewerActivity extends ActionBarActivity {
                 return true;
             }
         });
+        ContactDeveloperUtil.setUpMenuItem(this, contactDeveloper);
 
         return super.onCreateOptionsMenu(menu);
     }

@@ -16,12 +16,10 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.gmail.walles.johan.batterylogger" >
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-
-    <!-- Needed for attaching logs to emails to developer -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"
@@ -44,6 +42,12 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.gmail.walles.johan.batterylogger.MainActivity" />
         </activity>
+        <provider
+            android:name=".LogProvider"
+            android:authorities="com.gmail.walles.johan.batterylogger"
+            android:grantUriPermissions="true"
+            tools:ignore="ExportedContentProvider">
+        </provider>
 
         <service
             android:name=".SystemSamplingService"

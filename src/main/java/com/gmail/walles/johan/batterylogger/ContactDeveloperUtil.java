@@ -24,20 +24,19 @@ import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.MenuItem;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
+import java.io.StringWriter;
 
 public class ContactDeveloperUtil {
-    private static final String TAG = "ContactDeveloper";
+    private static final String TAG = "ContactDeveloperUtil";
     private static final String DEVELOPER_EMAIL = "johan.walles@gmail.com";
 
     /**
@@ -46,7 +45,7 @@ public class ContactDeveloperUtil {
      * @return Null if the package wasn't found.
      */
     @Nullable
-    private static PackageInfo getPackageInfo(Context context, @NotNull String packageName) {
+    private static PackageInfo getPackageInfo(Context context, @NonNull String packageName) {
         try {
             final PackageManager packageManager = context.getPackageManager();
 
@@ -57,7 +56,7 @@ public class ContactDeveloperUtil {
         }
     }
 
-    @NotNull
+    @NonNull
     private static String getVersion(Context context) {
         String packageName = context.getPackageName();
         if (packageName == null) {
@@ -77,7 +76,7 @@ public class ContactDeveloperUtil {
         return context.getString(stringId);
     }
 
-    @NotNull
+    @NonNull
     private static String getEmailSubject(Context context) {
         String versionName = getVersion(context);
         String appName = getApplicationName(context);
@@ -88,10 +87,9 @@ public class ContactDeveloperUtil {
     private static void sendMail(Context context,
                                  String address,
                                  String subject,
-                                 String message,
                                  CharSequence attachmentText)
     {
-        final Intent emailIntent = getSendMailIntent(address, subject, message, attachmentText);
+        final Intent emailIntent = getSendMailIntent(context, address, subject, attachmentText);
         if (emailIntent == null) return;
 
         context.startActivity(emailIntent);
@@ -99,32 +97,61 @@ public class ContactDeveloperUtil {
 
     // Inspired by
     // http://answers.unity3d.com/questions/725503/how-to-send-an-email-with-an-attachment-on-android.html
-    @Nullable
-    private static Intent getSendMailIntent(String address, String subject, String message, CharSequence attachmentText) {
+    private static Intent getSendMailIntent(
+            Context context,
+            String address, String subject, @Nullable CharSequence attachmentText)
+    {
         // Create the intent
         final Intent emailIntent = new Intent(Intent.ACTION_SEND);
 
         // add the address, subject and body of the mail
         emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] { address });
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
-        emailIntent.putExtra(Intent.EXTRA_TEXT, message);
+
+        // Use an empty text to encourage people to write something
+        emailIntent.putExtra(Intent.EXTRA_TEXT, "");
+
+        // From: https://developer.android.com/guide/components/intents-common.html
+        emailIntent.setData(Uri.parse("mailto:"));
 
         // set the MIME type
         emailIntent.setType("message/rfc822");
 
-        // grant access to the uri (for the attached file, although I'm not sure if the grant access
-        // is required)
-        emailIntent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        if (attachmentText != null) {
+            try {
+                addAttachmentToEmailIntent(context, emailIntent, attachmentText);
+            } catch (IOException e) {
+                // Store exception in message body
+                StringWriter stringWriter = new StringWriter();
+                PrintWriter pw = new PrintWriter(stringWriter);
+                e.printStackTrace(pw);
+                emailIntent.putExtra(Intent.EXTRA_TEXT, stringWriter.toString());
+            }
+        }
 
+        return emailIntent;
+    }
+
+    private static void addAttachmentToEmailIntent(
+            Context context, Intent emailIntent, CharSequence attachmentText)
+            throws IOException
+    {
         // Store the attachment text in a place where the mail app can get at it
-        File externalFile = new File(Environment.getExternalStorageDirectory(), "attachment.txt");
+        File attachmentFile = getAttachmentFile(context);
         PrintWriter writer = null;
         try {
-            writer = new PrintWriter(externalFile);
+            // Write to temporary file first and then mv into attachment file?
+            File tempFile =
+                    File.createTempFile("attachment", ".txt", attachmentFile.getParentFile());
+            writer = new PrintWriter(tempFile);
             writer.print(attachmentText);
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to write attachment to " + externalFile.getAbsolutePath(), e);
-            return null;
+            writer.close();
+
+            if (!tempFile.renameTo(attachmentFile)) {
+                throw new IOException(
+                        "Failed renaming " + tempFile.getAbsolutePath()
+                        + " to " + attachmentFile.getAbsolutePath());
+            }
         } finally {
             if (writer != null) {
                 writer.close();
@@ -132,12 +159,18 @@ public class ContactDeveloperUtil {
         }
 
         // Get the Uri from the external file and add it to the intent
-        emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(externalFile));
-        return emailIntent;
+        final Uri attachmentUri = Uri.parse("content://" + LogProvider.AUTHORITY + "/"
+                + attachmentFile.getName());
+        emailIntent.putExtra(Intent.EXTRA_STREAM, attachmentUri);
+        Log.v(TAG, "E-mail attachment URI: " + attachmentUri);
+    }
+
+    public static File getAttachmentFile(Context context) {
+        return new File(context.getCacheDir(), "attachment.txt");
     }
 
     public static void sendMail(Context context, CharSequence attachmentText) {
-        sendMail(context, DEVELOPER_EMAIL, getEmailSubject(context), "", attachmentText);
+        sendMail(context, DEVELOPER_EMAIL, getEmailSubject(context), attachmentText);
     }
 
     public static void sendMail(final Context context) {
@@ -155,11 +188,7 @@ public class ContactDeveloperUtil {
     }
 
     public static void setUpMenuItem(Context context, MenuItem contactDeveloper) {
-        Intent sendMailIntent = getSendMailIntent(DEVELOPER_EMAIL, "", "", "");
-        if (sendMailIntent == null) {
-            contactDeveloper.setEnabled(false);
-            return;
-        }
+        final Intent sendMailIntent = getSendMailIntent(context, DEVELOPER_EMAIL, "Subject", null);
 
         PackageManager packageManager = context.getPackageManager();
         ResolveInfo sendMailActivity = packageManager.resolveActivity(

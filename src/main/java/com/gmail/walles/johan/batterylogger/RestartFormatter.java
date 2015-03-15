@@ -21,7 +21,7 @@ import android.graphics.Paint;
 
 import com.androidplot.xy.XYPlot;
 
-public class RestartFormatter extends HidableLineAndPointFormatter {
+public class RestartFormatter extends HideableLineAndPointFormatter {
     private static class RestartEventRenderer extends EventRenderer {
         public RestartEventRenderer(XYPlot plot, Paint paint) {
             super(plot, paint);

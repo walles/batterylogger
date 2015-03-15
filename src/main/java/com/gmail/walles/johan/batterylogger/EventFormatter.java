@@ -20,7 +20,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import com.androidplot.xy.XYPlot;
 
-public class EventFormatter extends HidableLineAndPointFormatter {
+public class EventFormatter extends HideableLineAndPointFormatter {
     private static class TextEventRenderer extends EventRenderer {
         public TextEventRenderer(XYPlot plot, Paint paint) {
             super(plot, paint);

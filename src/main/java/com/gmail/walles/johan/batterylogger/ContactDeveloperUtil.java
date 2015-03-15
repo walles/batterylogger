@@ -16,7 +16,10 @@
 
 package com.gmail.walles.johan.batterylogger;
 
+import android.app.AlertDialog;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -91,7 +94,20 @@ public class ContactDeveloperUtil {
         final Intent emailIntent = getSendMailIntent(context, subject, attachmentText);
         if (emailIntent == null) return;
 
-        context.startActivity(emailIntent);
+        try {
+            context.startActivity(emailIntent);
+        } catch (ActivityNotFoundException e) {
+            new AlertDialog.Builder(context)
+                    .setTitle(R.string.app_name)
+                    .setMessage("No e-mail app installed")
+                    .setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            // This method intentionally left blank
+                        }
+                    })
+                    .show();
+        }
     }
 
     // Inspired by

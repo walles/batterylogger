@@ -17,8 +17,12 @@
 package com.gmail.walles.johan.batterylogger;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Debug;
 import android.os.SystemClock;
@@ -136,24 +140,45 @@ public class MainActivity extends ActionBarActivity {
         boolean showLegend = preferences.getBoolean(PREF_SHOW_LEGEND, true);
         toggleLegend.setChecked(showLegend);
 
-        // Set up Contact Developer callback
-        MenuItem contactDeveloper = menu.findItem(R.id.contact_developer);
-        contactDeveloper.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+        // Set up Support callback
+        MenuItem support = menu.findItem(R.id.support);
+        support.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem menuItem) {
-                ContactDeveloperUtil.sendMail(MainActivity.this);
-                return true;
-            }
-        });
-        ContactDeveloperUtil.setUpMenuItem(this, contactDeveloper);
+                final Context context = MainActivity.this;
+                int stringId = context.getApplicationInfo().labelRes;
+                String applicationLabel = context.getString(stringId);
 
-        // Set up View Application Logs callback
-        MenuItem viewAppLogs = menu.findItem(R.id.view_app_logs);
-        viewAppLogs.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem menuItem) {
-                MainActivity.this.startActivity(
-                        new Intent(MainActivity.this, LogViewerActivity.class));
+                String versionName = "<Unknown>";
+                try {
+                    versionName = context.getPackageManager()
+                            .getPackageInfo(context.getPackageName(), 0).versionName;
+                } catch (PackageManager.NameNotFoundException e) {
+                    Log.w(TAG, "Getting version name failed", e);
+                }
+
+                new AlertDialog.Builder(MainActivity.this)
+                        .setTitle(applicationLabel)
+                        .setMessage("Version " + versionName)
+                        .setNeutralButton(R.string.view_app_logs,
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        final Intent viewLogsIntent =
+                                                new Intent(context, LogViewerActivity.class);
+                                        context.startActivity(viewLogsIntent);
+                                    }
+                                })
+                        .setPositiveButton(R.string.contact_developer_condensed,
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        ContactDeveloperUtil.sendMail(MainActivity.this);
+                                    }
+                                })
+                        .setIcon(R.drawable.ic_launcher)
+                        .show();
+
                 return true;
             }
         });

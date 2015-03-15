@@ -5,10 +5,6 @@
         android:title="@string/toggle_legend"
         android:titleCondensed="@string/toggle_legend_condensed"
         android:checkable="true" />
-    <item android:id="@+id/contact_developer"
-        android:title="@string/contact_developer"
-        android:titleCondensed="@string/contact_developer_condensed" />
-    <item android:id="@+id/view_app_logs"
-        android:title="@string/view_app_logs"
-        android:titleCondensed="@string/view_app_logs_condensed" />
+    <item android:id="@+id/support"
+        android:title="@string/support" />
 </menu>

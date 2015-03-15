@@ -37,10 +37,10 @@ public class MainActivity extends ActionBarActivity {
      *
      * @see #getTraceFileName()
      */
-    private static final boolean GENERATE_TRACEFILES = false;
+    private static final boolean GENERATE_TRACE_FILES = false;
 
     public static final String TAG = "BatteryLogger";
-    public static final int REFRESH_PLOT_EVERY_MINUTES = 60;
+    private static final int REFRESH_PLOT_EVERY_MINUTES = 60;
 
     private long lastShown = -(24 * 60 * 60 * 1000);
 
@@ -66,7 +66,7 @@ public class MainActivity extends ActionBarActivity {
     public MainActivity() {
         super();
 
-        if (GENERATE_TRACEFILES) {
+        if (GENERATE_TRACE_FILES) {
             String traceFileName = getTraceFileName();
             Log.i(TAG, "Traces will be saved to " + traceFileName);
             Debug.startMethodTracing(traceFileName);
@@ -106,7 +106,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        if (GENERATE_TRACEFILES) {
+        if (GENERATE_TRACE_FILES) {
             Debug.stopMethodTracing();
         }
     }

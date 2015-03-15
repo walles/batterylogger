@@ -73,11 +73,11 @@ import java.util.Set;
 import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 
 public class BatteryPlotFragment extends Fragment {
-    public static final int IN_GRAPH_TEXT_SIZE_SP = 12;
+    private static final int IN_GRAPH_TEXT_SIZE_SP = 12;
 
     private static final long ONE_DAY_MS = 86400 * 1000;
-    public static final int LEGEND_WIDTH_LANDSCAPE_SP = 300;
-    public static final int ANIMATION_DURATION_MS = 1000;
+    private static final int LEGEND_WIDTH_LANDSCAPE_SP = 300;
+    private static final int ANIMATION_DURATION_MS = 1000;
 
     private ValueAnimator animator;
     private double minX;
@@ -213,10 +213,6 @@ public class BatteryPlotFragment extends Fragment {
         });
     }
 
-    private void showAlertDialog(String title, String message) {
-        showAlertDialog(title, message, DIALOG_DISMISSER);
-    }
-
     // From: http://stackoverflow.com/a/10187511/473672
     private static CharSequence trimTrailingWhitespace(CharSequence source) {
         int i = source.length();
@@ -286,7 +282,7 @@ public class BatteryPlotFragment extends Fragment {
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                animateXrange(plot, originalMinX, originalMaxX);
+                animateXRange(plot, originalMinX, originalMaxX);
             }
         }, 250);
 
@@ -485,7 +481,7 @@ public class BatteryPlotFragment extends Fragment {
             }
         } catch (IOException e) {
             Log.e(TAG, "Reading battery history failed", e);
-            showAlertDialog("Reading Battery History Failed", e.getMessage());
+            showAlertDialog("Reading Battery History Failed", e.getMessage(), DIALOG_DISMISSER);
         }
     }
 
@@ -541,7 +537,7 @@ public class BatteryPlotFragment extends Fragment {
     /**
      * Animate minX and maxX to new values.
      */
-    private void animateXrange(final XYPlot plot, double targetMinX, double targetMaxX) {
+    private void animateXRange(final XYPlot plot, double targetMinX, double targetMaxX) {
         // Cancel any running animation
         if (animator != null) {
             animator.cancel();
@@ -675,7 +671,7 @@ public class BatteryPlotFragment extends Fragment {
                             targetMaxX = originalMaxX;
                         }
 
-                        animateXrange(plot, targetMinX, targetMaxX);
+                        animateXRange(plot, targetMinX, targetMaxX);
 
                         return true;
                     }

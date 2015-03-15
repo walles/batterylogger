@@ -65,8 +65,8 @@ public class LogCollector {
     private static Date getLatestLogMessageTimestamp(Context context) {
         long newest = Long.MIN_VALUE;
 
-        File[] logfiles = getLogDir(context).listFiles();
-        for (File logfile : logfiles) {
+        File[] logFiles = getLogDir(context).listFiles();
+        for (File logfile : logFiles) {
             if (!logfile.isFile()) {
                 continue;
             }

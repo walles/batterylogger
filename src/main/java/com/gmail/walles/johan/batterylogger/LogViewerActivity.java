@@ -29,7 +29,7 @@ import android.widget.TextView;
  * Show collected system logs and offer user to compose an e-mail to the developer.
  */
 public class LogViewerActivity extends ActionBarActivity {
-    TextView logView = null;
+    private TextView logView = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

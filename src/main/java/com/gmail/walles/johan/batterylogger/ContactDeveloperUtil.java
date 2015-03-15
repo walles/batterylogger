@@ -85,11 +85,10 @@ public class ContactDeveloperUtil {
     }
 
     private static void sendMail(Context context,
-                                 String address,
                                  String subject,
                                  CharSequence attachmentText)
     {
-        final Intent emailIntent = getSendMailIntent(context, address, subject, attachmentText);
+        final Intent emailIntent = getSendMailIntent(context, subject, attachmentText);
         if (emailIntent == null) return;
 
         context.startActivity(emailIntent);
@@ -99,13 +98,13 @@ public class ContactDeveloperUtil {
     // http://answers.unity3d.com/questions/725503/how-to-send-an-email-with-an-attachment-on-android.html
     private static Intent getSendMailIntent(
             Context context,
-            String address, String subject, @Nullable CharSequence attachmentText)
+            String subject, @Nullable CharSequence attachmentText)
     {
         // Create the intent
         final Intent emailIntent = new Intent(Intent.ACTION_SEND);
 
         // add the address, subject and body of the mail
-        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] { address });
+        emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[] { DEVELOPER_EMAIL });
         emailIntent.putExtra(Intent.EXTRA_SUBJECT, subject);
 
         // Use an empty text to encourage people to write something
@@ -170,7 +169,7 @@ public class ContactDeveloperUtil {
     }
 
     public static void sendMail(Context context, CharSequence attachmentText) {
-        sendMail(context, DEVELOPER_EMAIL, getEmailSubject(context), attachmentText);
+        sendMail(context, getEmailSubject(context), attachmentText);
     }
 
     public static void sendMail(final Context context) {
@@ -188,7 +187,7 @@ public class ContactDeveloperUtil {
     }
 
     public static void setUpMenuItem(Context context, MenuItem contactDeveloper) {
-        final Intent sendMailIntent = getSendMailIntent(context, DEVELOPER_EMAIL, "Subject", null);
+        final Intent sendMailIntent = getSendMailIntent(context, "Subject", null);
 
         PackageManager packageManager = context.getPackageManager();
         ResolveInfo sendMailActivity = packageManager.resolveActivity(

@@ -32,6 +32,7 @@ import android.widget.TextView;
  */
 public class LogViewerActivity extends ActionBarActivity {
     private TextView logView;
+    private boolean logsLoaded = false;
     private MenuItem contactDeveloper;
 
     @Override
@@ -48,6 +49,7 @@ public class LogViewerActivity extends ActionBarActivity {
             @Override
             protected void onPostExecute(CharSequence logText) {
                 logView.setText(logText);
+                logsLoaded = true;
 
                 // Scroll log view to bottom
                 verticalScrollView.post(new Runnable() {
@@ -57,16 +59,7 @@ public class LogViewerActivity extends ActionBarActivity {
                     }
                 });
 
-                final Context context = LogViewerActivity.this;
-                contactDeveloper.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem menuItem) {
-                        ContactDeveloperUtil.sendMail(context, logView.getText());
-
-                        return true;
-                    }
-                });
-                ContactDeveloperUtil.setUpMenuItem(context, contactDeveloper);
+                setUpContactDeveloper();
             }
 
             @Override
@@ -79,6 +72,27 @@ public class LogViewerActivity extends ActionBarActivity {
         actionBar.setDisplayHomeAsUpEnabled(true);
     }
 
+    private void setUpContactDeveloper() {
+        if (contactDeveloper == null) {
+            return;
+        }
+
+        if (!logsLoaded) {
+            contactDeveloper.setEnabled(false);
+            return;
+        }
+
+        contactDeveloper.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                ContactDeveloperUtil.sendMail(LogViewerActivity.this, logView.getText());
+
+                return true;
+            }
+        });
+        ContactDeveloperUtil.setUpMenuItem(this, contactDeveloper);
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu items for use in the action bar
@@ -86,7 +100,7 @@ public class LogViewerActivity extends ActionBarActivity {
         inflater.inflate(R.menu.contact_developer, menu);
 
         contactDeveloper = menu.findItem(R.id.contact_developer);
-        contactDeveloper.setEnabled(false);
+        setUpContactDeveloper();
 
         return super.onCreateOptionsMenu(menu);
     }

@@ -213,6 +213,9 @@ public class ContactDeveloperUtil {
             return;
         }
 
+        // We're clickable
+        contactDeveloper.setEnabled(true);
+
         Log.i(TAG, "E-mail app is " + sendMailActivity.activityInfo.name);
         if (sendMailActivity.activityInfo.name.endsWith("ResolverActivity")) {
             // This is the resolver activity, don't set an icon

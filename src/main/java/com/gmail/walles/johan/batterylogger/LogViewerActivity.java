@@ -16,6 +16,7 @@
 
 package com.gmail.walles.johan.batterylogger;
 
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -23,13 +24,15 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 /**
  * Show collected system logs and offer user to compose an e-mail to the developer.
  */
 public class LogViewerActivity extends ActionBarActivity {
-    private TextView logView = null;
+    private TextView logView;
+    private MenuItem contactDeveloper;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -37,12 +40,33 @@ public class LogViewerActivity extends ActionBarActivity {
         setContentView(R.layout.contact_developer_layout);
 
         logView = (TextView)findViewById(R.id.logView);
+        final ScrollView verticalScrollView =
+                (ScrollView)findViewById(R.id.verticalScrollView);
 
         logView.setText("Reading logs, please stand by...");
         new AsyncTask<Void, Void, CharSequence>() {
             @Override
             protected void onPostExecute(CharSequence logText) {
                 logView.setText(logText);
+
+                // Scroll log view to bottom
+                verticalScrollView.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        verticalScrollView.smoothScrollTo(0, Integer.MAX_VALUE);
+                    }
+                });
+
+                final Context context = LogViewerActivity.this;
+                contactDeveloper.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem menuItem) {
+                        ContactDeveloperUtil.sendMail(context, logView.getText());
+
+                        return true;
+                    }
+                });
+                ContactDeveloperUtil.setUpMenuItem(context, contactDeveloper);
             }
 
             @Override
@@ -61,17 +85,8 @@ public class LogViewerActivity extends ActionBarActivity {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.contact_developer, menu);
 
-        MenuItem contactDeveloper = menu.findItem(R.id.contact_developer);
-        contactDeveloper.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem menuItem) {
-                ContactDeveloperUtil.sendMail(LogViewerActivity.this,
-                        logView.getText());
-
-                return true;
-            }
-        });
-        ContactDeveloperUtil.setUpMenuItem(this, contactDeveloper);
+        contactDeveloper = menu.findItem(R.id.contact_developer);
+        contactDeveloper.setEnabled(false);
 
         return super.onCreateOptionsMenu(menu);
     }

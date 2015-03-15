@@ -16,12 +16,11 @@
 
 package com.gmail.walles.johan.batterylogger;
 
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeries;
-
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.Arrays;

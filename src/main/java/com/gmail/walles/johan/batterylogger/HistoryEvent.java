@@ -16,15 +16,15 @@
 
 package com.gmail.walles.johan.batterylogger;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.text.ParseException;
 import java.util.Date;
 
 class HistoryEvent implements Comparable<HistoryEvent> {
     @Override
-    public int compareTo(@NotNull HistoryEvent historyEvent) {
+    public int compareTo(@NonNull HistoryEvent historyEvent) {
         return getTimestamp().compareTo(historyEvent.getTimestamp());
     }
 
@@ -53,7 +53,7 @@ class HistoryEvent implements Comparable<HistoryEvent> {
         return timestamp;
     }
 
-    public void setTimestamp(@NotNull Date timestamp) {
+    public void setTimestamp(@NonNull Date timestamp) {
         if (this.timestamp != null) {
             throw new IllegalStateException("Timestamp already set");
         }

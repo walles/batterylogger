@@ -17,10 +17,10 @@
 package com.gmail.walles.johan.batterylogger;
 
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeries;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.File;

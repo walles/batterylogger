@@ -30,6 +30,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Html;
 import android.util.Log;
@@ -55,9 +57,6 @@ import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.AnimatorListenerAdapter;
 import com.nineoldandroids.animation.PropertyValuesHolder;
 import com.nineoldandroids.animation.ValueAnimator;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.text.FieldPosition;
@@ -358,7 +357,7 @@ public class BatteryPlotFragment extends Fragment {
         plot.setDomainStep(XYStepMode.SUBDIVIDE, 4);
         plot.setDomainValueFormat(new Format() {
             @Override
-            public StringBuffer format(Object o, @NotNull StringBuffer toAppendTo, @NotNull FieldPosition position) {
+            public StringBuffer format(Object o, @NonNull StringBuffer toAppendTo, @NonNull FieldPosition position) {
                 Date timestamp = History.toDate((Number) o);
                 long domainWidthSeconds = History.doubleToDeltaMs(maxX - minX) / 1000;
                 SimpleDateFormat format;
@@ -376,7 +375,7 @@ public class BatteryPlotFragment extends Fragment {
 
             @Override
             @Nullable
-            public Object parseObject(String s, @NotNull ParsePosition parsePosition) {
+            public Object parseObject(String s, @NonNull ParsePosition parsePosition) {
                 return null;
             }
         });

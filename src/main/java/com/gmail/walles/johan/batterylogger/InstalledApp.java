@@ -16,7 +16,7 @@
 
 package com.gmail.walles.johan.batterylogger;
 
-import org.jetbrains.annotations.Nullable;
+import android.support.annotation.Nullable;
 
 import java.io.BufferedReader;
 import java.io.IOException;

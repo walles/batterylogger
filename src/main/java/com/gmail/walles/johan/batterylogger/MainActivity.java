@@ -17,6 +17,7 @@
 package com.gmail.walles.johan.batterylogger;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Debug;
@@ -114,6 +115,8 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        LogCollector.keepAlive(this);
+
         SystemSamplingService.enable(this);
 
         setContentView(R.layout.activity_main);
@@ -132,6 +135,28 @@ public class MainActivity extends ActionBarActivity {
         MenuItem toggleLegend = menu.findItem(R.id.toggle_legend);
         boolean showLegend = preferences.getBoolean(PREF_SHOW_LEGEND, true);
         toggleLegend.setChecked(showLegend);
+
+        // Set up Contact Developer callback
+        MenuItem contactDeveloper = menu.findItem(R.id.contact_developer);
+        contactDeveloper.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                ContactDeveloperUtil.sendMail(MainActivity.this);
+                return true;
+            }
+        });
+        ContactDeveloperUtil.setUpMenuItem(this, contactDeveloper);
+
+        // Set up View Application Logs callback
+        MenuItem viewAppLogs = menu.findItem(R.id.view_app_logs);
+        viewAppLogs.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem menuItem) {
+                MainActivity.this.startActivity(
+                        new Intent(MainActivity.this, LogViewerActivity.class));
+                return true;
+            }
+        });
 
         return true;
     }

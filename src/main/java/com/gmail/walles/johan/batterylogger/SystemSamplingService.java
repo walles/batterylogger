@@ -21,15 +21,12 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Environment;
 import android.os.IBinder;
 import android.os.SystemClock;
 import android.util.Log;
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Date;
 
 import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
@@ -40,7 +37,6 @@ import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
 public class SystemSamplingService extends Service {
     private static final String SAMPLE_ACTION = "history event sample action";
     private static final String SYSTEM_STATE_FILE_NAME = "system-state.txt";
-    private static final String SAMPLER_ERROR_LOG_FILE_NAME = "battery-logger-errors.log";
 
     /**
      * Start sampling the system state at regular intervals.
@@ -66,28 +62,10 @@ public class SystemSamplingService extends Service {
                 pendingIntent);
     }
 
-    /**
-     * Log an error to {@link #SAMPLER_ERROR_LOG_FILE_NAME}
-     */
-    private static void logError(Throwable t) {
-        File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        File logFile = new File(path, SAMPLER_ERROR_LOG_FILE_NAME);
-        PrintWriter printWriter = null;
-        try {
-            printWriter = new PrintWriter(new FileWriter(logFile, true));
-            t.printStackTrace(printWriter);
-            Log.i(TAG, "Exception written to " + logFile.getAbsolutePath());
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to write exception to " + logFile.getAbsolutePath());
-        } finally {
-            if (printWriter != null) {
-                printWriter.close();
-            }
-        }
-    }
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        LogCollector.keepAlive(this);
+
         final Intent finalIntent = intent;
 
         Thread thread = new Thread("Sampling Thread " + new Date()) {
@@ -96,7 +74,7 @@ public class SystemSamplingService extends Service {
                 try {
                     handleIntent(finalIntent);
                 } catch (Exception e) {
-                    logError(e);
+                    Log.e(TAG, "Failed to handle incoming intent", e);
                 }
             }
         };

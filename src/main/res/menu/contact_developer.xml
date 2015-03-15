@@ -1,6 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
 <!--
-  ~ Copyright 2014 Johan Walles <johan.walles@gmail.com>
+  ~ Copyright 2015 Johan Walles <johan.walles@gmail.com>
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
   ~ you may not use this file except in compliance with the License.
@@ -15,14 +14,12 @@
   ~ limitations under the License.
   -->
 
-<resources>
-
-    <string name="app_name">Battery Logger</string>
-    <string name="toggle_legend">Show legend</string>
-    <string name="toggle_legend_condensed">Legend</string>
-    <string name="contact_developer">Contact Developer</string>
-    <string name="contact_developer_condensed">E-mail dev</string>
-    <string name="view_app_logs">View Application Logs</string>
-    <string name="view_app_logs_condensed">App Logs</string>
-
-</resources>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:yourapp="http://schemas.android.com/apk/res-auto"
+    tools:context="com.gmail.walles.johan.batterylogger.LogViewerActivity">
+    <item android:id="@+id/contact_developer"
+        android:title="@string/contact_developer"
+        android:titleCondensed="@string/contact_developer_condensed"
+        yourapp:showAsAction="ifRoom"/>
+</menu>

@@ -146,21 +146,22 @@ public class LogCollector {
     }
 
     private static Collection<Integer> getLogCollectorPids(Context context) {
+        long t0 = System.currentTimeMillis();
+
         final String logcatCommandLine[] = createLogcatCommandLine(context);
 
         Collection<Integer> pids = new LinkedList<>();
         for (File directory : new File("/proc").listFiles()) {
-            if (!directory.isDirectory()) {
+            try {
+                if (!"logcat".equals(new File(directory, "exe").getCanonicalFile().getName())) {
+                    continue;
+                }
+            } catch (IOException e) {
+                // Permission denied; not our logcat
                 continue;
             }
 
             File cmdline = new File(directory, "cmdline");
-            if (!cmdline.exists()) {
-                continue;
-            }
-            if (!cmdline.canRead()) {
-                continue;
-            }
 
             BufferedReader cmdlineReader;
             try {
@@ -196,6 +197,10 @@ public class LogCollector {
                 }
             }
         }
+
+        long t1 = System.currentTimeMillis();
+        long deltaMs = t1 - t0;
+        Log.v(TAG, "Listing logcat PIDs took " + deltaMs + "ms");
 
         return pids;
     }

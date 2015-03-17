@@ -82,18 +82,18 @@ public class LogCollector {
     }
 
     static boolean isAlive(Context context) {
-        if (getLogCollectorPids(context).isEmpty()) {
-            Log.v(TAG,
-                    "No log collector processes found, assuming dead");
-            return false;
-        }
-
         long latestLogMessageAgeMs =
                 System.currentTimeMillis() - getLatestLogMessageTimestamp(context).getTime();
         if (latestLogMessageAgeMs < 10000) {
             Log.v(TAG,
-                "Log collector last collected " + latestLogMessageAgeMs + "ms ago, assuming alive");
+                    "Log collector last collected " + latestLogMessageAgeMs + "ms ago, assuming alive");
             return true;
+        }
+
+        if (getLogCollectorPids(context).isEmpty()) {
+            Log.v(TAG,
+                    "No log collector processes found, assuming dead");
+            return false;
         }
 
         // Log a canary message

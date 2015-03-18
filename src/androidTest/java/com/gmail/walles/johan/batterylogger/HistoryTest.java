@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Johan Walles <johan.walles@gmail.com>
+ * Copyright 2015 Johan Walles <johan.walles@gmail.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class HistoryTest extends AndroidTestCase {
             assertTrue(diff, diffMs < 1000L);
         }
     }
-    
+
     private void assertDrainTimestamps(Date ... expectedTimestamps) throws Exception {
         assertTimestampEquals(expectedTimestamps, new History(testStorage).getBatteryDrain());
     }

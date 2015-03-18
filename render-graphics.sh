@@ -31,13 +31,15 @@ cd "$(dirname $0)"/gfx
 EOF
 
 RES=../src/main/res
+mkdir -p $RES/drawable-xxxhdpi
 mkdir -p $RES/drawable-xxhdpi
 mkdir -p $RES/drawable-xhdpi
 mkdir -p $RES/drawable-hdpi
-mkdir -p $RES/drawable-mhdpi
+mkdir -p $RES/drawable-mdpi
 
 # From http://lifehacker.com/5962420/batch-resize-images-quickly-in-the-os-x-terminal
 PNG=ic_launcher.png
+sips -Z 192 logo.png --out $RES/drawable-xxxhdpi/$PNG
 sips -Z 144 logo.png --out $RES/drawable-xxhdpi/$PNG
 sips -Z  96 logo.png --out $RES/drawable-xhdpi/$PNG
 sips -Z  72 logo.png --out $RES/drawable-hdpi/$PNG

@@ -26,6 +26,7 @@ import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -88,6 +89,9 @@ public class BatteryPlotFragment extends Fragment {
     private EventFormatter eventFormatter;
 
     private XYSeries drainDots;
+
+    private CharSequence legendHtml;
+    private View rootView;
 
     @Nullable
     private AlertDialog visibleDialog;
@@ -225,15 +229,42 @@ public class BatteryPlotFragment extends Fragment {
         return source.subSequence(0, i+1);
     }
 
-    private void initializeLegend(final TextView legend) {
-        // From: http://stackoverflow.com/questions/6068197/utils-read-resource-text-file-to-string-java#answer-18897411
-        String html = new Scanner(this.getClass().getResourceAsStream("/legend.html"), "UTF-8").useDelimiter("\\A").next();
-        legend.setText(trimTrailingWhitespace(Html.fromHtml(html)));
+    private void startLoadingLegendHtml() {
+        // Load the legend HTML
+        new AsyncTask<Void, Void, CharSequence>() {
+            @Override
+            protected CharSequence doInBackground(Void... voids) {
+                // From: http://stackoverflow.com/questions/6068197/utils-read-resource-text-file-to-string-java#answer-18897411
+                String html = new Scanner(this.getClass().getResourceAsStream("/legend.html"), "UTF-8").useDelimiter("\\A").next();
+                return trimTrailingWhitespace(Html.fromHtml(html));
+            }
+
+            @Override
+            protected void onPostExecute(CharSequence html) {
+                legendHtml = html;
+                finalizeView();
+            }
+        }.execute();
+    }
+
+    /**
+     * When we have both {@link #rootView} and {@link #legendHtml}, put everything in place in the
+     * view.
+     */
+    private void finalizeView() {
+        TextView legendTextView = (TextView)rootView.findViewById(R.id.legend);
+        if (legendHtml == null) {
+            return;
+        }
+        if (legendTextView == null) {
+            return;
+        }
+        legendTextView.setText(legendHtml);
 
         // Check MainActivity.PREF_SHOW_LEGEND and set legend visibility from that
         SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
         boolean showLegend = preferences.getBoolean(MainActivity.PREF_SHOW_LEGEND, true);
-        legend.setVisibility(showLegend ? View.VISIBLE : View.GONE);
+        legendTextView.setVisibility(showLegend ? View.VISIBLE : View.GONE);
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             int width = (int)spToPixels(LEGEND_WIDTH_LANDSCAPE_SP);
@@ -246,8 +277,10 @@ public class BatteryPlotFragment extends Fragment {
                 width = (int)(landscapeWidth * 0.4);
             }
 
-            legend.getLayoutParams().width = width;
+            legendTextView.getLayoutParams().width = width;
         }
+
+        Log.v(TAG, "Legend loaded and " + (showLegend ? "visible" : "invisible"));
     }
 
     @Override
@@ -256,14 +289,13 @@ public class BatteryPlotFragment extends Fragment {
     {
         long t0 = System.currentTimeMillis();
 
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        startLoadingLegendHtml();
+
+        rootView = inflater.inflate(R.layout.fragment_main, container, false);
         if (rootView == null) {
             throw new RuntimeException("Got a null root view");
         }
-
-        // Initialize our WebView legend
-        TextView legend = (TextView)rootView.findViewById(R.id.legend);
-        initializeLegend(legend);
+        finalizeView();
 
         // Initialize our XYPlot view reference:
         final XYPlot plot = (XYPlot)rootView.findViewById(R.id.mySimpleXYPlot);

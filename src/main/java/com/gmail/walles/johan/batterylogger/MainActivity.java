@@ -47,6 +47,7 @@ public class MainActivity extends ActionBarActivity {
     private static final int REFRESH_PLOT_EVERY_MINUTES = 60;
 
     private long lastShown = -(24 * 60 * 60 * 1000);
+    private BatteryPlotFragment batteryPlotFragment;
 
     @SuppressLint("SdCardPath")
     private static String getTraceFileName() {
@@ -100,9 +101,15 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void refreshBatteryPlotFragment() {
+        batteryPlotFragment = new BatteryPlotFragment();
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.container, new BatteryPlotFragment())
+                .replace(R.id.container, batteryPlotFragment)
                 .commit();
+
+        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+        boolean showLegend = preferences.getBoolean(PREF_SHOW_LEGEND, true);
+        batteryPlotFragment.setShowLegend(showLegend);
+
         lastShown = SystemClock.elapsedRealtime();
     }
 
@@ -186,17 +193,6 @@ public class MainActivity extends ActionBarActivity {
         return true;
     }
 
-    private void toggleLegend(MenuItem toggleLegend) {
-        SharedPreferences preferences = getPreferences(MODE_PRIVATE);
-        boolean showLegend = preferences.getBoolean(PREF_SHOW_LEGEND, true);
-        showLegend = !showLegend;
-        preferences.edit().putBoolean(PREF_SHOW_LEGEND, showLegend).commit();
-
-        toggleLegend.setChecked(showLegend);
-
-        refreshBatteryPlotFragment();
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -204,7 +200,15 @@ public class MainActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.toggle_legend) {
-            toggleLegend(item);
+            SharedPreferences preferences = getPreferences(MODE_PRIVATE);
+            boolean showLegend = preferences.getBoolean(PREF_SHOW_LEGEND, true);
+            showLegend = !showLegend;
+            preferences.edit().putBoolean(PREF_SHOW_LEGEND, showLegend).commit();
+
+            item.setChecked(showLegend);
+
+            batteryPlotFragment.setShowLegend(showLegend);
+
             return true;
         }
         return super.onOptionsItemSelected(item);

@@ -91,7 +91,8 @@ public class BatteryPlotFragment extends Fragment {
     private XYSeries drainDots;
 
     private CharSequence legendHtml;
-    private View rootView;
+
+    private boolean showLegend = false;
 
     @Nullable
     private AlertDialog visibleDialog;
@@ -248,22 +249,27 @@ public class BatteryPlotFragment extends Fragment {
     }
 
     /**
-     * When we have both {@link #rootView} and {@link #legendHtml}, put everything in place in the
-     * view.
+     * When we have been attached to a View and {@link #legendHtml} is loaded, put everything in
+     * place in the view.
      */
     private void finalizeView() {
-        TextView legendTextView = (TextView)rootView.findViewById(R.id.legend);
+        View view = getView();
+        if (view == null) {
+            return;
+        }
         if (legendHtml == null) {
             return;
         }
+
+        final TextView legendTextView = (TextView) view.findViewById(R.id.legend);
         if (legendTextView == null) {
             return;
         }
-        legendTextView.setText(legendHtml);
 
-        // Check MainActivity.PREF_SHOW_LEGEND and set legend visibility from that
-        SharedPreferences preferences = getActivity().getPreferences(Context.MODE_PRIVATE);
-        boolean showLegend = preferences.getBoolean(MainActivity.PREF_SHOW_LEGEND, true);
+        if (legendTextView.getText() != legendHtml) {
+            legendTextView.setText(legendHtml);
+        }
+
         legendTextView.setVisibility(showLegend ? View.VISIBLE : View.GONE);
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
@@ -283,6 +289,16 @@ public class BatteryPlotFragment extends Fragment {
         Log.v(TAG, "Legend loaded and " + (showLegend ? "visible" : "invisible"));
     }
 
+    public void setShowLegend(boolean showLegend) {
+        if (this.showLegend == showLegend) {
+            return;
+        }
+
+        this.showLegend = showLegend;
+
+        finalizeView();
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
             Bundle savedInstanceState)
@@ -291,7 +307,7 @@ public class BatteryPlotFragment extends Fragment {
 
         startLoadingLegendHtml();
 
-        rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         if (rootView == null) {
             throw new RuntimeException("Got a null root view");
         }

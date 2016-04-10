@@ -19,14 +19,17 @@ package com.gmail.walles.johan.batterylogger;
 import timber.log.Timber;
 
 public class Util {
+    private static Class<Timber> initializedLoggingClass = null;
+
     private Util() {
         // Don't let people instantiate this class
     }
 
     public static void setUpLogging() {
-        if (Timber.treeCount() == 0) {
+        if (initializedLoggingClass == Timber.class) {
             return;
         }
+        initializedLoggingClass = Timber.class;
 
         Timber.plant(new Timber.DebugTree());
     }

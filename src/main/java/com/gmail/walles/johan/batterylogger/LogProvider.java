@@ -22,18 +22,18 @@ import android.content.UriMatcher;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import java.io.FileNotFoundException;
+
+import timber.log.Timber;
 
 /**
  * Inspired by http://stephendnicholas.com/archives/974
  */
 public class LogProvider extends ContentProvider {
     public static final String AUTHORITY = "com.gmail.walles.johan.batterylogger";
-
-    private static final String TAG = "LogProvider";
 
     private static final int URI_CODE = 1;
 
@@ -42,6 +42,8 @@ public class LogProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
+        Util.setUpLogging();
+
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
         // Add a URI to the matcher which will match against the form
@@ -53,13 +55,13 @@ public class LogProvider extends ContentProvider {
     }
 
     @Override
-    public ParcelFileDescriptor openFile(Uri uri, String ignoredMode)
+    public ParcelFileDescriptor openFile(@NonNull Uri uri, @NonNull String ignoredMode)
             throws FileNotFoundException
     {
-        Log.v(TAG, "Called with URI: '" + uri);
+        Timber.v("Called with URI: '%s", uri);
 
         if (uriMatcher.match(uri) != URI_CODE) {
-            Log.v(TAG, "Unsupported uri: '" + uri + "'.");
+            Timber.v("Unsupported uri: '%s'.", uri);
             throw new FileNotFoundException("Unsupported uri: " + uri);
         }
 
@@ -71,32 +73,32 @@ public class LogProvider extends ContentProvider {
     }
 
     @Override
-    public int update(Uri uri, ContentValues contentvalues, String s,
+    public int update(@NonNull Uri uri, ContentValues contentvalues, String s,
                       String[] as)
     {
         return 0;
     }
 
     @Override
-    public int delete(Uri uri, String s, String[] as) {
+    public int delete(@NonNull Uri uri, String s, String[] as) {
         return 0;
     }
 
     @Override
     @Nullable
-    public Uri insert(Uri uri, ContentValues contentvalues) {
+    public Uri insert(@NonNull Uri uri, ContentValues contentvalues) {
         return null;
     }
 
     @Override
     @Nullable
-    public String getType(Uri uri) {
+    public String getType(@NonNull Uri uri) {
         return null;
     }
 
     @Override
     @Nullable
-    public Cursor query(Uri uri, String[] projection, String s, String[] as1,
+    public Cursor query(@NonNull Uri uri, String[] projection, String s, String[] as1,
                         String s1)
     {
         return null;

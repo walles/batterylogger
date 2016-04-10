@@ -23,13 +23,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.SystemClock;
-import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
-import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
+import timber.log.Timber;
 
 /**
  * Sample the system state at regular intervals.
@@ -42,7 +41,7 @@ public class SystemSamplingService extends Service {
      * Start sampling the system state at regular intervals.
      */
     public static void enable(Context context) {
-        Log.v(TAG, "Setting repeating system state sampling alarm...");
+        Timber.v("Setting repeating system state sampling alarm...");
 
         Intent intent = new Intent(context, SystemSamplingService.class);
         intent.setAction(SAMPLE_ACTION);
@@ -74,7 +73,7 @@ public class SystemSamplingService extends Service {
                 try {
                     handleIntent(finalIntent);
                 } catch (Exception e) {
-                    Log.e(TAG, "Failed to handle incoming intent", e);
+                    Timber.e(e, "Failed to handle incoming intent");
                 }
             }
         };
@@ -85,7 +84,7 @@ public class SystemSamplingService extends Service {
 
     private void handleIntent(Intent intent) throws IOException {
         if (!SAMPLE_ACTION.equals(intent.getAction())) {
-            Log.w(TAG, "Ignoring unknown action " + intent.getAction());
+            Timber.w("Ignoring unknown action %s", intent.getAction());
             return;
         }
 

@@ -21,6 +21,9 @@
 
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
+    <!-- For Crashlytics -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <!-- For writing trace files on real devices during development
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     -->
@@ -66,5 +69,9 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </receiver>
+
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="***REMOVED***"/>
     </application>
 </manifest>

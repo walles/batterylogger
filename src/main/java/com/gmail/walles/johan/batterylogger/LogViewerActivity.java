@@ -26,6 +26,10 @@ import android.view.MenuItem;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.crashlytics.android.Crashlytics;
+
+import io.fabric.sdk.android.Fabric;
+
 /**
  * Show collected system logs and offer user to compose an e-mail to the developer.
  */
@@ -38,6 +42,7 @@ public class LogViewerActivity extends ActionBarActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Fabric.with(this, new Crashlytics());
         Util.setUpLogging();
 
         setContentView(R.layout.contact_developer_layout);

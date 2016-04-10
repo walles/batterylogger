@@ -24,10 +24,13 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.os.SystemClock;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 
+import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
 /**
@@ -59,6 +62,14 @@ public class SystemSamplingService extends Service {
                 SystemClock.elapsedRealtime() + 30 * 1000,
                 AlarmManager.INTERVAL_FIFTEEN_MINUTES,
                 pendingIntent);
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        Fabric.with(this, new Crashlytics());
+        Util.setUpLogging();
     }
 
     @Override

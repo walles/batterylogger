@@ -369,12 +369,14 @@ public class BatteryPlotFragment extends Fragment {
         plot.getDomainLabelWidget().setVisible(false);
         plot.getLegendWidget().setVisible(false);
 
-        plot.getGraphWidget().getRangeTickLabelPaint().setTextSize(labelHeightPixels);
-        plot.getGraphWidget().getDomainTickLabelPaint().setTextSize(labelHeightPixels);
+        plot.getGraphWidget().getRangeLabelPaint().setTextSize(labelHeightPixels);
+        plot.getGraphWidget().getRangeOriginLabelPaint().setTextSize(labelHeightPixels);
+        plot.getGraphWidget().getDomainLabelPaint().setTextSize(labelHeightPixels);
+        plot.getGraphWidget().getDomainOriginLabelPaint().setTextSize(labelHeightPixels);
 
         // Tell the widget about how much space we should reserve for the range label widgets
-        final float maxRangeLabelWidth = plot.getGraphWidget().getRangeTickLabelPaint().measureText("25.0");
-        plot.getGraphWidget().setRangeTickLabelWidth(maxRangeLabelWidth);
+        final float maxRangeLabelWidth = plot.getGraphWidget().getRangeLabelPaint().measureText("25.0");
+        plot.getGraphWidget().setRangeLabelWidth(maxRangeLabelWidth);
 
         // Need room for top scale label
         plot.getGraphWidget().setMarginTop(labelHeightPixels);

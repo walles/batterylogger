@@ -17,7 +17,6 @@
 package com.gmail.walles.johan.batterylogger;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,12 +34,12 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
+import timber.log.Timber;
+
 /**
  * Functionality for recording and accessing events logged by the app.
  */
 public class LogCollector {
-    private static final String TAG = "LogCollector";
-
     /**
      * Make sure logs are being collected. Call periodically or at app /service startup.
      */
@@ -56,9 +55,9 @@ public class LogCollector {
         try {
             Runtime.getRuntime().exec(createLogcatCommandLine(context));
 
-            Log.i(TAG, "Background logcat started, logging into " + logfile.getParent());
+            Timber.i("Background logcat started, logging into " + logfile.getParent());
         } catch (IOException e) {
-            Log.e(TAG, "Executing logcat failed", e);
+            Timber.e(e, "Executing logcat failed");
         }
     }
 
@@ -85,35 +84,33 @@ public class LogCollector {
         long latestLogMessageAgeMs =
                 System.currentTimeMillis() - getLatestLogMessageTimestamp(context).getTime();
         if (latestLogMessageAgeMs < 10000) {
-            Log.v(TAG,
-                    "Log collector last collected " + latestLogMessageAgeMs + "ms ago, assuming alive");
+            Timber.v("Log collector last collected " + latestLogMessageAgeMs + "ms ago, assuming alive");
             return true;
         }
 
         if (getLogCollectorPids(context).isEmpty()) {
-            Log.v(TAG,
-                    "No log collector processes found, assuming dead");
+            Timber.v("No log collector processes found, assuming dead");
             return false;
         }
 
         // Log a canary message
-        Log.v(TAG, "Checking whether the log collector is up...");
+        Timber.v("Checking whether the log collector is up...");
 
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            Log.w(TAG, "Sleeping for log message to be collected failed", e);
+            Timber.w(e, "Sleeping for log message to be collected failed");
         }
 
         latestLogMessageAgeMs =
                 System.currentTimeMillis() - getLatestLogMessageTimestamp(context).getTime();
         if (latestLogMessageAgeMs < 10000) {
             // We recently caught a message
-            Log.v(TAG, "It's alive");
+            Timber.v("It's alive");
             return true;
         }
 
-        Log.v(TAG, "It's dead");
+        Timber.v("It's dead");
         return false;
     }
 
@@ -182,25 +179,25 @@ public class LogCollector {
                 try {
                     pids.add(Integer.valueOf(directory.getName()));
                 } catch (NumberFormatException e) {
-                    Log.w(TAG, "Couldn't parse into pid: " + directory.getName());
+                    Timber.w("Couldn't parse into pid: " + directory.getName());
                     continue;
                 }
             } catch (IOException e) {
-                Log.w(TAG, "Reading command line failed: " + cmdline.getAbsolutePath());
+                Timber.w("Reading command line failed: " + cmdline.getAbsolutePath());
                 continue;
             } finally {
                 try {
                     cmdlineReader.close();
                 } catch (IOException e) {
                     // Closing is a best-effort operation, this exception intentionally ignored
-                    Log.w(TAG, "Failed to close " + cmdline, e);
+                    Timber.w(e, "Failed to close " + cmdline);
                 }
             }
         }
 
         long t1 = System.currentTimeMillis();
         long deltaMs = t1 - t0;
-        Log.v(TAG, "Listing logcat PIDs took " + deltaMs + "ms");
+        Timber.v("Listing logcat PIDs took " + deltaMs + "ms");
 
         return pids;
     }
@@ -210,16 +207,16 @@ public class LogCollector {
      */
     static void kill(Context context) {
         long t0 = System.currentTimeMillis();
-        Log.d(TAG, "Cleaning up old logcat processes...");
+        Timber.d("Cleaning up old logcat processes...");
         int killCount = 0;
         for (Integer pid: getLogCollectorPids(context)) {
-            Log.i(TAG, "Killing old logcat process: " + pid);
+            Timber.i("Killing old logcat process: " + pid);
             android.os.Process.killProcess(pid);
             killCount++;
         }
 
         long t1 = System.currentTimeMillis();
-        Log.i(TAG, "Killed " + killCount + " old logcats in " + (t1 - t0) + "ms");
+        Timber.i("Killed " + killCount + " old logcats in " + (t1 - t0) + "ms");
     }
 
     public static CharSequence readLogs(Context context) {
@@ -250,7 +247,7 @@ public class LogCollector {
                 // http://stackoverflow.com/a/7449797/473672
                 returnMe.append(new Scanner(logFile).useDelimiter("\\A").next());
             } catch (FileNotFoundException | NoSuchElementException e) {
-                Log.e(TAG, "Reading log file failed: " + logFile.getAbsolutePath(), e);
+                Timber.e(e, "Reading log file failed: " + logFile.getAbsolutePath());
 
                 StringWriter stringWriter = new StringWriter();
                 e.printStackTrace(new PrintWriter(stringWriter));

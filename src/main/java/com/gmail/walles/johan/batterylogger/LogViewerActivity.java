@@ -16,7 +16,6 @@
 
 package com.gmail.walles.johan.batterylogger;
 
-import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
@@ -38,6 +37,9 @@ public class LogViewerActivity extends ActionBarActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Util.setUpLogging();
+
         setContentView(R.layout.contact_developer_layout);
 
         logView = (TextView)findViewById(R.id.logView);

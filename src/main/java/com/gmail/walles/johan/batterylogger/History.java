@@ -18,7 +18,7 @@ package com.gmail.walles.johan.batterylogger;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
-import android.util.Log;
+
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeries;
 
@@ -36,7 +36,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Random;
 
-import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
+import timber.log.Timber;
 
 public class History {
     private static final int FAKE_HISTORY_DAYS_OLD_START = 30;
@@ -168,7 +168,7 @@ public class History {
                     // Doesn't affect drain
                     continue;
                 default:
-                    Log.w(TAG, "Drain: Unsupported event type " + event.getType());
+                    Timber.w("Drain: Unsupported event type " + event.getType());
                     continue;
             }
             if (systemDown) {
@@ -224,7 +224,7 @@ public class History {
                     returnMe.add(HistoryEvent.deserializeFromString(line));
                 } catch (ParseException e) {
                     // Log this but keep going and hope we get the gist of it
-                    Log.w(TAG, "Reading storage file failed at line " + lineNumber + ": " + storage.getAbsolutePath(), e);
+                    Timber.w(e, "Reading storage file failed at line " + lineNumber + ": " + storage.getAbsolutePath());
                 }
                 lineNumber++;
             }
@@ -234,7 +234,7 @@ public class History {
             }
         }
 
-        Log.i(TAG, returnMe.size() + " events read from " + storage.getAbsolutePath());
+        Timber.i(returnMe.size() + " events read from " + storage.getAbsolutePath());
 
         return returnMe;
     }
@@ -259,7 +259,7 @@ public class History {
                     return HistoryEvent.deserializeFromString(line);
                 } catch (ParseException e) {
                     // Log this but keep going and hope we get the gist of it
-                    Log.w(TAG, "Reading storage file failed at line " + lineNumber + ": " + storage.getAbsolutePath(), e);
+                    Timber.w(e, "Reading storage file failed at line " + lineNumber + ": " + storage.getAbsolutePath());
                 }
                 lineNumber++;
             }
@@ -448,7 +448,7 @@ public class History {
             try {
                 firstEvent = readFirstEventFromStorage();
             } catch (IOException e) {
-                Log.e(TAG, "Unable to read first event from storage file", e);
+                Timber.e(e, "Unable to read first event from storage file");
                 return 0;
             }
         }

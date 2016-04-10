@@ -27,11 +27,12 @@ import android.os.Bundle;
 import android.os.Debug;
 import android.os.SystemClock;
 import android.support.v7.app.ActionBarActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import java.io.File;
+
+import timber.log.Timber;
 
 public class MainActivity extends ActionBarActivity {
     public static final String PREF_SHOW_LEGEND = "show legend";
@@ -43,7 +44,6 @@ public class MainActivity extends ActionBarActivity {
      */
     private static final boolean GENERATE_TRACE_FILES = false;
 
-    public static final String TAG = "BatteryLogger";
     private static final int REFRESH_PLOT_EVERY_MINUTES = 60;
 
     private long lastShown = -(24 * 60 * 60 * 1000);
@@ -73,7 +73,7 @@ public class MainActivity extends ActionBarActivity {
 
         if (GENERATE_TRACE_FILES) {
             String traceFileName = getTraceFileName();
-            Log.i(TAG, "Traces will be saved to " + traceFileName);
+            Timber.i("Traces will be saved to " + traceFileName);
             Debug.startMethodTracing(traceFileName);
         }
     }
@@ -126,6 +126,8 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        Util.setUpLogging();
+
         LogCollector.keepAlive(this);
 
         SystemSamplingService.enable(this);
@@ -161,28 +163,28 @@ public class MainActivity extends ActionBarActivity {
                     versionName = context.getPackageManager()
                             .getPackageInfo(context.getPackageName(), 0).versionName;
                 } catch (PackageManager.NameNotFoundException e) {
-                    Log.w(TAG, "Getting version name failed", e);
+                    Timber.w(e, "Getting version name failed");
                 }
 
                 new AlertDialog.Builder(MainActivity.this)
                         .setTitle(applicationLabel)
                         .setMessage("Version " + versionName)
                         .setNeutralButton(R.string.view_app_logs,
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        final Intent viewLogsIntent =
-                                                new Intent(context, LogViewerActivity.class);
-                                        context.startActivity(viewLogsIntent);
-                                    }
-                                })
+                                         new DialogInterface.OnClickListener() {
+                                             @Override
+                                             public void onClick(DialogInterface dialogInterface, int i) {
+                                                 final Intent viewLogsIntent =
+                                                 new Intent(context, LogViewerActivity.class);
+                                                 context.startActivity(viewLogsIntent);
+                                             }
+                                         })
                         .setPositiveButton(R.string.contact_developer_condensed,
-                                new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        ContactDeveloperUtil.sendMail(MainActivity.this);
-                                    }
-                                })
+                                          new DialogInterface.OnClickListener() {
+                                              @Override
+                                              public void onClick(DialogInterface dialogInterface, int i) {
+                                                  ContactDeveloperUtil.sendMail(MainActivity.this);
+                                              }
+                                          })
                         .setIcon(R.drawable.ic_launcher)
                         .show();
 
@@ -203,7 +205,7 @@ public class MainActivity extends ActionBarActivity {
             SharedPreferences preferences = getPreferences(MODE_PRIVATE);
             boolean showLegend = preferences.getBoolean(PREF_SHOW_LEGEND, true);
             showLegend = !showLegend;
-            preferences.edit().putBoolean(PREF_SHOW_LEGEND, showLegend).commit();
+            preferences.edit().putBoolean(PREF_SHOW_LEGEND, showLegend).apply();
 
             item.setChecked(showLegend);
 

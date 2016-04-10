@@ -35,7 +35,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Html;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.GestureDetector;
@@ -71,7 +70,7 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
-import static com.gmail.walles.johan.batterylogger.MainActivity.TAG;
+import timber.log.Timber;
 
 public class BatteryPlotFragment extends Fragment {
     private static final int IN_GRAPH_TEXT_SIZE_SP = 12;
@@ -211,7 +210,7 @@ public class BatteryPlotFragment extends Fragment {
         visibleDialog = showAlertDialog(title, message, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                preferences.edit().putBoolean(shownTag, true).commit();
+                preferences.edit().putBoolean(shownTag, true).apply();
                 shownDialogs.add(shownTag);
                 dialogInterface.dismiss();
             }
@@ -286,7 +285,7 @@ public class BatteryPlotFragment extends Fragment {
             legendTextView.getLayoutParams().width = width;
         }
 
-        Log.v(TAG, "Legend loaded and " + (showLegend ? "visible" : "invisible"));
+        Timber.v("Legend loaded and " + (showLegend ? "visible" : "invisible"));
     }
 
     public void setShowLegend(boolean showLegend) {
@@ -336,7 +335,7 @@ public class BatteryPlotFragment extends Fragment {
 
         long t1 = System.currentTimeMillis();
         long dMillis = t1 - t0;
-        Log.i(TAG, "Setting up view took " + dMillis + "ms");
+        Timber.i("Setting up view took " + dMillis + "ms");
 
         return rootView;
     }
@@ -530,7 +529,7 @@ public class BatteryPlotFragment extends Fragment {
                         "If you come back in a week you'll be able to see patterns much better.");
             }
         } catch (IOException e) {
-            Log.e(TAG, "Reading battery history failed", e);
+            Timber.e(e, "Reading battery history failed");
             showAlertDialog("Reading Battery History Failed", e.getMessage(), DIALOG_DISMISSER);
         }
     }
@@ -666,25 +665,24 @@ public class BatteryPlotFragment extends Fragment {
                 long t1 = SystemClock.elapsedRealtime();
                 long durationMs = t1 - t0;
                 if (nFrames[0] == 0 || durationMs == 0) {
-                    Log.w(TAG,
-                            "Animation had "
-                                    + nFrames[0] + " frames, done in "
-                                    + durationMs + "ms, longest gap was "
-                                    + longestGapMs[0] + "ms at frames "
-                                    + (longestGapBeforeFrame[0] - 1)
-                                    + "-"
-                                    + longestGapBeforeFrame[0]);
+                    Timber.w("Animation had "
+                             + nFrames[0] + " frames, done in "
+                             + durationMs + "ms, longest gap was "
+                             + longestGapMs[0] + "ms at frames "
+                             + (longestGapBeforeFrame[0] - 1)
+                             + "-"
+                             + longestGapBeforeFrame[0]);
                 } else {
                     double fps = nFrames[0] / (durationMs / 1000.0);
                     double msPerFrame = durationMs / ((double)nFrames[0]);
-                    Log.i(TAG, String.format("Animation of %d frames took %dms at %.1ffps or %.1fms/frame, longest time was %dms at frames %d-%d",
+                    Timber.i("Animation of %d frames took %dms at %.1ffps or %.1fms/frame, longest time was %dms at frames %d-%d",
                             nFrames[0],
                             durationMs,
                             fps,
                             msPerFrame,
                             longestGapMs[0],
                             (longestGapBeforeFrame[0] - 1),
-                            longestGapBeforeFrame[0]));
+                            longestGapBeforeFrame[0]);
                 }
 
                 // Avoid any float -> double rounding errors

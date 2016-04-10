@@ -29,17 +29,16 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.MenuItem;
-
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import timber.log.Timber;
+
 public class ContactDeveloperUtil {
-    private static final String TAG = "ContactDeveloperUtil";
     private static final String DEVELOPER_EMAIL = "johan.walles@gmail.com";
 
     /**
@@ -54,7 +53,7 @@ public class ContactDeveloperUtil {
 
             return packageManager.getPackageInfo(packageName, 0);
         } catch (PackageManager.NameNotFoundException e) {
-            Log.w(TAG, "Couldn't find " + packageName);
+            Timber.w("Couldn't find " + packageName);
             return null;
         }
     }
@@ -177,7 +176,7 @@ public class ContactDeveloperUtil {
         final Uri attachmentUri = Uri.parse("content://" + LogProvider.AUTHORITY + "/"
                 + attachmentFile.getName());
         emailIntent.putExtra(Intent.EXTRA_STREAM, attachmentUri);
-        Log.v(TAG, "E-mail attachment URI: " + attachmentUri);
+        Timber.v("E-mail attachment URI: " + attachmentUri);
     }
 
     public static File getAttachmentFile(Context context) {
@@ -216,7 +215,7 @@ public class ContactDeveloperUtil {
         // We're clickable
         contactDeveloper.setEnabled(true);
 
-        Log.i(TAG, "E-mail app is " + sendMailActivity.activityInfo.name);
+        Timber.i("E-mail app is " + sendMailActivity.activityInfo.name);
         if (sendMailActivity.activityInfo.name.endsWith("ResolverActivity")) {
             // This is the resolver activity, don't set an icon
             return;

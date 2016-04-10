@@ -165,7 +165,7 @@ public class DrainLinesCreator {
             return null;
         }
 
-        Timber.v("Drawing drain line at " + y);
+        Timber.v("Drawing drain line at %s", y);
         SimpleXYSeries line = new SimpleXYSeries("don't show this string");
         line.addLast(History.toDouble(lineStart), y);
         line.addLast(History.toDouble(lineEnd), y);

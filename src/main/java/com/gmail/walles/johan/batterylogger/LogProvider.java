@@ -58,10 +58,10 @@ public class LogProvider extends ContentProvider {
     public ParcelFileDescriptor openFile(@NonNull Uri uri, @NonNull String ignoredMode)
             throws FileNotFoundException
     {
-        Timber.v("Called with URI: '" + uri);
+        Timber.v("Called with URI: '%s", uri);
 
         if (uriMatcher.match(uri) != URI_CODE) {
-            Timber.v("Unsupported uri: '" + uri + "'.");
+            Timber.v("Unsupported uri: '%s'.", uri);
             throw new FileNotFoundException("Unsupported uri: " + uri);
         }
 

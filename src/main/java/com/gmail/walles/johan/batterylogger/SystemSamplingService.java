@@ -84,7 +84,7 @@ public class SystemSamplingService extends Service {
 
     private void handleIntent(Intent intent) throws IOException {
         if (!SAMPLE_ACTION.equals(intent.getAction())) {
-            Timber.w("Ignoring unknown action " + intent.getAction());
+            Timber.w("Ignoring unknown action %s", intent.getAction());
             return;
         }
 

@@ -53,7 +53,7 @@ public class ContactDeveloperUtil {
 
             return packageManager.getPackageInfo(packageName, 0);
         } catch (PackageManager.NameNotFoundException e) {
-            Timber.w("Couldn't find " + packageName);
+            Timber.w("Couldn't find %s", packageName);
             return null;
         }
     }
@@ -176,7 +176,7 @@ public class ContactDeveloperUtil {
         final Uri attachmentUri = Uri.parse("content://" + LogProvider.AUTHORITY + "/"
                 + attachmentFile.getName());
         emailIntent.putExtra(Intent.EXTRA_STREAM, attachmentUri);
-        Timber.v("E-mail attachment URI: " + attachmentUri);
+        Timber.v("E-mail attachment URI: %s", attachmentUri);
     }
 
     public static File getAttachmentFile(Context context) {
@@ -215,7 +215,7 @@ public class ContactDeveloperUtil {
         // We're clickable
         contactDeveloper.setEnabled(true);
 
-        Timber.i("E-mail app is " + sendMailActivity.activityInfo.name);
+        Timber.i("E-mail app is %s", sendMailActivity.activityInfo.name);
         if (sendMailActivity.activityInfo.name.endsWith("ResolverActivity")) {
             // This is the resolver activity, don't set an icon
             return;

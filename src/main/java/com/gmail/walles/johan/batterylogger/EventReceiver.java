@@ -26,10 +26,10 @@ public class EventReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (isSystemBoot(intent)) {
-            Timber.i("System is booting, got intent action " + intent.getAction());
+            Timber.i("System is booting, got intent action %s", intent.getAction());
             SystemSamplingService.enable(context);
         } else {
-            Timber.i("Ignoring unknown intent action " + intent.getAction());
+            Timber.i("Ignoring unknown intent action %s", intent.getAction());
         }
     }
 

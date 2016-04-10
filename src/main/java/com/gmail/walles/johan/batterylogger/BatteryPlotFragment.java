@@ -285,7 +285,7 @@ public class BatteryPlotFragment extends Fragment {
             legendTextView.getLayoutParams().width = width;
         }
 
-        Timber.v("Legend loaded and " + (showLegend ? "visible" : "invisible"));
+        Timber.v("Legend loaded and %s", showLegend ? "visible" : "invisible");
     }
 
     public void setShowLegend(boolean showLegend) {
@@ -335,7 +335,7 @@ public class BatteryPlotFragment extends Fragment {
 
         long t1 = System.currentTimeMillis();
         long dMillis = t1 - t0;
-        Timber.i("Setting up view took " + dMillis + "ms");
+        Timber.i("Setting up view took %dms", dMillis);
 
         return rootView;
     }
@@ -665,13 +665,8 @@ public class BatteryPlotFragment extends Fragment {
                 long t1 = SystemClock.elapsedRealtime();
                 long durationMs = t1 - t0;
                 if (nFrames[0] == 0 || durationMs == 0) {
-                    Timber.w("Animation had "
-                             + nFrames[0] + " frames, done in "
-                             + durationMs + "ms, longest gap was "
-                             + longestGapMs[0] + "ms at frames "
-                             + (longestGapBeforeFrame[0] - 1)
-                             + "-"
-                             + longestGapBeforeFrame[0]);
+                    Timber.w("Animation had %d frames, done in %dms, longest gap was %dms at frames %d-%d",
+                            nFrames[0], durationMs, longestGapMs[0], longestGapBeforeFrame[0] - 1, longestGapBeforeFrame[0]);
                 } else {
                     double fps = nFrames[0] / (durationMs / 1000.0);
                     double msPerFrame = durationMs / ((double)nFrames[0]);

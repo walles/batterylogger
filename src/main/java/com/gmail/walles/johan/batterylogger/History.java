@@ -168,7 +168,7 @@ public class History {
                     // Doesn't affect drain
                     continue;
                 default:
-                    Timber.w("Drain: Unsupported event type " + event.getType());
+                    Timber.w("Drain: Unsupported event type %s", event.getType());
                     continue;
             }
             if (systemDown) {
@@ -224,7 +224,7 @@ public class History {
                     returnMe.add(HistoryEvent.deserializeFromString(line));
                 } catch (ParseException e) {
                     // Log this but keep going and hope we get the gist of it
-                    Timber.w(e, "Reading storage file failed at line " + lineNumber + ": " + storage.getAbsolutePath());
+                    Timber.w(e, "Reading storage file failed at line %d: %s", lineNumber, storage.getAbsolutePath());
                 }
                 lineNumber++;
             }
@@ -234,7 +234,7 @@ public class History {
             }
         }
 
-        Timber.i(returnMe.size() + " events read from " + storage.getAbsolutePath());
+        Timber.i("%d events read from %s", returnMe.size(), storage.getAbsolutePath());
 
         return returnMe;
     }
@@ -259,7 +259,7 @@ public class History {
                     return HistoryEvent.deserializeFromString(line);
                 } catch (ParseException e) {
                     // Log this but keep going and hope we get the gist of it
-                    Timber.w(e, "Reading storage file failed at line " + lineNumber + ": " + storage.getAbsolutePath());
+                    Timber.w(e, "Reading storage file failed at line %d: %s", lineNumber, storage.getAbsolutePath());
                 }
                 lineNumber++;
             }

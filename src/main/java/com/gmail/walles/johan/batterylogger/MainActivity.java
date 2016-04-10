@@ -73,7 +73,7 @@ public class MainActivity extends ActionBarActivity {
 
         if (GENERATE_TRACE_FILES) {
             String traceFileName = getTraceFileName();
-            Timber.i("Traces will be saved to " + traceFileName);
+            Timber.i("Traces will be saved to %s", traceFileName);
             Debug.startMethodTracing(traceFileName);
         }
     }

@@ -42,7 +42,7 @@ public class LogProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        Util.setUpLogging();
+        TimberUtil.setUpLogging();
 
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 

@@ -30,8 +30,11 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.crashlytics.android.Crashlytics;
+
 import java.io.File;
 
+import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
 public class MainActivity extends ActionBarActivity {
@@ -126,7 +129,8 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Util.setUpLogging();
+        Fabric.with(this, new Crashlytics());
+        TimberUtil.setUpLogging();
 
         LogCollector.keepAlive(this);
 

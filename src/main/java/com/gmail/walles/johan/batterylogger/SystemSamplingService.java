@@ -69,7 +69,7 @@ public class SystemSamplingService extends Service {
         super.onCreate();
 
         Fabric.with(this, new Crashlytics());
-        Util.setUpLogging();
+        TimberUtil.setUpLogging();
     }
 
     @Override

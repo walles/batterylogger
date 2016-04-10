@@ -43,7 +43,7 @@ public class LogViewerActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
 
         Fabric.with(this, new Crashlytics());
-        Util.setUpLogging();
+        TimberUtil.setUpLogging();
 
         setContentView(R.layout.contact_developer_layout);
 

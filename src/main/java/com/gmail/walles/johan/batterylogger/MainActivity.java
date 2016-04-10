@@ -130,7 +130,7 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
 
         Fabric.with(this, new Crashlytics());
-        Util.setUpLogging();
+        TimberUtil.setUpLogging();
 
         LogCollector.keepAlive(this);
 

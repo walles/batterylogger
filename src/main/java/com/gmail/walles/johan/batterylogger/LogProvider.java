@@ -25,11 +25,8 @@ import android.os.ParcelFileDescriptor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
-import com.crashlytics.android.Crashlytics;
-
 import java.io.FileNotFoundException;
 
-import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
 /**
@@ -45,7 +42,7 @@ public class LogProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        Util.setUpLogging();
+        TimberUtil.setUpLogging();
 
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 

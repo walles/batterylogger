@@ -16,12 +16,17 @@
 
 package com.gmail.walles.johan.batterylogger;
 
+import android.text.TextUtils;
+import android.util.Log;
+
+import com.crashlytics.android.Crashlytics;
+
 import timber.log.Timber;
 
-public class Util {
+public class TimberUtil {
     private static Class<Timber> initializedLoggingClass = null;
 
-    private Util() {
+    private TimberUtil() {
         // Don't let people instantiate this class
     }
 
@@ -31,6 +36,29 @@ public class Util {
         }
         initializedLoggingClass = Timber.class;
 
-        Timber.plant(new Timber.DebugTree());
+        if (BuildConfig.DEBUG) {
+            Timber.plant(new Timber.DebugTree());
+        } else /* RELEASE */ {
+            Timber.plant(new CrashlyticsTree());
+        }
+    }
+
+    private static class CrashlyticsTree extends Timber.Tree {
+        @Override
+        protected void log(int priority, String tag, String message, Throwable t) {
+            if (t == null && priority < Log.WARN) {
+                return;
+            }
+
+            if (TextUtils.isEmpty(tag)) {
+                tag = "BatteryLogger";
+            }
+
+            Crashlytics.log(priority, tag, message);
+
+            if (t != null) {
+                Crashlytics.logException(t);
+            }
+        }
     }
 }

@@ -66,7 +66,7 @@ android {
     buildToolsVersion "21.1.2"
 
     defaultConfig {
-        minSdkVersion 8
+        minSdkVersion 15
         targetSdkVersion 21
         versionCode getVersionCode()
         versionName getVersionName()
@@ -95,4 +95,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:21.0.3'
     compile 'com.nineoldandroids:library:2.4.0'
     compile(group:'com.androidplot', name:'androidplot-core', version:'0.6.2-SNAPSHOT', ext:'aar')
+    compile 'com.jakewharton.timber:timber:4.1.2'
 }

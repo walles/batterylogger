@@ -36,9 +36,8 @@ public class TimberUtil {
         }
         initializedLoggingClass = Timber.class;
 
-        if (BuildConfig.DEBUG) {
-            Timber.plant(new Timber.DebugTree());
-        } else /* RELEASE */ {
+        Timber.plant(new AndroidLogTree());
+        if (!BuildConfig.DEBUG) {
             Timber.plant(new CrashlyticsTree());
         }
     }
@@ -59,6 +58,19 @@ public class TimberUtil {
             if (t != null) {
                 Crashlytics.logException(t);
             }
+        }
+    }
+
+    private static class AndroidLogTree extends Timber.Tree {
+        @Override
+        protected void log(int priority, String tag, String message, Throwable t) {
+            if (TextUtils.isEmpty(tag)) {
+                tag = "BatteryLogger";
+            }
+            if (t != null) {
+                message += "\n" + Log.getStackTraceString(t);
+            }
+            Log.println(priority, tag, message);
         }
     }
 }

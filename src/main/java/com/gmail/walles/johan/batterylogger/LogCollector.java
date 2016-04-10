@@ -62,7 +62,8 @@ public class LogCollector {
     }
 
     private static Date getLatestLogMessageTimestamp(Context context) {
-        long newest = Long.MIN_VALUE;
+        // 0 == not found == at the epoch
+        long newest = 0;
 
         File[] logFiles = getLogDir(context).listFiles();
         for (File logfile : logFiles) {
@@ -83,7 +84,9 @@ public class LogCollector {
     static boolean isAlive(Context context) {
         long latestLogMessageAgeMs =
                 System.currentTimeMillis() - getLatestLogMessageTimestamp(context).getTime();
-        if (latestLogMessageAgeMs < 10000) {
+        if (latestLogMessageAgeMs < -1000) {
+            Timber.w("Log collector last collected %dms in the future", -latestLogMessageAgeMs);
+        } else if (latestLogMessageAgeMs < 10000) {
             Timber.v("Log collector last collected %dms ago, assuming alive", latestLogMessageAgeMs);
             return true;
         }

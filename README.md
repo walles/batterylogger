@@ -18,6 +18,17 @@ Building
 Before building the project you need to run render-graphics.sh to
 convert gfx/logo.xcf into icon resources.
 
+You also need to add a `fabric.properties` file in the root of the
+project:
+```
+apiSecret=YOUR_BUILD_SECRET
+apiKey=YOUR_API_KEY
+```
+The values can be retrieved from https://fabric.io/settings/organizations
+by clicking the (very small) `API Key` and `Build Secret` links.
+
+Keys are available for free, just get yourself a pair.
+
 
 Releasing
 ---------
@@ -30,6 +41,8 @@ Releasing
 
 TODO
 ----
+* Enable making debug builds without Crashlytics keys.
+
 * Add a tab where we list installed apps and the average drain speed
 over the time each app has been installed (much like the built-in
 battery app). Clicking on an app should expand that line and show

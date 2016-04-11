@@ -252,6 +252,11 @@ public class BatteryPlotFragment extends Fragment {
      * place in the view.
      */
     private void finalizeView() {
+        if (!isAdded()) {
+            Timber.w("BatteryPlotFragment.finalizeView() called when not attached, ignoring");
+            return;
+        }
+
         View view = getView();
         if (view == null) {
             return;
@@ -270,6 +275,7 @@ public class BatteryPlotFragment extends Fragment {
         }
 
         legendTextView.setVisibility(showLegend ? View.VISIBLE : View.GONE);
+
 
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             int width = (int)spToPixels(LEGEND_WIDTH_LANDSCAPE_SP);

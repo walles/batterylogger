@@ -1,4 +1,5 @@
 .gradle
+/fabric.properties
 /local.properties
 /.idea/workspace.xml
 /.idea/dictionaries/

@@ -25,14 +25,16 @@ import com.crashlytics.android.Crashlytics;
 import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
-public class TimberUtil {
+public class LoggingUtil {
     private static Class<Timber> initializedLoggingClass = null;
 
-    private TimberUtil() {
+    private LoggingUtil() {
         // Don't let people instantiate this class
     }
 
     public static void setUpLogging(Context context) {
+        LogCollector.keepAlive(context);
+
         if (initializedLoggingClass != Timber.class) {
             initializedLoggingClass = Timber.class;
             Timber.plant(new CrashlyticsTree());

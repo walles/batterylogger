@@ -126,9 +126,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        TimberUtil.setUpLogging(this);
-
-        LogCollector.keepAlive(this);
+        LoggingUtil.setUpLogging(this);
 
         SystemSamplingService.enable(this);
 

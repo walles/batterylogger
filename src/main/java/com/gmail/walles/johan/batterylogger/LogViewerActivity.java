@@ -38,7 +38,7 @@ public class LogViewerActivity extends ActionBarActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        TimberUtil.setUpLogging(this);
+        LoggingUtil.setUpLogging(this);
 
         setContentView(R.layout.contact_developer_layout);
 

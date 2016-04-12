@@ -27,9 +27,5 @@ public class LogCollectorTest extends AndroidTestCase {
         Thread.sleep(500);
         assertTrue("Log collector should be alive after calling keepAlive()",
                 LogCollector.isAlive(getContext()));
-
-        LogCollector.kill(getContext());
-        Thread.sleep(500);
-        assertFalse(LogCollector.isAlive(getContext()));
     }
 }

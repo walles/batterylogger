@@ -15,19 +15,23 @@ https://play.google.com/store/apps/details?id=com.gmail.walles.johan.batterylogg
 
 Building
 --------
-Before building the project you need to run render-graphics.sh to
-convert gfx/logo.xcf into icon resources.
+Before building the project you need to run `render-graphics.sh` to
+convert `gfx/logo.xcf` into icon resources.
 
 You also need to add a `fabric.properties` file in the root of the
-project:
+project. Here's one that will enable you to build and run:
 ```
-apiSecret=YOUR_BUILD_SECRET
-apiKey=YOUR_API_KEY
+apiKey=0
+```
+
+If you want to do it properly, [set up a (free) Crashlytics
+account](http://try.crashlytics.com/) and use this `fabric.properties`:
+```
+apiSecret=YOUR_BUILD_SECRET_HERE
+apiKey=YOUR_API_KEY_HERE_
 ```
 The values can be retrieved from https://fabric.io/settings/organizations
 by clicking the (very small) `API Key` and `Build Secret` links.
-
-Keys are available for free, just get yourself a pair.
 
 
 Releasing

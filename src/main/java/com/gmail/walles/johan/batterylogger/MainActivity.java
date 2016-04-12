@@ -30,15 +30,12 @@ import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import com.crashlytics.android.Crashlytics;
-
 import java.io.File;
 
-import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
 public class MainActivity extends ActionBarActivity {
-    public static final String PREF_SHOW_LEGEND = "show legend";
+    private static final String PREF_SHOW_LEGEND = "show legend";
 
     /**
      * Enable this to generate a trace file from when the widget is added to when it is removed.
@@ -129,8 +126,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Fabric.with(this, new Crashlytics());
-        TimberUtil.setUpLogging();
+        TimberUtil.setUpLogging(this);
 
         LogCollector.keepAlive(this);
 

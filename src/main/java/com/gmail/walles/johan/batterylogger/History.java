@@ -235,8 +235,30 @@ public class History {
         }
 
         Timber.i("%d events read from %s", returnMe.size(), storage.getAbsolutePath());
+        long stalenessDays = getStalenessDays(returnMe);
+        if (stalenessDays > 0) {
+            Timber.w("Most recently sampled data was %d days old for %d datapoints, expected at most 15 minutes",
+                    stalenessDays,
+                    returnMe.size());
+        }
 
         return returnMe;
+    }
+
+    private static long getStalenessDays(ArrayList<HistoryEvent> history) {
+        if (history.isEmpty()) {
+            return 0;
+        }
+
+        HistoryEvent lastEvent = history.get(history.size() - 1);
+        Date lastTimestamp = lastEvent.getTimestamp();
+
+        long ageMs = System.currentTimeMillis() - lastTimestamp.getTime();
+        if (ageMs < -10000) {
+            Timber.w("Most recent sample timestamp is %dms in the future", -ageMs);
+        }
+
+        return ageMs / (86400 * 1000);
     }
 
     /**
@@ -435,6 +457,9 @@ public class History {
         return history;
     }
 
+    /**
+     * Returns the age of the oldest history entry in days.
+     */
     public int getHistoryAgeDays() {
         HistoryEvent firstEvent;
 

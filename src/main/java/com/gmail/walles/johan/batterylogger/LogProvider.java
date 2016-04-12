@@ -18,6 +18,7 @@ package com.gmail.walles.johan.batterylogger;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.net.Uri;
@@ -42,7 +43,15 @@ public class LogProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        TimberUtil.setUpLogging();
+        Context context = getContext();
+        if (context == null) {
+            // According to the getContext() docs, the context is "Only available once onCreate()
+            // has been called". According to the source code (API level 21), the context is
+            // available inside of onCreate() as well. If that doesn't hold we want to know about it.
+            throw new NullPointerException("getContext() returned null in LogProvider.onCreate()");
+        }
+
+        TimberUtil.setUpLogging(context);
 
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 
@@ -61,13 +70,17 @@ public class LogProvider extends ContentProvider {
         Timber.v("Called with URI: '%s", uri);
 
         if (uriMatcher.match(uri) != URI_CODE) {
-            Timber.v("Unsupported uri: '%s'.", uri);
             throw new FileNotFoundException("Unsupported uri: " + uri);
+        }
+
+        Context context = getContext();
+        if (context == null) {
+            throw new NullPointerException("getContext() returned null in LogProvider.openFile()");
         }
 
         ParcelFileDescriptor pfd =
                 ParcelFileDescriptor.open(
-                        ContactDeveloperUtil.getAttachmentFile(getContext()),
+                        ContactDeveloperUtil.getAttachmentFile(context),
                         ParcelFileDescriptor.MODE_READ_ONLY);
         return pfd;
     }

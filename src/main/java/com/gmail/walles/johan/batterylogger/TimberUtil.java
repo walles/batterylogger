@@ -16,11 +16,13 @@
 
 package com.gmail.walles.johan.batterylogger;
 
+import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
 import com.crashlytics.android.Crashlytics;
 
+import io.fabric.sdk.android.Fabric;
 import timber.log.Timber;
 
 public class TimberUtil {
@@ -30,13 +32,13 @@ public class TimberUtil {
         // Don't let people instantiate this class
     }
 
-    public static void setUpLogging() {
-        if (initializedLoggingClass == Timber.class) {
-            return;
+    public static void setUpLogging(Context context) {
+        if (initializedLoggingClass != Timber.class) {
+            initializedLoggingClass = Timber.class;
+            Timber.plant(new CrashlyticsTree());
         }
-        initializedLoggingClass = Timber.class;
 
-        Timber.plant(new CrashlyticsTree());
+        Fabric.with(context, new Crashlytics());
     }
 
     private static class CrashlyticsTree extends Timber.Tree {

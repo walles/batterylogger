@@ -28,8 +28,11 @@ public class EventReceiver extends BroadcastReceiver {
         if (isSystemBoot(intent)) {
             Timber.i("System is booting, got intent action %s", intent.getAction());
             SystemSamplingService.enable(context);
+        } else if (Intent.ACTION_MY_PACKAGE_REPLACED.equals(intent.getAction())) {
+            Timber.i("I was upgraded, got intent action %s", intent.getAction());
+            SystemSamplingService.enable(context);
         } else {
-            Timber.i("Ignoring unknown intent action %s", intent.getAction());
+            Timber.w("Ignoring unknown intent action %s", intent.getAction());
         }
     }
 

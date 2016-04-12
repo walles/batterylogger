@@ -36,7 +36,8 @@ Releasing
 2. Do ```git tag version-1.2.3``` to set the next version number.
 3. ```env JAVA_OPTS=-Xmx512m ./gradlew --no-daemon build```
 4. ```git push --tags```
-5. Upload ```build/outputs/apk/BatteryLogger-release.apk``` to Google Play
+5. Upload ```build/outputs/apk/BatteryLogger-release.apk``` to [Google
+Play](https://play.google.com/apps/publish)
 
 
 TODO

@@ -249,7 +249,12 @@ public class LogCollector {
                 // Scanner trick to read whole file into string from:
                 // http://stackoverflow.com/a/7449797/473672
                 returnMe.append(new Scanner(logFile).useDelimiter("\\A").next());
-            } catch (FileNotFoundException | NoSuchElementException e) {
+            } catch (NoSuchElementException e) {
+                // NoSuchElementException is what Scanner.next() throws if the file is empty:
+                // http://stackoverflow.com/questions/3402735/what-is-simplest-way-to-read-a-file-into-string#comment-36399547
+                //
+                // Just ignore this.
+            } catch (FileNotFoundException e) {
                 Timber.e(e, "Reading log file failed: %s", logFile.getAbsolutePath());
 
                 StringWriter stringWriter = new StringWriter();

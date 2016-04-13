@@ -47,12 +47,6 @@ public class LoggingUtil {
         @Override
         protected void log(int priority, String tag, String message, Throwable t) {
             if (BuildConfig.DEBUG) {
-                // This block intentionally left blank; fall through and log everything
-            } else if (t == null && priority < Log.WARN) {
-                return;
-            }
-
-            if (BuildConfig.DEBUG) {
                 tag = "DEBUG";
             } else if (TextUtils.isEmpty(tag)) {
                 tag = "BatteryLogger";

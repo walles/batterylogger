@@ -46,8 +46,6 @@ Play](https://play.google.com/apps/publish)
 
 TODO
 ----
-* Enable making debug builds without Crashlytics keys.
-
 * Add a tab where we list installed apps and the average drain speed
 over the time each app has been installed (much like the built-in
 battery app). Clicking on an app should expand that line and show
@@ -243,3 +241,5 @@ zoom performance.
 * Make sure we're actually removing samples older than one month
 
 * Auto generate version code and version number from git describe.
+
+* Enable making debug builds without Crashlytics keys.

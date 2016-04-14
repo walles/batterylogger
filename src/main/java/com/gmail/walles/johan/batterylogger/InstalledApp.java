@@ -20,7 +20,7 @@ import android.support.annotation.Nullable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.Writer;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 
@@ -66,10 +66,10 @@ public class InstalledApp {
                 '}';
     }
 
-    public void println(PrintWriter writer) throws IOException {
-        writer.println(URLEncoder.encode(dottedName, "UTF-8"));
-        writer.println("  " + URLEncoder.encode(displayName, "UTF-8"));
-        writer.println("  " + URLEncoder.encode(versionName, "UTF-8"));
+    public void println(Writer writer) throws IOException {
+        writer.append(URLEncoder.encode(dottedName, "UTF-8")).append("\n");
+        writer.append("  ").append(URLEncoder.encode(displayName, "UTF-8")).append("\n");
+        writer.append("  ").append(URLEncoder.encode(versionName, "UTF-8")).append("\n");
     }
 
     @Nullable

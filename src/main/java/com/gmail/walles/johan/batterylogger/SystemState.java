@@ -30,7 +30,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -247,14 +246,14 @@ public class SystemState {
     public void writeToFile(File file) throws IOException {
         File tmp = new File(file.getAbsolutePath() + ".tmp");
 
-        PrintWriter writer = null;
+        FileWriter writer = null;
         try {
-            writer = new PrintWriter(new FileWriter(tmp));
+            writer = new FileWriter(tmp);
 
-            writer.println(timestamp.getTime());
-            writer.println(batteryPercentage);
-            writer.println(bootTimestamp.getTime());
-            writer.println(charging);
+            writer.append(Long.toString(timestamp.getTime())).append("\n");
+            writer.append(Integer.toString(batteryPercentage)).append("\n");
+            writer.append(Long.toString(bootTimestamp.getTime())).append("\n");
+            writer.append(Boolean.toString(charging)).append("\n");
             for (InstalledApp app : installedApps.values()) {
                 app.println(writer);
             }

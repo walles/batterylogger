@@ -132,32 +132,34 @@ public class SystemState {
         }
     }
 
-    public Collection<HistoryEvent> getEventsSince(SystemState then) {
-        if (timestamp.before(then.timestamp)) {
-            throw new IllegalArgumentException("Timestamp of other state must be older than mine");
+    public Collection<HistoryEvent> getEventsSince(SystemState before) {
+        if (before.timestamp.after(timestamp)) {
+            throw new IllegalArgumentException(
+                String.format("Timestamp of previous state (%s) must be before mine (%s)",
+                    before.timestamp.toString(), timestamp.toString()));
         }
 
         List<HistoryEvent> returnMe = new LinkedList<>();
 
         boolean reboot = false;
-        if (!bootTimestampsMatch(then)) {
-            returnMe.add(HistoryEvent.createSystemHaltingEvent(new Date(then.timestamp.getTime() + 1)));
+        if (!bootTimestampsMatch(before)) {
+            returnMe.add(HistoryEvent.createSystemHaltingEvent(new Date(before.timestamp.getTime() + 1)));
             returnMe.add(HistoryEvent.createSystemBootingEvent(bootTimestamp, charging));
             reboot = true;
         }
 
         boolean discharging = !charging;
-        boolean wasDischarging = !then.charging;
-        if ((discharging || wasDischarging) && batteryPercentage != then.batteryPercentage) {
+        boolean wasDischarging = !before.charging;
+        if ((discharging || wasDischarging) && batteryPercentage != before.batteryPercentage) {
             returnMe.add(HistoryEvent.createBatteryLevelEvent(timestamp, batteryPercentage));
         }
 
         if (!reboot) {
             HistoryEvent chargingEvent = null;
-            if (charging && !then.charging) {
+            if (charging && !before.charging) {
                 chargingEvent = HistoryEvent.createStartChargingEvent(null);
             }
-            if (then.charging && !charging) {
+            if (before.charging && !charging) {
                 chargingEvent = HistoryEvent.createStopChargingEvent(null);
             }
             if (chargingEvent != null) {
@@ -165,7 +167,7 @@ public class SystemState {
             }
         }
 
-        addPackagingEventsSince(then, returnMe);
+        addPackagingEventsSince(before, returnMe);
 
         // Add dates to all events that need it
         int needTimestampCount = 0;
@@ -175,7 +177,7 @@ public class SystemState {
             }
         }
         if (needTimestampCount > 0) {
-            Date timestamps[] = between(then.timestamp, timestamp, needTimestampCount);
+            Date timestamps[] = between(before.timestamp, timestamp, needTimestampCount);
             int nextFreeTimestampIndex = 0;
             for (HistoryEvent event : returnMe) {
                 if (!event.isComplete()) {

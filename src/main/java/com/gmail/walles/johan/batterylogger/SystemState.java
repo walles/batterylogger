@@ -24,12 +24,15 @@ import android.content.pm.PackageManager;
 import android.os.BatteryManager;
 import android.os.Build;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -305,6 +308,53 @@ public class SystemState {
         return new Date(System.currentTimeMillis() - SystemClock.elapsedRealtime());
     }
 
+    @NonNull
+    private static List<PackageInfo> getInstalledPackages(PackageManager pm) throws IOException {
+        try {
+            return pm.getInstalledPackages(0);
+        } catch (Exception e) {
+            Timber.w("Getting installed packages Plan A failed: <%s>", e.getMessage());
+        }
+
+        return getInstalledPackagesManually(pm);
+    }
+
+    @NonNull
+    // Workaround for https://code.google.com/p/android/issues/detail?id=69276
+    // From: http://stackoverflow.com/a/30062632/473672
+    private static List<PackageInfo> getInstalledPackagesManually(PackageManager pm) throws IOException {
+        Process process;
+        List<PackageInfo> result = new ArrayList<>();
+        BufferedReader bufferedReader = null;
+        try {
+            process = Runtime.getRuntime().exec("pm list packages");
+            bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                final String packageName = line.substring(line.indexOf(':') + 1);
+                final PackageInfo packageInfo = pm.getPackageInfo(packageName, 0);
+                result.add(packageInfo);
+            }
+            process.waitFor();
+        } catch (InterruptedException | PackageManager.NameNotFoundException e) {
+            throw new IOException("Listing installed packages Plan B failed", e);
+        } finally {
+            if (bufferedReader != null) {
+                try {
+                    bufferedReader.close();
+                } catch (IOException e) {
+                    Timber.w(e, "Closing stream from \"pm\" command failed");
+                }
+            }
+        }
+
+        if (result.isEmpty()) {
+            throw new IOException("Listing installed packages Plan B didn't find any packages");
+        }
+
+        return result;
+    }
+
     public static SystemState readFromSystem(Context context) throws IOException {
         long t0 = System.currentTimeMillis();
 
@@ -339,7 +389,7 @@ public class SystemState {
         if (packageManager == null) {
             throw new IOException("Package manager not available");
         }
-        List<PackageInfo> installedPackages = packageManager.getInstalledPackages(0);
+        List<PackageInfo> installedPackages = getInstalledPackages(packageManager);
         for (PackageInfo packageInfo : installedPackages) {
             if (packageInfo.applicationInfo == null) {
                 throw new IOException(

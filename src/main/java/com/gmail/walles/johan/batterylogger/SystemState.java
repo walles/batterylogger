@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -248,6 +249,41 @@ public class SystemState {
         return true;
     }
 
+    private String describeFile(File file) {
+        if (!file.exists()) {
+            return file.getAbsolutePath() + " doesn't exist";
+        }
+
+        String type;
+        if (file.isDirectory()) {
+            type = "directory";
+        } else if (file.isFile()) {
+            type = "file";
+        } else {
+            type = "neither dir nor file";
+        }
+
+        String readable = file.canRead() ? "readable" : "not readable";
+        String writable = file.canWrite() ? "writable" : "not writable";
+        String executable = file.canRead() ? "executable" : "not executable";
+
+        return String.format(Locale.ENGLISH, "%s: %s, %s, %s, %s, %d",
+            file, type, readable, writable, executable, file.length());
+    }
+
+    private void renameFile(File from, File to) throws IOException {
+        if (from.renameTo(to)) {
+            return;
+        }
+
+        throw new IOException(String.format(
+            "Rename failed: %s->%s\n%s\n%s",
+            from.getAbsolutePath(),
+            to.getAbsolutePath(),
+            describeFile(from),
+            describeFile(to)));
+    }
+
     public void writeToFile(File file) throws IOException {
         File tmp = new File(file.getAbsolutePath() + ".tmp");
 
@@ -268,9 +304,7 @@ public class SystemState {
             }
         }
 
-        if (!tmp.renameTo(file)) {
-            throw new IOException("Rename failed: " + tmp.getAbsolutePath() + "->" + file.getAbsolutePath());
-        }
+        renameFile(tmp, file);
     }
 
     public static SystemState readFromFile(File file) throws IOException {

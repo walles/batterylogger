@@ -52,6 +52,10 @@ public class SystemSamplingService extends Service {
         }
 
         AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
+
+        // Prevent duplicate alarms
+        alarmManager.cancel(pendingIntent);
+
         alarmManager.setInexactRepeating(
                 AlarmManager.ELAPSED_REALTIME,
                 // Don't start sampling immediately, this makes us not sample during startup,

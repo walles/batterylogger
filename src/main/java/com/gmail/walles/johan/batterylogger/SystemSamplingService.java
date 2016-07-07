@@ -108,6 +108,7 @@ public class SystemSamplingService extends IntentService {
         long deltaMinutes = (now - lastTime) / (1000 * 60);
         if (deltaMinutes < 10) {
             // Ignore events that are too close together
+            Timber.i("Ignoring sampling event %d minutes after last", deltaMinutes);
             return;
         }
         lastTime = now;

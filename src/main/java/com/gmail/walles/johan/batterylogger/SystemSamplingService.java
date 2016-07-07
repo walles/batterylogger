@@ -17,8 +17,8 @@
 package com.gmail.walles.johan.batterylogger;
 
 import android.app.AlarmManager;
+import android.app.IntentService;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
@@ -26,16 +26,20 @@ import android.os.SystemClock;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 
 import timber.log.Timber;
 
 /**
  * Sample the system state at regular intervals.
  */
-public class SystemSamplingService extends Service {
+public class SystemSamplingService extends IntentService {
     private static final String SAMPLE_ACTION = "history event sample action";
     private static final String SYSTEM_STATE_FILE_NAME = "system-state.txt";
+    private long lastTime = 0;
+
+    public SystemSamplingService() {
+        super("System Sampling Service");
+    }
 
     /**
      * Start sampling the system state at regular intervals.
@@ -72,25 +76,6 @@ public class SystemSamplingService extends Service {
         LoggingUtil.setUpLogging(this);
     }
 
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
-        final Intent finalIntent = intent;
-
-        Thread thread = new Thread("Sampling Thread " + new Date()) {
-            @Override
-            public void run() {
-                try {
-                    handleIntent(finalIntent);
-                } catch (Exception e) {
-                    Timber.e(e, "Failed to handle incoming intent");
-                }
-            }
-        };
-        thread.start();
-
-        return START_NOT_STICKY;
-    }
-
     private void handleIntent(Intent intent) throws IOException {
         if (!SAMPLE_ACTION.equals(intent.getAction())) {
             Timber.w("Ignoring unknown action %s", intent.getAction());
@@ -115,5 +100,22 @@ public class SystemSamplingService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         throw new UnsupportedOperationException("Binding unsupported, please use startService() instead");
+    }
+
+    @Override
+    protected void onHandleIntent(Intent intent) {
+        long now = System.currentTimeMillis();
+        long deltaMinutes = (now - lastTime) / (1000 * 60);
+        if (deltaMinutes < 10) {
+            // Ignore events that are too close together
+            return;
+        }
+        lastTime = now;
+
+        try {
+            handleIntent(intent);
+        } catch (IOException e) {
+            Timber.w(e, "Failed to handle sampling intent");
+        }
     }
 }

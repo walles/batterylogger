@@ -20,7 +20,7 @@ buildscript {
         maven { url 'https://maven.fabric.io/public' }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.0'
+        classpath 'com.android.tools.build:gradle:2.1.2'
 
         // Having a dynamic version here is explicitly recommended by the Crashlytics docs
         //noinspection GradleDynamicVersion

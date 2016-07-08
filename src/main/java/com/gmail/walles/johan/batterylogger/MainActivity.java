@@ -126,7 +126,7 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        LoggingUtil.setUpLogging(this);
+        LoggingUtils.setUpLogging(this);
 
         SystemSamplingService.enable(this);
 

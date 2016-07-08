@@ -38,7 +38,7 @@ public class LogViewerActivity extends ActionBarActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        LoggingUtil.setUpLogging(this);
+        LoggingUtils.setUpLogging(this);
 
         setContentView(R.layout.contact_developer_layout);
 

@@ -51,7 +51,7 @@ public class LogProvider extends ContentProvider {
             throw new NullPointerException("getContext() returned null in LogProvider.onCreate()");
         }
 
-        LoggingUtil.setUpLogging(context);
+        LoggingUtils.setUpLogging(context);
 
         uriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
 

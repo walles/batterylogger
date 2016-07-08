@@ -35,7 +35,7 @@ import timber.log.Timber;
 public class SystemSamplingService extends IntentService {
     private static final String SAMPLE_ACTION = "history event sample action";
     private static final String SYSTEM_STATE_FILE_NAME = "system-state.txt";
-    private long lastTime = 0;
+    private long lastSamplingEndTimestamp = 0;
 
     public SystemSamplingService() {
         super("System Sampling Service");
@@ -73,7 +73,7 @@ public class SystemSamplingService extends IntentService {
     public void onCreate() {
         super.onCreate();
 
-        LoggingUtil.setUpLogging(this);
+        LoggingUtils.setUpLogging(this);
     }
 
     private void handleIntent(Intent intent) throws IOException {
@@ -105,18 +105,18 @@ public class SystemSamplingService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         long now = System.currentTimeMillis();
-        long deltaMinutes = (now - lastTime) / (1000 * 60);
-        if (deltaMinutes < 10) {
+        long deltaMinutes = (now - lastSamplingEndTimestamp) / (1000 * 60);
+        if (deltaMinutes <= 5) {
             // Ignore events that are too close together
-            Timber.i("Ignoring sampling event %d minutes after last", deltaMinutes);
+            Timber.i("Ignoring sampling event %d minutes after last ended", deltaMinutes);
             return;
         }
-        lastTime = now;
 
         try {
             handleIntent(intent);
         } catch (IOException e) {
             Timber.w(e, "Failed to handle sampling intent");
         }
+        lastSamplingEndTimestamp = System.currentTimeMillis();
     }
 }

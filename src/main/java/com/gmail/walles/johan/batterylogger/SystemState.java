@@ -26,6 +26,8 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 
+import com.crashlytics.android.answers.CustomEvent;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -462,11 +464,15 @@ public class SystemState {
                 Build.FINGERPRINT);
 
         long t1 = System.currentTimeMillis();
+        long dtMillis = t1 - t0;
         Timber.v("System state sampled in %dms: %s, %d%%, %d apps",
-                (t1 - t0),
+                dtMillis,
                 charging ? "charging" : "not charging",
                 batteryPercentage,
                 returnMe.getAppCount());
+        LoggingUtils.logCustom(new CustomEvent("Sampling").putCustomAttribute(
+            "Duration (seconds)",
+            dtMillis / 1000.0));
 
         return returnMe;
     }

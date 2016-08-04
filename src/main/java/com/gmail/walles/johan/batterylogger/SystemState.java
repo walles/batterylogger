@@ -34,6 +34,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -45,6 +47,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 
 import timber.log.Timber;
 
@@ -59,6 +62,8 @@ import timber.log.Timber;
  * </ul>
  */
 public class SystemState {
+
+    private static final long TWO_HOURS_MS = 2 * 60 * 60 * 1000;
 
     private final Date timestamp;
 
@@ -138,11 +143,36 @@ public class SystemState {
         }
     }
 
+    private String toIsoString(Date date) {
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'", Locale.ENGLISH);
+        df.setTimeZone(tz);
+        return df.format(date);
+    }
+
+    private String toDescriptionString() {
+        return String.format(Locale.ENGLISH, "Timestamp: %s, Boot: %s, Version: %s",
+            toIsoString(timestamp),
+            toIsoString(bootTimestamp),
+            installedApps.get("com.gmail.walles.johan.batterylogger").versionName);
+    }
+
+    private void logSamplingGap(SystemState before) {
+        Timber.w(new RuntimeException(),
+            "System sampling gap unexpectedly large:\nnow:  %s\nthen: %s",
+            toDescriptionString(),
+            before.toDescriptionString());
+    }
+
     public Collection<HistoryEvent> getEventsSince(SystemState before) {
         if (before.timestamp.after(timestamp)) {
             throw new IllegalArgumentException(
                 String.format("Timestamp of previous state (%s) must be before mine (%s)",
                     before.timestamp.toString(), timestamp.toString()));
+        }
+
+        if (timestamp.getTime() - before.timestamp.getTime() > TWO_HOURS_MS) {
+            logSamplingGap(before);
         }
 
         List<HistoryEvent> returnMe = new LinkedList<>();

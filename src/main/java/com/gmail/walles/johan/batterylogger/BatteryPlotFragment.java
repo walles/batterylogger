@@ -23,8 +23,6 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -65,8 +63,6 @@ import java.util.Set;
 import timber.log.Timber;
 
 public class BatteryPlotFragment extends Fragment {
-    private static final int IN_GRAPH_TEXT_SIZE_SP = 12;
-
     private static final long ONE_DAY_MS = 86400 * 1000;
     private static final int LEGEND_WIDTH_LANDSCAPE_SP = 300;
     private static final int ANIMATION_DURATION_MS = 1000;
@@ -77,9 +73,6 @@ public class BatteryPlotFragment extends Fragment {
 
     private double originalMinX;
     private double originalMaxX;
-    private EventFormatter eventFormatter;
-
-    private XYSeries drainDots;
 
     private CharSequence legendHtml;
 
@@ -147,7 +140,7 @@ public class BatteryPlotFragment extends Fragment {
             showAlertDialogOnce("Events Hidden", "Zoom in with two fingers to see hidden events");
         }
 
-        eventFormatter.setVisible(isShowingEvents());
+        plot.setShowEvents(isShowingEvents());
         plot.invalidate();
     }
 
@@ -359,7 +352,7 @@ public class BatteryPlotFragment extends Fragment {
 
         plot.setYLabel("Battery Drain (%/h)");
 
-        plot.setDomainValueFormat(new Format() {
+        plot.setXValueFormat(new Format() {
             @Override
             public StringBuffer format(Object o, @NonNull StringBuffer toAppendTo, @NonNull FieldPosition position) {
                 Date timestamp = History.toDate((Number) o);
@@ -421,8 +414,6 @@ public class BatteryPlotFragment extends Fragment {
     }
 
     private void addPlotData(final XYPlot plot) {
-        LineAndPointFormatter medianFormatter = getMedianFormatter();
-
         try {
             // Add battery drain series to the plot
             History history = new History(getActivity());
@@ -430,29 +421,9 @@ public class BatteryPlotFragment extends Fragment {
                 history = History.createFakeHistory();
             }
 
-            drainDots = history.getBatteryDrain();
-            plot.setShowDrainDots(true);
-
-            final List<XYSeries> medians = history.getDrainLines();
-            for (XYSeries median : medians) {
-                plot.addSeries(median, medianFormatter);
-            }
-
-            // Add red restart lines to the plot
-            Paint restartPaint = new Paint();
-            restartPaint.setAntiAlias(true);
-            restartPaint.setColor(Color.RED);
-            restartPaint.setStrokeWidth(dpToPixels(0.5f));
-            plot.addSeries(history.getEvents(), new RestartFormatter(restartPaint));
-
-            // Add events to the plot
-            Paint labelPaint = new Paint();
-            labelPaint.setAntiAlias(true);
-            labelPaint.setColor(Color.WHITE);
-            labelPaint.setTextSize(spToPixels(IN_GRAPH_TEXT_SIZE_SP));
-
-            eventFormatter = new EventFormatter(labelPaint);
-            plot.addSeries(history.getEvents(), eventFormatter);
+            plot.setDrainDots(history.getBatteryDrain());
+            plot.setDrainLines(history.getDrainLines());
+            plot.setEvents(history.getEvents());
 
             if (history.isEmpty()) {
                 showAlertDialogOnce(
@@ -467,40 +438,6 @@ public class BatteryPlotFragment extends Fragment {
             Timber.e(e, "Reading battery history failed");
             showAlertDialog("Reading Battery History Failed", e.getMessage(), DIALOG_DISMISSER);
         }
-    }
-
-    private LineAndPointFormatter getMedianFormatter() {
-        LineAndPointFormatter medianFormatter = new LineAndPointFormatter();
-        medianFormatter.setPointLabelFormatter(new PointLabelFormatter());
-        medianFormatter.setPointLabeler(new PointLabeler() {
-            @Override
-            public String getLabel(XYSeries xySeries, int i) {
-                return "";
-            }
-        });
-        medianFormatter.getLinePaint().setStrokeWidth(7);
-        medianFormatter.getLinePaint().setColor(Color.GREEN);
-        medianFormatter.getVertexPaint().setColor(Color.TRANSPARENT);
-        medianFormatter.getFillPaint().setColor(Color.TRANSPARENT);
-        return medianFormatter;
-    }
-
-    private LineAndPointFormatter getDrainFormatter() {
-        LineAndPointFormatter drainFormatter = new LineAndPointFormatter();
-        drainFormatter.setPointLabelFormatter(new PointLabelFormatter());
-        drainFormatter.setPointLabeler(new PointLabeler() {
-            @Override
-            public String getLabel(XYSeries xySeries, int i) {
-                return "";
-            }
-        });
-        drainFormatter.getLinePaint().setStrokeWidth(0);
-        drainFormatter.getLinePaint().setColor(Color.TRANSPARENT);
-        drainFormatter.getVertexPaint().setColor(Color.rgb(0x00, 0x44, 0x00));
-        drainFormatter.getVertexPaint().setStrokeWidth(4);
-        drainFormatter.getFillPaint().setColor(Color.TRANSPARENT);
-        drainFormatter.getPointLabelFormatter().getTextPaint().setColor(Color.WHITE);
-        return drainFormatter;
     }
 
     private View.OnTouchListener getOnTouchListener(final XYPlot plot) {

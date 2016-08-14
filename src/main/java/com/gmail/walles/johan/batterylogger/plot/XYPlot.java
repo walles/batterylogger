@@ -27,6 +27,8 @@ public class XYPlot extends View {
     private double minY;
     private double maxY;
     private boolean showDrainDots = true;
+    private boolean showEvents;
+    private String yLabel;
 
     public XYPlot(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -56,9 +58,16 @@ public class XYPlot extends View {
         if (showDrainDots) {
             drawDrainDots(canvas);
         }
-        drawReboots(canvas);
-        drawMedianLines(canvas);
-        drawPackagingEvents(canvas);
+
+        if (showEvents) {
+            drawRestarts(canvas);
+        }
+
+        drawDrainLines(canvas);
+
+        if (showEvents) {
+            drawPackagingEvents(canvas);
+        }
     }
 
     private void clear(Canvas canvas) {
@@ -81,11 +90,11 @@ public class XYPlot extends View {
         // FIXME: Code missing here
     }
 
-    private void drawReboots(Canvas canvas) {
+    private void drawRestarts(Canvas canvas) {
         // FIXME: Code missing here
     }
 
-    private void drawMedianLines(Canvas canvas) {
+    private void drawDrainLines(Canvas canvas) {
         // FIXME: Code missing here
     }
 
@@ -98,5 +107,13 @@ public class XYPlot extends View {
      */
     public double getXVal(float pixelX) {
         // FIXME: Code missing here
+    }
+
+    public void setYLabel(String yLabel) {
+        this.yLabel = yLabel;
+    }
+
+    public void setShowEvents(boolean showEvents) {
+        this.showEvents = showEvents;
     }
 }

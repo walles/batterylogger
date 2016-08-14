@@ -28,7 +28,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Html;
@@ -43,6 +42,7 @@ import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.TextView;
 
+import com.gmail.walles.johan.batterylogger.plot.DrainSample;
 import com.gmail.walles.johan.batterylogger.plot.XYPlot;
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.AnimatorListenerAdapter;
@@ -50,13 +50,10 @@ import com.nineoldandroids.animation.PropertyValuesHolder;
 import com.nineoldandroids.animation.ValueAnimator;
 
 import java.io.IOException;
-import java.text.FieldPosition;
-import java.text.Format;
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -129,7 +126,7 @@ public class BatteryPlotFragment extends Fragment {
      * @return True if we should show text events, false otherwise.
      */
     private boolean isShowingEvents() {
-        long visibleMs = History.toDate(maxX).getTime() - History.toDate(minX).getTime();
+        long visibleMs = (long)(maxX - minX);
         return visibleMs <= 3 * ONE_DAY_MS;
     }
 
@@ -339,50 +336,15 @@ public class BatteryPlotFragment extends Fragment {
                 r.getDisplayMetrics());
     }
 
-    private float dpToPixels(float dp) {
-        Resources r = getResources();
-        return TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                dp,
-                r.getDisplayMetrics());
-    }
-
     private void setUpPlotLayout(final XYPlot plot) {
-        final float labelHeightPixels = spToPixels(15);
-
         plot.setYLabel("Battery Drain (%/h)");
 
-        plot.setXValueFormat(new Format() {
-            @Override
-            public StringBuffer format(Object o, @NonNull StringBuffer toAppendTo, @NonNull FieldPosition position) {
-                Date timestamp = History.toDate((Number) o);
-                long domainWidthSeconds = History.doubleToDeltaMs(maxX - minX) / 1000;
-                SimpleDateFormat format;
-                if (domainWidthSeconds < 5 * 60) {
-                    format = new SimpleDateFormat("HH:mm:ss");
-                } else if (domainWidthSeconds < 86400) {
-                    format = new SimpleDateFormat("HH:mm");
-                } else if (domainWidthSeconds < 86400 * 7) {
-                    format = new SimpleDateFormat("EEE HH:mm");
-                } else {
-                    format = new SimpleDateFormat("MMM d");
-                }
-                return format.format(timestamp, toAppendTo, position);
-            }
-
-            @Override
-            @Nullable
-            public Object parseObject(String s, @NonNull ParsePosition parsePosition) {
-                return null;
-            }
-        });
-
         Date now = new Date();
-        maxX = History.toDouble(now);
+        maxX = now.getTime();
 
         // FIXME: Set minX to the leftmost available timestamp if it's lower than mixX
         Date fiveMinutesAgo = new Date(now.getTime() - History.FIVE_MINUTES_MS);
-        minX = History.toDouble(fiveMinutesAgo);
+        minX = fiveMinutesAgo.getTime();
 
         originalMinX = minX;
         originalMaxX = maxX;
@@ -422,14 +384,15 @@ public class BatteryPlotFragment extends Fragment {
             }
 
             plot.setDrainDots(history.getBatteryDrain());
-            plot.setDrainLines(history.getDrainLines());
+            final List<DrainSample> drainLines = history.getDrainLines();
+            plot.setDrainLines(drainLines);
             plot.setEvents(history.getEvents());
 
             if (history.isEmpty()) {
                 showAlertDialogOnce(
                         "No Battery History Recorded",
                         "Come back in a few hours to get a graph, or in a week to be able to see patterns.");
-            } else if (medians.size() < 5) {
+            } else if (drainLines.size() < 5) {
                 showAlertDialogOnce(
                         "Very Short Battery History Recorded",
                         "If you come back in a week you'll be able to see patterns much better.");

@@ -21,7 +21,12 @@ import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.View;
 
+import com.gmail.walles.johan.batterylogger.History;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class XYPlot extends View {
     private double minX;
@@ -33,6 +38,7 @@ public class XYPlot extends View {
     private String yLabel;
     private List<DrainSample> drainDots;
     private List<DrainSample> drainLines;
+    private List<PlotEvent> events;
 
     public XYPlot(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -127,5 +133,25 @@ public class XYPlot extends View {
 
     public void setDrainLines(List<DrainSample> drainLines) {
         this.drainLines = drainLines;
+    }
+
+    public void setEvents(List<PlotEvent> events) {
+        this.events = events;
+    }
+
+    private CharSequence getXValueLabel(double x) {
+        Date timestamp = new Date((long)x);
+        long domainWidthSeconds = History.doubleToDeltaMs(maxX - minX) / 1000;
+        SimpleDateFormat format;
+        if (domainWidthSeconds < 5 * 60) {
+            format = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
+        } else if (domainWidthSeconds < 86400) {
+            format = new SimpleDateFormat("HH:mm", Locale.getDefault());
+        } else if (domainWidthSeconds < 86400 * 7) {
+            format = new SimpleDateFormat("EEE HH:mm", Locale.getDefault());
+        } else {
+            format = new SimpleDateFormat("MMM d", Locale.getDefault());
+        }
+        return format.format(timestamp);
     }
 }

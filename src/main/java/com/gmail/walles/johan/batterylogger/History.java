@@ -20,6 +20,7 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 
 import com.gmail.walles.johan.batterylogger.plot.DrainSample;
+import com.gmail.walles.johan.batterylogger.plot.PlotEvent;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -292,8 +293,8 @@ public class History {
     /**
      * Add this to a plot and you'll hopefully see what events affect your battery usage.
      */
-    public EventSeries getEvents() throws IOException {
-        EventSeries returnMe = new EventSeries();
+    public List<PlotEvent> getEvents() throws IOException {
+        List<PlotEvent> returnMe = new ArrayList<>();
         if (eventsFromStorage == null) {
             eventsFromStorage = readEventsFromStorage();
         }
@@ -322,7 +323,7 @@ public class History {
                             uncleanShutdownTimestamp = new Date((event.getTimestamp().getTime() + lastTimestamp.getTime()) / 2);
                         }
 
-                        returnMe.add(toDouble(uncleanShutdownTimestamp), "Unclean shutdown", event.getType());
+                        returnMe.add(new PlotEvent(uncleanShutdownTimestamp, "Unclean shutdown", event.getType()));
                     }
 
                     description = "System starting up (" +
@@ -343,7 +344,7 @@ public class History {
                 default:
                     description = "Unknown event type " + event.getType();
             }
-            returnMe.add(toDouble(event.getTimestamp()), description, event.getType());
+            returnMe.add(new PlotEvent(event.getTimestamp(), description, event.getType()));
         }
         return returnMe;
     }

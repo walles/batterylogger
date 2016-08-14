@@ -25,7 +25,6 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.RectF;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -46,13 +45,7 @@ import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.TextView;
 
-import com.androidplot.xy.BoundaryMode;
-import com.androidplot.xy.LineAndPointFormatter;
-import com.androidplot.xy.PointLabelFormatter;
-import com.androidplot.xy.PointLabeler;
-import com.androidplot.xy.XYPlot;
-import com.androidplot.xy.XYSeries;
-import com.androidplot.xy.XYStepMode;
+import com.gmail.walles.johan.batterylogger.plot.XYPlot;
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.AnimatorListenerAdapter;
 import com.nineoldandroids.animation.PropertyValuesHolder;
@@ -66,7 +59,6 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
 
@@ -156,7 +148,7 @@ public class BatteryPlotFragment extends Fragment {
         }
 
         eventFormatter.setVisible(isShowingEvents());
-        plot.redraw();
+        plot.invalidate();
     }
 
     private static final DialogInterface.OnClickListener DIALOG_DISMISSER = new DialogInterface.OnClickListener() {
@@ -365,47 +357,8 @@ public class BatteryPlotFragment extends Fragment {
     private void setUpPlotLayout(final XYPlot plot) {
         final float labelHeightPixels = spToPixels(15);
 
-        // Note that we have to set text size before label text, otherwise the label gets clipped,
-        // with AndroidPlot 0.6.2-SNAPSHOT on 2014sep12 /Johan
-        plot.getRangeLabelWidget().getLabelPaint().setTextSize(labelHeightPixels);
-        plot.setRangeLabel("Battery Drain (%/h)");
+        plot.setYLabel("Battery Drain (%/h)");
 
-        plot.getTitleWidget().setVisible(false);
-        plot.getDomainLabelWidget().setVisible(false);
-        plot.getLegendWidget().setVisible(false);
-
-        plot.getGraphWidget().getRangeLabelPaint().setTextSize(labelHeightPixels);
-        plot.getGraphWidget().getRangeOriginLabelPaint().setTextSize(labelHeightPixels);
-        plot.getGraphWidget().getDomainLabelPaint().setTextSize(labelHeightPixels);
-        plot.getGraphWidget().getDomainOriginLabelPaint().setTextSize(labelHeightPixels);
-
-        // Tell the widget about how much space we should reserve for the range label widgets
-        final float maxRangeLabelWidth = plot.getGraphWidget().getRangeLabelPaint().measureText("25.0");
-        plot.getGraphWidget().setRangeLabelWidth(maxRangeLabelWidth);
-
-        // Need room for top scale label
-        plot.getGraphWidget().setMarginTop(labelHeightPixels);
-
-        // Need room for domain labels
-        plot.getGraphWidget().setMarginBottom(labelHeightPixels);
-
-        // Need room for the range label
-        //noinspection SuspiciousNameCombination
-        plot.getGraphWidget().setMarginLeft(labelHeightPixels);
-
-        // Prevent the leftmost part of the range labels from being clipped
-        // FIXME: I don't know where the clipping comes from, fixing it properly would be better
-        plot.getGraphWidget().setClippingEnabled(false);
-
-        // Symmetry with upper and bottom
-        //noinspection SuspiciousNameCombination
-        plot.getGraphWidget().setMarginRight(labelHeightPixels);
-
-        plot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 1);
-        plot.setTicksPerRangeLabel(5);
-
-        plot.setTicksPerDomainLabel(1);
-        plot.setDomainStep(XYStepMode.SUBDIVIDE, 4);
         plot.setDomainValueFormat(new Format() {
             @Override
             public StringBuffer format(Object o, @NonNull StringBuffer toAppendTo, @NonNull FieldPosition position) {
@@ -431,33 +384,18 @@ public class BatteryPlotFragment extends Fragment {
             }
         });
 
-        plot.calculateMinMaxVals();
-        minX = plot.getCalculatedMinX().doubleValue();
-        maxX = plot.getCalculatedMaxX().doubleValue();
         Date now = new Date();
-        if (maxX < History.toDouble(now)) {
-            maxX = History.toDouble(now);
-        }
+        maxX = History.toDouble(now);
+
+        // FIXME: Set minX to the leftmost available timestamp if it's lower than mixX
         Date fiveMinutesAgo = new Date(now.getTime() - History.FIVE_MINUTES_MS);
-        if (minX > History.toDouble(fiveMinutesAgo)) {
-            minX = History.toDouble(fiveMinutesAgo);
-        }
+        minX = History.toDouble(fiveMinutesAgo);
 
         originalMinX = minX;
         originalMaxX = maxX;
 
-        plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
-
-        double maxY = plot.getCalculatedMaxY().doubleValue();
-        if (maxY < 5) {
-            maxY = 5;
-        }
-        if (maxY > 25) {
-            // We sometimes get unreasonable outliers, clamp them so they don't make the graph unreadable
-            maxY = 25;
-        }
-
-        plot.setRangeBoundaries(0, maxY, BoundaryMode.FIXED);
+        plot.setXRange(minX, maxX);
+        plot.setYRange(0, 20);
     }
 
     public static boolean isRunningOnEmulator() {
@@ -482,15 +420,6 @@ public class BatteryPlotFragment extends Fragment {
         return parts.size() == 0;
     }
 
-    private void enableDrainDots(XYPlot plot) {
-        plot.removeSeries(drainDots);
-        plot.addSeries(drainDots, getDrainFormatter());
-    }
-
-    private void disableDrainDots(XYPlot plot) {
-        plot.removeSeries(drainDots);
-    }
-
     private void addPlotData(final XYPlot plot) {
         LineAndPointFormatter medianFormatter = getMedianFormatter();
 
@@ -502,7 +431,7 @@ public class BatteryPlotFragment extends Fragment {
             }
 
             drainDots = history.getBatteryDrain();
-            enableDrainDots(plot);
+            plot.setShowDrainDots(true);
 
             final List<XYSeries> medians = history.getDrainLines();
             for (XYSeries median : medians) {
@@ -640,7 +569,7 @@ public class BatteryPlotFragment extends Fragment {
                 //noinspection RedundantCast
                 maxX = (double)(Float)animation.getAnimatedValue("maxX");
 
-                plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
+                plot.setXRange(minX, maxX);
                 redrawPlot(plot);
             }
         });
@@ -658,12 +587,12 @@ public class BatteryPlotFragment extends Fragment {
             @Override
             public void onAnimationStart(Animator animation) {
                 t0 = SystemClock.elapsedRealtime();
-                disableDrainDots(plot);
+                plot.setShowDrainDots(false);
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                enableDrainDots(plot);
+                plot.setShowDrainDots(true);
                 if (cancelled) {
                     return;
                 }
@@ -729,7 +658,7 @@ public class BatteryPlotFragment extends Fragment {
                     public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent2, float dx, float dy) {
                         scrollSideways(plot, dx);
 
-                        plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
+                        plot.setXRange(minX, maxX);
                         redrawPlot(plot);
                         return true;
                     }
@@ -750,14 +679,11 @@ public class BatteryPlotFragment extends Fragment {
                     public boolean onScale(ScaleGestureDetector detector) {
                         float factor = detector.getPreviousSpan() / detector.getCurrentSpan();
                         float pixelX = detector.getFocusX();
-                        RectF gridRect = plot.getGraphWidget().getGridRect();
-                        // getXVal throws IAE if the X value is outside of the rectangle
-                        if (gridRect.contains(pixelX, gridRect.top)) {
-                            double pivot = plot.getGraphWidget().getXVal(pixelX);
-                            zoom(factor, pivot);
-                        }
 
-                        plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
+                        double pivot = plot.getXVal(pixelX);
+                        zoom(factor, pivot);
+
+                        plot.setXRange(minX, maxX);
                         redrawPlot(plot);
                         return true;
                     }

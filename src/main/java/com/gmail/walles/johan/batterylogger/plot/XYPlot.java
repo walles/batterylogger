@@ -17,6 +17,7 @@
 package com.gmail.walles.johan.batterylogger.plot;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -43,6 +44,53 @@ public class XYPlot extends View {
 
     public void setShowDrainDots(boolean yesOrNo) {
         showDrainDots = yesOrNo;
+    }
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        clear(canvas);
+        drawAxes(canvas);
+        drawYLabel(canvas);
+        drawGridLines(canvas);
+
+        if (showDrainDots) {
+            drawDrainDots(canvas);
+        }
+        drawReboots(canvas);
+        drawMedianLines(canvas);
+        drawPackagingEvents(canvas);
+    }
+
+    private void clear(Canvas canvas) {
+        // FIXME: Code missing here
+    }
+
+    private void drawAxes(Canvas canvas) {
+        // FIXME: Code missing here
+    }
+
+    private void drawYLabel(Canvas canvas) {
+        // FIXME: Code missing here
+    }
+
+    private void drawGridLines(Canvas canvas) {
+        // FIXME: Code missing here
+    }
+
+    private void drawDrainDots(Canvas canvas) {
+        // FIXME: Code missing here
+    }
+
+    private void drawReboots(Canvas canvas) {
+        // FIXME: Code missing here
+    }
+
+    private void drawMedianLines(Canvas canvas) {
+        // FIXME: Code missing here
+    }
+
+    private void drawPackagingEvents(Canvas canvas) {
+        // FIXME: Code missing here
     }
 
     /**

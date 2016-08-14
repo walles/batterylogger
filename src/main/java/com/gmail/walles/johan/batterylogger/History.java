@@ -19,8 +19,7 @@ package com.gmail.walles.johan.batterylogger;
 import android.content.Context;
 import android.support.annotation.Nullable;
 
-import com.androidplot.xy.SimpleXYSeries;
-import com.androidplot.xy.XYSeries;
+import com.gmail.walles.johan.batterylogger.plot.DrainSample;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -47,8 +46,6 @@ public class History {
 
     public static final long HOUR_MS = 3600 * 1000;
     public static final long FIVE_MINUTES_MS = 5 * 60 * 1000;
-
-    private static final long EPOCH_MS = System.currentTimeMillis();
 
     @Nullable
     private List<HistoryEvent> eventsFromStorage;
@@ -138,8 +135,8 @@ public class History {
     /**
      * Add this series to a plot and you'll see how battery drain speed has changed over time.
      */
-    public XYSeries getBatteryDrain() throws IOException {
-        SimpleXYSeries returnMe = new SimpleXYSeries("Battery drain");
+    public List<DrainSample> getBatteryDrain() throws IOException {
+        List<DrainSample> returnMe = new ArrayList<>();
 
         boolean systemDown = false;
         HistoryEvent lastLevelEvent = null;
@@ -190,9 +187,7 @@ public class History {
                 continue;
             }
 
-            Date drainTimestamp = new Date((event.getTimestamp().getTime() + lastLevelEvent.getTimestamp().getTime()) / 2);
-
-            returnMe.addLast(toDouble(drainTimestamp), drain);
+            returnMe.add(new DrainSample(event.getTimestamp(), lastLevelEvent.getTimestamp(), drain));
 
             lastLevelEvent = event;
         }
@@ -200,7 +195,7 @@ public class History {
         return returnMe;
     }
 
-    public List<XYSeries> getDrainLines() throws IOException {
+    public List<DrainSample> getDrainLines() throws IOException {
         if (eventsFromStorage == null) {
             eventsFromStorage = readEventsFromStorage();
         }
@@ -351,14 +346,6 @@ public class History {
             returnMe.add(toDouble(event.getTimestamp()), description, event.getType());
         }
         return returnMe;
-    }
-
-    public static Date toDate(Number x) {
-        return new Date(x.intValue() * 1000L + EPOCH_MS);
-    }
-
-    public static double toDouble(Date timestamp) {
-        return (timestamp.getTime() - EPOCH_MS) / 1000L;
     }
 
     public static double deltaMsToDouble(long deltaMs) {

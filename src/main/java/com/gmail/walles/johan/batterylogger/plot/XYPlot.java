@@ -21,6 +21,8 @@ import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.view.View;
 
+import java.util.List;
+
 public class XYPlot extends View {
     private double minX;
     private double maxX;
@@ -29,6 +31,8 @@ public class XYPlot extends View {
     private boolean showDrainDots = true;
     private boolean showEvents;
     private String yLabel;
+    private List<DrainSample> drainDots;
+    private List<DrainSample> drainLines;
 
     public XYPlot(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -115,5 +119,13 @@ public class XYPlot extends View {
 
     public void setShowEvents(boolean showEvents) {
         this.showEvents = showEvents;
+    }
+
+    public void setDrainDots(List<DrainSample> drainDots) {
+        this.drainDots = drainDots;
+    }
+
+    public void setDrainLines(List<DrainSample> drainLines) {
+        this.drainLines = drainLines;
     }
 }

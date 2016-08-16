@@ -17,7 +17,6 @@
 package com.gmail.walles.johan.batterylogger;
 
 import android.test.AndroidTestCase;
-import com.androidplot.xy.XYSeries;
 
 import java.io.File;
 import java.util.Arrays;

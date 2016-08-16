@@ -18,10 +18,10 @@ package com.gmail.walles.johan.batterylogger.plot;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.View;
-
-import com.gmail.walles.johan.batterylogger.History;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -29,16 +29,39 @@ import java.util.List;
 import java.util.Locale;
 
 public class XYPlot extends View {
+    private static final Paint BACKGROUND; static {
+        BACKGROUND = new Paint();
+        BACKGROUND.setColor(Color.BLACK);
+    }
+
     private double minX;
     private double maxX;
     private double minY;
     private double maxY;
+
+    private int screenMinX;
+    private int screenMaxX;
+
+    /**
+     * Lower values are further down on the screen.
+     */
+    private int screenMinY;
+
+    /**
+     * Higher values are further up on the screen.
+     */
+    private int screenMaxY;
+
     private boolean showDrainDots = true;
     private boolean showEvents;
     private String yLabel;
     private List<DrainSample> drainDots;
     private List<DrainSample> drainLines;
     private List<PlotEvent> events;
+
+    public XYPlot(Context context, AttributeSet attrs) {
+        super(context, attrs);
+    }
 
     public XYPlot(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
@@ -60,6 +83,8 @@ public class XYPlot extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
+        doLayout(canvas);
+
         clear(canvas);
         drawAxes(canvas);
         drawYLabel(canvas);
@@ -80,8 +105,19 @@ public class XYPlot extends View {
         }
     }
 
+    /**
+     * Set up {@link #screenMinX}, {@link #screenMaxX}, {@link #screenMinY} and {@link #screenMaxY}
+     */
+    private void doLayout(Canvas canvas) {
+        screenMinX = 0;
+        screenMaxX = canvas.getWidth() - 1;
+
+        screenMinY = 0;
+        screenMaxY = canvas.getHeight() - 1;
+    }
+
     private void clear(Canvas canvas) {
-        // FIXME: Code missing here
+        canvas.drawPaint(BACKGROUND);
     }
 
     private void drawAxes(Canvas canvas) {
@@ -116,7 +152,9 @@ public class XYPlot extends View {
      * Convert an X pixel value into a plot X value.
      */
     public double getXVal(float pixelX) {
-        // FIXME: Code missing here
+        int screenWidthPixels = screenMaxX - screenMaxY;
+        double valueWidth = maxX - minX;
+        return (pixelX - screenMinX) * valueWidth / screenWidthPixels;
     }
 
     public void setYLabel(String yLabel) {
@@ -141,7 +179,7 @@ public class XYPlot extends View {
 
     private CharSequence getXValueLabel(double x) {
         Date timestamp = new Date((long)x);
-        long domainWidthSeconds = History.doubleToDeltaMs(maxX - minX) / 1000;
+        long domainWidthSeconds = (long)((maxX - minX) / 1000);
         SimpleDateFormat format;
         if (domainWidthSeconds < 5 * 60) {
             format = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());

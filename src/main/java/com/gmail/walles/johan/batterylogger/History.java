@@ -188,7 +188,7 @@ public class History {
                 continue;
             }
 
-            returnMe.add(new DrainSample(event.getTimestamp(), lastLevelEvent.getTimestamp(), drain));
+            returnMe.add(new DrainSample(lastLevelEvent.getTimestamp(), event.getTimestamp(), drain));
 
             lastLevelEvent = event;
         }

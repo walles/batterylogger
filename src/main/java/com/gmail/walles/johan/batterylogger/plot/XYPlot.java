@@ -21,6 +21,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
+import android.util.TypedValue;
 import android.view.View;
 
 import java.text.SimpleDateFormat;
@@ -29,28 +30,18 @@ import java.util.List;
 import java.util.Locale;
 
 public class XYPlot extends View {
-    private static final Paint BACKGROUND; static {
-        BACKGROUND = new Paint();
-        BACKGROUND.setColor(Color.BLACK);
-    }
+    private final Paint BACKGROUND;
+    private final Paint DRAINLINE;
 
     private double minX;
     private double maxX;
     private double minY;
     private double maxY;
 
-    private int screenMinX;
-    private int screenMaxX;
-
-    /**
-     * Lower values are further down on the screen.
-     */
-    private int screenMinY;
-
-    /**
-     * Higher values are further up on the screen.
-     */
-    private int screenMaxY;
+    private int screenLeftX;
+    private int screenRightX;
+    private int screenBottomY;
+    private int screenTopY;
 
     private boolean showDrainDots = true;
     private boolean showEvents;
@@ -60,11 +51,23 @@ public class XYPlot extends View {
     private List<PlotEvent> events;
 
     public XYPlot(Context context, AttributeSet attrs) {
-        super(context, attrs);
+        this(context, attrs, 0);
     }
 
     public XYPlot(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+
+        BACKGROUND = new Paint();
+        BACKGROUND.setColor(Color.BLACK);
+
+        DRAINLINE = new Paint();
+        DRAINLINE.setColor(Color.GREEN);
+        DRAINLINE.setStrokeWidth(mmToPixels(1, context));
+    }
+
+    private static float mmToPixels(float mm, Context context) {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, mm,
+            context.getResources().getDisplayMetrics());
     }
 
     public void setXRange(double minX, double maxX) {
@@ -106,14 +109,14 @@ public class XYPlot extends View {
     }
 
     /**
-     * Set up {@link #screenMinX}, {@link #screenMaxX}, {@link #screenMinY} and {@link #screenMaxY}
+     * Set up {@link #screenLeftX}, {@link #screenRightX}, {@link #screenBottomY} and {@link #screenTopY}
      */
     private void doLayout(Canvas canvas) {
-        screenMinX = 0;
-        screenMaxX = canvas.getWidth() - 1;
+        screenLeftX = 0;
+        screenRightX = canvas.getWidth() - 1;
 
-        screenMinY = 0;
-        screenMaxY = canvas.getHeight() - 1;
+        screenTopY = 0;
+        screenBottomY = canvas.getHeight() - 1;
     }
 
     private void clear(Canvas canvas) {
@@ -132,29 +135,67 @@ public class XYPlot extends View {
         // FIXME: Code missing here
     }
 
+    /**
+     * Clip the drawing region to the plot area.
+     */
+    private void prepareForPlotting(Canvas canvas) {
+        canvas.clipRect(screenLeftX, screenTopY, screenRightX, screenBottomY);
+    }
+
     private void drawDrainDots(Canvas canvas) {
+        prepareForPlotting(canvas);
+
         // FIXME: Code missing here
     }
 
     private void drawRestarts(Canvas canvas) {
+        prepareForPlotting(canvas);
+
         // FIXME: Code missing here
     }
 
     private void drawDrainLines(Canvas canvas) {
-        // FIXME: Code missing here
+        prepareForPlotting(canvas);
+
+        for (DrainSample sample : drainLines) {
+            if (sample.startMsSinceEpoch > maxX) {
+                continue;
+            }
+            if (sample.endMsSinceEpoch < minX) {
+                continue;
+            }
+            canvas.drawLine(
+                toScreenX(sample.startMsSinceEpoch), toScreenY(sample.drainSpeed),
+                toScreenX(sample.endMsSinceEpoch),    toScreenY(sample.drainSpeed),
+                DRAINLINE);
+        }
     }
 
     private void drawPackagingEvents(Canvas canvas) {
+        prepareForPlotting(canvas);
+
         // FIXME: Code missing here
+    }
+
+    private int toScreenX(double x) {
+        double xWidth = maxX - minX;
+        int screenWidth = screenRightX - screenLeftX;
+        return (int)(((x - minX) / xWidth) * screenWidth) + screenLeftX;
+    }
+
+    private int toScreenY(double y) {
+        double yHeight = maxY - minY;
+        int screenHeight = screenBottomY - screenTopY;
+        return (int)(((y - minY) / yHeight) * -screenHeight) + screenBottomY;
     }
 
     /**
      * Convert an X pixel value into a plot X value.
      */
     public double getXVal(float pixelX) {
-        int screenWidthPixels = screenMaxX - screenMaxY;
+        int screenWidthPixels = screenRightX - screenTopY;
         double valueWidth = maxX - minX;
-        return (pixelX - screenMinX) * valueWidth / screenWidthPixels;
+        return (pixelX - screenLeftX) * valueWidth / screenWidthPixels;
     }
 
     public void setYLabel(String yLabel) {

@@ -36,12 +36,14 @@ public class XYPlot extends View {
     private final Paint DRAINLINE;
     private final Paint DRAINDOTS;
     private final Paint RESTART;
+    private final Paint AXES;
 
     private double minX;
     private double maxX;
     private double minY;
     private double maxY;
 
+    // Here's the screen coordinates of the plot
     private int screenLeftX;
     private int screenRightX;
     private int screenBottomY;
@@ -66,19 +68,23 @@ public class XYPlot extends View {
 
         DRAINLINE = new Paint();
         DRAINLINE.setColor(Color.GREEN);
-        DRAINLINE.setStrokeWidth(mmToPixels(0.5f, context));
+        DRAINLINE.setStrokeWidth(mmToPixels(0.5, context));
 
         DRAINDOTS = new Paint();
         DRAINDOTS.setColor(Color.DKGRAY);
-        DRAINDOTS.setStrokeWidth(mmToPixels(0.25f, context));
+        DRAINDOTS.setStrokeWidth(mmToPixels(0.25, context));
 
         RESTART = new Paint();
         RESTART.setColor(Color.RED);
-        RESTART.setStrokeWidth(mmToPixels(0.25f, context));
+        RESTART.setStrokeWidth(mmToPixels(0.25, context));
+
+        AXES = new Paint();
+        AXES.setColor(Color.WHITE);
+        AXES.setStrokeWidth(mmToPixels(0.25, context));
     }
 
-    private static float mmToPixels(float mm, Context context) {
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, mm,
+    private static float mmToPixels(double mm, Context context) {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, (float)mm,
             context.getResources().getDisplayMetrics());
     }
 
@@ -101,8 +107,6 @@ public class XYPlot extends View {
         doLayout(canvas);
 
         clear(canvas);
-        drawAxes(canvas);
-        drawYLabel(canvas);
         drawGridLines(canvas);
 
         if (showDrainDots) {
@@ -118,6 +122,9 @@ public class XYPlot extends View {
         if (showEvents) {
             drawPackagingEvents(canvas);
         }
+
+        drawAxes(canvas);
+        drawYLabel(canvas);
     }
 
     /**
@@ -146,7 +153,11 @@ public class XYPlot extends View {
     }
 
     private void drawAxes(Canvas canvas) {
-        // FIXME: Code missing here
+        // Horizontal axis
+        canvas.drawLine(screenLeftX, screenBottomY, screenRightX, screenBottomY, AXES);
+
+        // Vertical axis
+        canvas.drawLine(screenLeftX, screenBottomY, screenLeftX, screenTopY, AXES);
     }
 
     private void drawYLabel(Canvas canvas) {

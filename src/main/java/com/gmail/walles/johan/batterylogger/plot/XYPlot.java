@@ -32,6 +32,7 @@ import java.util.Locale;
 public class XYPlot extends View {
     private final Paint BACKGROUND;
     private final Paint DRAINLINE;
+    private final Paint DRAINDOTS;
 
     private double minX;
     private double maxX;
@@ -63,6 +64,10 @@ public class XYPlot extends View {
         DRAINLINE = new Paint();
         DRAINLINE.setColor(Color.GREEN);
         DRAINLINE.setStrokeWidth(mmToPixels(1, context));
+
+        DRAINDOTS = new Paint();
+        DRAINDOTS.setColor(Color.DKGRAY);
+        DRAINDOTS.setStrokeWidth(mmToPixels(0.5f, context));
     }
 
     private static float mmToPixels(float mm, Context context) {
@@ -94,14 +99,14 @@ public class XYPlot extends View {
         drawGridLines(canvas);
 
         if (showDrainDots) {
-            drawDrainDots(canvas);
+            drawSamples(canvas, drainDots, DRAINDOTS);
         }
 
         if (showEvents) {
             drawRestarts(canvas);
         }
 
-        drawDrainLines(canvas);
+        drawSamples(canvas, drainLines, DRAINLINE);
 
         if (showEvents) {
             drawPackagingEvents(canvas);
@@ -142,22 +147,16 @@ public class XYPlot extends View {
         canvas.clipRect(screenLeftX, screenTopY, screenRightX, screenBottomY);
     }
 
-    private void drawDrainDots(Canvas canvas) {
-        prepareForPlotting(canvas);
-
-        // FIXME: Code missing here
-    }
-
     private void drawRestarts(Canvas canvas) {
         prepareForPlotting(canvas);
 
         // FIXME: Code missing here
     }
 
-    private void drawDrainLines(Canvas canvas) {
+    private void drawSamples(Canvas canvas, Iterable<DrainSample> samples, Paint paint) {
         prepareForPlotting(canvas);
 
-        for (DrainSample sample : drainLines) {
+        for (DrainSample sample : samples) {
             if (sample.startMsSinceEpoch > maxX) {
                 continue;
             }
@@ -166,8 +165,8 @@ public class XYPlot extends View {
             }
             canvas.drawLine(
                 toScreenX(sample.startMsSinceEpoch), toScreenY(sample.drainSpeed),
-                toScreenX(sample.endMsSinceEpoch),    toScreenY(sample.drainSpeed),
-                DRAINLINE);
+                toScreenX(sample.endMsSinceEpoch),   toScreenY(sample.drainSpeed),
+                paint);
         }
     }
 

@@ -221,7 +221,11 @@ public class DrainLinesCreator {
         }
 
         for (HistoryEvent event : history) {
-            handleEvent(event);
+            try {
+                handleEvent(event);
+            } catch (IllegalArgumentException e) {
+                Timber.e(e, "Error handling history event, ignoring this one: %s", event);
+            }
         }
         finishLine(history.get(history.size() - 1).getTimestamp());
 

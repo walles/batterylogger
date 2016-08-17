@@ -24,6 +24,8 @@ import android.util.AttributeSet;
 import android.util.TypedValue;
 import android.view.View;
 
+import com.gmail.walles.johan.batterylogger.HistoryEvent;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -33,6 +35,7 @@ public class XYPlot extends View {
     private final Paint BACKGROUND;
     private final Paint DRAINLINE;
     private final Paint DRAINDOTS;
+    private final Paint RESTART;
 
     private double minX;
     private double maxX;
@@ -68,6 +71,10 @@ public class XYPlot extends View {
         DRAINDOTS = new Paint();
         DRAINDOTS.setColor(Color.DKGRAY);
         DRAINDOTS.setStrokeWidth(mmToPixels(0.5f, context));
+
+        RESTART = new Paint();
+        RESTART.setColor(Color.RED);
+        RESTART.setStrokeWidth(mmToPixels(0.5f, context));
     }
 
     private static float mmToPixels(float mm, Context context) {
@@ -150,7 +157,24 @@ public class XYPlot extends View {
     private void drawRestarts(Canvas canvas) {
         prepareForPlotting(canvas);
 
-        // FIXME: Code missing here
+        for (PlotEvent event : events) {
+            if (event.type != HistoryEvent.Type.SYSTEM_BOOT) {
+                // FIXME: Draw shutdowns as well? Or shutdown->startup together somehow?
+                continue;
+            }
+
+            if (event.msSinceEpoch < minX) {
+                continue;
+            }
+            if (event.msSinceEpoch > maxX) {
+                continue;
+            }
+
+            canvas.drawLine(
+                toScreenX(event.msSinceEpoch), screenBottomY,
+                toScreenX(event.msSinceEpoch), screenTopY,
+                RESTART);
+        }
     }
 
     private void drawSamples(Canvas canvas, Iterable<DrainSample> samples, Paint paint) {

@@ -349,10 +349,6 @@ public class History {
         return returnMe;
     }
 
-    public static double deltaMsToDouble(long deltaMs) {
-        return deltaMs / 1000.0;
-    }
-
     public static long doubleToDeltaMs(Number x) {
         return Math.round(x.doubleValue() * 1000.0);
     }

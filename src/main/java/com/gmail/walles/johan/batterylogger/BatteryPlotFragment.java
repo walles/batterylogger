@@ -342,9 +342,11 @@ public class BatteryPlotFragment extends Fragment {
         Date now = new Date();
         maxX = now.getTime();
 
-        // FIXME: Set minX to the leftmost available timestamp if it's lower than mixX
         Date fiveMinutesAgo = new Date(now.getTime() - History.FIVE_MINUTES_MS);
         minX = fiveMinutesAgo.getTime();
+        if (!plot.isEmpty()) {
+            minX = Math.min(plot.getLeftmostX(), fiveMinutesAgo.getTime());
+        }
 
         originalMinX = minX;
         originalMaxX = maxX;

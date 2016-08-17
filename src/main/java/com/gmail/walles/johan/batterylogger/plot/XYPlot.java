@@ -233,4 +233,36 @@ public class XYPlot extends View {
         }
         return format.format(timestamp);
     }
+
+    public boolean isEmpty() {
+        if (!drainDots.isEmpty()) {
+            return false;
+        }
+        if (!drainLines.isEmpty()) {
+            return false;
+        }
+        if (!events.isEmpty()) {
+            return false;
+        }
+        return true;
+    }
+
+    public double getLeftmostX() {
+        double leftmostX = Double.MAX_VALUE;
+        if (!drainDots.isEmpty()) {
+            leftmostX = Math.min(leftmostX, drainDots.get(0).startMsSinceEpoch);
+        }
+        if (!drainLines.isEmpty()) {
+            leftmostX = Math.min(leftmostX, drainLines.get(0).startMsSinceEpoch);
+        }
+        if (!events.isEmpty()) {
+            leftmostX = Math.min(leftmostX, events.get(0).msSinceEpoch);
+        }
+
+        if (leftmostX == Double.MAX_VALUE) {
+            throw new IllegalStateException("No data, leftmost X undefined");
+        }
+
+        return leftmostX;
+    }
 }

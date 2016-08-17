@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Locale;
 
 public class XYPlot extends View {
+    private static final int EVENT_TEXT_SIZE_SP = 11;
+
     private final Paint BACKGROUND;
     private final Paint DRAINLINE;
     private final Paint DRAINDOTS;
@@ -40,6 +42,7 @@ public class XYPlot extends View {
     private final Paint YLABEL;
     private final Paint YTICK;
     private final Paint XTICK;
+    private final Paint EVENTS;
 
     private double minX;
     private double maxX;
@@ -99,6 +102,11 @@ public class XYPlot extends View {
         XTICK.setColor(Color.WHITE);
         XTICK.setTextAlign(Paint.Align.CENTER);
         XTICK.setTextSize(YTICK.getTextSize());
+
+        EVENTS = new Paint();
+        EVENTS.setColor(Color.WHITE);
+        EVENTS.setTextSize(spToPixels(EVENT_TEXT_SIZE_SP, context));
+        EVENTS.setTextAlign(Paint.Align.LEFT);
     }
 
     private static float mmToPixels(double mm, Context context) {
@@ -130,7 +138,6 @@ public class XYPlot extends View {
         doLayout(canvas);
 
         clear(canvas);
-        drawGridLines(canvas);
 
         if (showDrainDots) {
             drawSamples(canvas, drainDots, DRAINDOTS);
@@ -227,10 +234,6 @@ public class XYPlot extends View {
         drawText(canvas, x, y, yLabel, -90, YLABEL);
     }
 
-    private void drawGridLines(Canvas canvas) {
-        // FIXME: Code missing here
-    }
-
     private void drawRestarts(final Canvas canvas) {
         withPlotClip(canvas, new Runnable() {
             @Override
@@ -277,11 +280,26 @@ public class XYPlot extends View {
         });
     }
 
-    private void drawPackagingEvents(Canvas canvas) {
+    private void drawPackagingEvents(final Canvas canvas) {
         withPlotClip(canvas, new Runnable() {
             @Override
             public void run() {
-                // FIXME: Code missing here
+                double width = maxX - minX;
+                double leftQuickClip = minX - width;
+                double rightQuickClip = maxX + width;
+                for (PlotEvent plotEvent : events) {
+                    if (plotEvent.msSinceEpoch > rightQuickClip) {
+                        continue;
+                    }
+                    if (plotEvent.msSinceEpoch < leftQuickClip) {
+                        continue;
+                    }
+                    drawText(
+                        canvas,
+                        toScreenX(plotEvent.msSinceEpoch), screenBottomY,
+                        plotEvent.description,
+                        -90, EVENTS);
+                }
             }
         });
     }

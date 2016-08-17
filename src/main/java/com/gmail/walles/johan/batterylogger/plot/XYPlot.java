@@ -38,6 +38,7 @@ public class XYPlot extends View {
     private final Paint RESTART;
     private final Paint AXES;
     private final Paint YLABEL;
+    private final Paint YTICK;
 
     private double minX;
     private double maxX;
@@ -87,6 +88,11 @@ public class XYPlot extends View {
         YLABEL.setColor(Color.WHITE);
         YLABEL.setTextAlign(Paint.Align.CENTER);
         YLABEL.setTextSize(spToPixels(14, context));
+
+        YTICK = new Paint();
+        YTICK.setColor(Color.WHITE);
+        YTICK.setTextAlign(Paint.Align.RIGHT);
+        YTICK.setTextSize(spToPixels(11, context));
     }
 
     private static float mmToPixels(double mm, Context context) {
@@ -143,7 +149,7 @@ public class XYPlot extends View {
      */
     private void doLayout(Canvas canvas) {
         // Make have room for the Y axis label
-        screenLeftX = Math.round(2 * YLABEL.getTextSize());
+        screenLeftX = Math.round(2.5f * YLABEL.getTextSize());
 
         screenRightX = canvas.getWidth() - 1;
 
@@ -171,6 +177,11 @@ public class XYPlot extends View {
 
         // Vertical axis
         canvas.drawLine(screenLeftX, screenBottomY, screenLeftX, screenTopY, AXES);
+        for (int i = 5; i < maxY; i += 5) {
+            int x = screenLeftX;
+            int y = toScreenY(i);
+            drawText(canvas, x, y, i + " ",0, YTICK);
+        }
     }
 
     private void drawText(
@@ -190,7 +201,7 @@ public class XYPlot extends View {
     }
 
     private void drawYLabel(Canvas canvas) {
-        int x = screenLeftX / 2;
+        int x = screenLeftX / 3;
         int y = (screenBottomY + screenTopY) / 2;
         drawText(canvas, x, y, yLabel, -90, YLABEL);
     }

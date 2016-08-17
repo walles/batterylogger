@@ -582,7 +582,7 @@ public class BatteryPlotFragment extends Fragment {
                         float factor = detector.getPreviousSpan() / detector.getCurrentSpan();
                         float pixelX = detector.getFocusX();
 
-                        double pivot = plot.getXVal(pixelX);
+                        double pivot = plot.getXValue(pixelX);
                         zoom(factor, pivot);
 
                         plot.setXRange(minX, maxX);

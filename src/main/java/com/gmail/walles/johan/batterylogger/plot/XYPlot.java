@@ -66,15 +66,15 @@ public class XYPlot extends View {
 
         DRAINLINE = new Paint();
         DRAINLINE.setColor(Color.GREEN);
-        DRAINLINE.setStrokeWidth(mmToPixels(1, context));
+        DRAINLINE.setStrokeWidth(mmToPixels(0.5f, context));
 
         DRAINDOTS = new Paint();
         DRAINDOTS.setColor(Color.DKGRAY);
-        DRAINDOTS.setStrokeWidth(mmToPixels(0.5f, context));
+        DRAINDOTS.setStrokeWidth(mmToPixels(0.25f, context));
 
         RESTART = new Paint();
         RESTART.setColor(Color.RED);
-        RESTART.setStrokeWidth(mmToPixels(0.5f, context));
+        RESTART.setStrokeWidth(mmToPixels(0.25f, context));
     }
 
     private static float mmToPixels(float mm, Context context) {
@@ -215,10 +215,10 @@ public class XYPlot extends View {
     /**
      * Convert an X pixel value into a plot X value.
      */
-    public double getXVal(float pixelX) {
-        int screenWidthPixels = screenRightX - screenTopY;
+    public double getXValue(float pixelX) {
+        int screenWidthPixels = screenRightX - screenLeftX;
         double valueWidth = maxX - minX;
-        return (pixelX - screenLeftX) * valueWidth / screenWidthPixels;
+        return ((pixelX - screenLeftX) / (double)screenWidthPixels) * valueWidth + minX;
     }
 
     public void setYLabel(String yLabel) {

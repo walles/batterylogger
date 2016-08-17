@@ -37,6 +37,7 @@ public class XYPlot extends View {
     private final Paint DRAINDOTS;
     private final Paint RESTART;
     private final Paint AXES;
+    private final Paint YLABEL;
 
     private double minX;
     private double maxX;
@@ -81,10 +82,20 @@ public class XYPlot extends View {
         AXES = new Paint();
         AXES.setColor(Color.WHITE);
         AXES.setStrokeWidth(mmToPixels(0.25, context));
+
+        YLABEL = new Paint();
+        YLABEL.setColor(Color.WHITE);
+        YLABEL.setTextAlign(Paint.Align.CENTER);
+        YLABEL.setTextSize(spToPixels(14, context));
     }
 
     private static float mmToPixels(double mm, Context context) {
         return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_MM, (float)mm,
+            context.getResources().getDisplayMetrics());
+    }
+
+    private static float spToPixels(double sp, Context context) {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, (float)sp,
             context.getResources().getDisplayMetrics());
     }
 
@@ -131,7 +142,9 @@ public class XYPlot extends View {
      * Set up {@link #screenLeftX}, {@link #screenRightX}, {@link #screenBottomY} and {@link #screenTopY}
      */
     private void doLayout(Canvas canvas) {
-        screenLeftX = 0;
+        // Make have room for the Y axis label
+        screenLeftX = Math.round(2 * YLABEL.getTextSize());
+
         screenRightX = canvas.getWidth() - 1;
 
         screenTopY = 0;
@@ -160,8 +173,26 @@ public class XYPlot extends View {
         canvas.drawLine(screenLeftX, screenBottomY, screenLeftX, screenTopY, AXES);
     }
 
+    private void drawText(
+        Canvas canvas, float x0, float y0, String text, float rotationDegrees, Paint paint)
+    {
+        try {
+            canvas.save();
+
+            canvas.translate(x0, y0);
+            if (rotationDegrees != 0) {
+                canvas.rotate(rotationDegrees);
+            }
+            canvas.drawText(text, 0, 0, paint);
+        } finally {
+            canvas.restore();
+        }
+    }
+
     private void drawYLabel(Canvas canvas) {
-        // FIXME: Code missing here
+        int x = screenLeftX / 2;
+        int y = (screenBottomY + screenTopY) / 2;
+        drawText(canvas, x, y, yLabel, -90, YLABEL);
     }
 
     private void drawGridLines(Canvas canvas) {

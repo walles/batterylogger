@@ -39,6 +39,7 @@ public class XYPlot extends View {
     private final Paint AXES;
     private final Paint YLABEL;
     private final Paint YTICK;
+    private final Paint XTICK;
 
     private double minX;
     private double maxX;
@@ -93,6 +94,11 @@ public class XYPlot extends View {
         YTICK.setColor(Color.WHITE);
         YTICK.setTextAlign(Paint.Align.RIGHT);
         YTICK.setTextSize(spToPixels(11, context));
+
+        XTICK = new Paint();
+        XTICK.setColor(Color.WHITE);
+        XTICK.setTextAlign(Paint.Align.CENTER);
+        XTICK.setTextSize(YTICK.getTextSize());
     }
 
     private static float mmToPixels(double mm, Context context) {
@@ -148,13 +154,15 @@ public class XYPlot extends View {
      * Set up {@link #screenLeftX}, {@link #screenRightX}, {@link #screenBottomY} and {@link #screenTopY}
      */
     private void doLayout(Canvas canvas) {
-        // Make have room for the Y axis label
+        // Make room for the Y axis label and the tick labels
         screenLeftX = Math.round(2.5f * YLABEL.getTextSize());
 
         screenRightX = canvas.getWidth() - 1;
 
         screenTopY = 0;
-        screenBottomY = canvas.getHeight() - 1;
+
+        // Make room for the X axis labels
+        screenBottomY = canvas.getHeight() - 1 - Math.round(2 * XTICK.getTextSize());
     }
 
     private void withPlotClip(Canvas canvas, Runnable runnable) {
@@ -175,11 +183,24 @@ public class XYPlot extends View {
         // Horizontal axis
         canvas.drawLine(screenLeftX, screenBottomY, screenRightX, screenBottomY, AXES);
 
+        final int N_XTICKS = 2;
+
+        float belowScreenHeight = canvas.getHeight() - screenBottomY;
+        float screenY = screenBottomY + belowScreenHeight * 2 / 3;
+
+        double width = maxX - minX;
+        for (int i = 1; i <= N_XTICKS; i++) {
+            double x = width / (N_XTICKS + 1) * i + minX;
+            float screenX = toScreenX(x);
+            String label = getXValueLabel(x).toString();
+            drawText(canvas, screenX, screenY, label, 0, XTICK);
+        }
+
         // Vertical axis
         canvas.drawLine(screenLeftX, screenBottomY, screenLeftX, screenTopY, AXES);
         for (int i = 5; i < maxY; i += 5) {
-            int x = screenLeftX;
-            int y = toScreenY(i);
+            float x = screenLeftX;
+            float y = toScreenY(i);
             drawText(canvas, x, y, i + " ",0, YTICK);
         }
     }
@@ -265,16 +286,16 @@ public class XYPlot extends View {
         });
     }
 
-    private int toScreenX(double x) {
+    private float toScreenX(double x) {
         double xWidth = maxX - minX;
         int screenWidth = screenRightX - screenLeftX;
-        return (int)(((x - minX) / xWidth) * screenWidth) + screenLeftX;
+        return (float)(((x - minX) / xWidth) * screenWidth) + screenLeftX;
     }
 
-    private int toScreenY(double y) {
+    private float toScreenY(double y) {
         double yHeight = maxY - minY;
         int screenHeight = screenBottomY - screenTopY;
-        return (int)(((y - minY) / yHeight) * -screenHeight) + screenBottomY;
+        return (float)(((y - minY) / yHeight) * -screenHeight) + screenBottomY;
     }
 
     /**

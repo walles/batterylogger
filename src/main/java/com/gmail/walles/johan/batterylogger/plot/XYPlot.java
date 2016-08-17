@@ -131,6 +131,16 @@ public class XYPlot extends View {
         screenBottomY = canvas.getHeight() - 1;
     }
 
+    private void withPlotClip(Canvas canvas, Runnable runnable) {
+        try {
+            canvas.save();
+            canvas.clipRect(screenLeftX, screenTopY, screenRightX, screenBottomY);
+            runnable.run();
+        } finally {
+            canvas.restore();
+        }
+    }
+
     private void clear(Canvas canvas) {
         canvas.drawPaint(BACKGROUND);
     }
@@ -147,57 +157,59 @@ public class XYPlot extends View {
         // FIXME: Code missing here
     }
 
-    /**
-     * Clip the drawing region to the plot area.
-     */
-    private void prepareForPlotting(Canvas canvas) {
-        canvas.clipRect(screenLeftX, screenTopY, screenRightX, screenBottomY);
+    private void drawRestarts(final Canvas canvas) {
+        withPlotClip(canvas, new Runnable() {
+            @Override
+            public void run() {
+                for (PlotEvent event : events) {
+                    if (event.type != HistoryEvent.Type.SYSTEM_BOOT) {
+                        // FIXME: Draw shutdowns as well? Or shutdown->startup together somehow?
+                        continue;
+                    }
+
+                    if (event.msSinceEpoch < minX) {
+                        continue;
+                    }
+                    if (event.msSinceEpoch > maxX) {
+                        continue;
+                    }
+
+                    canvas.drawLine(
+                        toScreenX(event.msSinceEpoch), screenBottomY,
+                        toScreenX(event.msSinceEpoch), screenTopY,
+                        RESTART);
+                }
+            }
+        });
     }
 
-    private void drawRestarts(Canvas canvas) {
-        prepareForPlotting(canvas);
-
-        for (PlotEvent event : events) {
-            if (event.type != HistoryEvent.Type.SYSTEM_BOOT) {
-                // FIXME: Draw shutdowns as well? Or shutdown->startup together somehow?
-                continue;
+    private void drawSamples(final Canvas canvas, final Iterable<DrainSample> samples, final Paint paint) {
+        withPlotClip(canvas, new Runnable() {
+            @Override
+            public void run() {
+                for (DrainSample sample : samples) {
+                    if (sample.startMsSinceEpoch > maxX) {
+                        continue;
+                    }
+                    if (sample.endMsSinceEpoch < minX) {
+                        continue;
+                    }
+                    canvas.drawLine(
+                        toScreenX(sample.startMsSinceEpoch), toScreenY(sample.drainSpeed),
+                        toScreenX(sample.endMsSinceEpoch),   toScreenY(sample.drainSpeed),
+                        paint);
+                }
             }
-
-            if (event.msSinceEpoch < minX) {
-                continue;
-            }
-            if (event.msSinceEpoch > maxX) {
-                continue;
-            }
-
-            canvas.drawLine(
-                toScreenX(event.msSinceEpoch), screenBottomY,
-                toScreenX(event.msSinceEpoch), screenTopY,
-                RESTART);
-        }
-    }
-
-    private void drawSamples(Canvas canvas, Iterable<DrainSample> samples, Paint paint) {
-        prepareForPlotting(canvas);
-
-        for (DrainSample sample : samples) {
-            if (sample.startMsSinceEpoch > maxX) {
-                continue;
-            }
-            if (sample.endMsSinceEpoch < minX) {
-                continue;
-            }
-            canvas.drawLine(
-                toScreenX(sample.startMsSinceEpoch), toScreenY(sample.drainSpeed),
-                toScreenX(sample.endMsSinceEpoch),   toScreenY(sample.drainSpeed),
-                paint);
-        }
+        });
     }
 
     private void drawPackagingEvents(Canvas canvas) {
-        prepareForPlotting(canvas);
-
-        // FIXME: Code missing here
+        withPlotClip(canvas, new Runnable() {
+            @Override
+            public void run() {
+                // FIXME: Code missing here
+            }
+        });
     }
 
     private int toScreenX(double x) {

@@ -22,13 +22,13 @@ import android.support.annotation.Nullable;
 import java.text.ParseException;
 import java.util.Date;
 
-class HistoryEvent implements Comparable<HistoryEvent> {
+public class HistoryEvent implements Comparable<HistoryEvent> {
     @Override
     public int compareTo(@NonNull HistoryEvent historyEvent) {
         return getTimestamp().compareTo(historyEvent.getTimestamp());
     }
 
-    enum Type {
+    public enum Type {
         BATTERY_LEVEL,
         SYSTEM_SHUTDOWN,
         SYSTEM_BOOT,

@@ -17,11 +17,16 @@
 package com.gmail.walles.johan.batterylogger;
 
 import android.test.AndroidTestCase;
-import com.androidplot.xy.XYSeries;
+
+import com.gmail.walles.johan.batterylogger.plot.DrainSample;
+import com.gmail.walles.johan.batterylogger.plot.PlotEvent;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
+import java.util.Locale;
 
 public class HistoryTest extends AndroidTestCase {
     private File testStorage;
@@ -45,23 +50,23 @@ public class HistoryTest extends AndroidTestCase {
     }
 
     private void assertValues(double ... expectedValues) throws Exception {
-        XYSeries batteryDrain = new History(testStorage).getBatteryDrain();
+        List<DrainSample> batteryDrain = new History(testStorage).getBatteryDrain();
         double actualValues[] = new double[batteryDrain.size()];
         for (int i = 0; i < batteryDrain.size(); i++) {
-            actualValues[i] = batteryDrain.getY(i).doubleValue();
+            actualValues[i] = batteryDrain.get(i).drainSpeed;
         }
         assertEquals(Arrays.toString(expectedValues), Arrays.toString(actualValues));
     }
 
-    private void assertTimestampEquals(Date expectedTimestamps[], XYSeries actualTimestamps) {
+    private void assertTimestampEquals(Date expectedTimestamps[], List<Date> actualTimestamps) {
         Date actualTimestampsArray[] = new Date[actualTimestamps.size()];
         for (int i = 0; i < actualTimestamps.size(); i++) {
-            actualTimestampsArray[i] = History.toDate(actualTimestamps.getX(i));
+            actualTimestampsArray[i] = actualTimestamps.get(i);
         }
 
         String diff =
                 "Expected: " + Arrays.toString(expectedTimestamps) + "\n" +
-                "  Actual: " + Arrays.toString(actualTimestampsArray);
+                "Actual  : " + Arrays.toString(actualTimestampsArray);
 
         // Fuzzy compare the arrays, accepting some time diff
         assertEquals(diff, expectedTimestamps.length, actualTimestampsArray.length);
@@ -70,23 +75,34 @@ public class HistoryTest extends AndroidTestCase {
             Date actual = actualTimestampsArray[i];
             long diffMs = Math.abs(expected.getTime() - actual.getTime());
 
-            assertTrue(diff, diffMs < 1000L);
+            assertTrue("\n" + diff, diffMs < 1000L);
         }
     }
 
     private void assertDrainTimestamps(Date ... expectedTimestamps) throws Exception {
-        assertTimestampEquals(expectedTimestamps, new History(testStorage).getBatteryDrain());
+        List<Date> actualTimestamps = new ArrayList<>();
+        for (DrainSample sample : new History(testStorage).getBatteryDrain()) {
+            actualTimestamps.add(new Date((long)sample.startMsSinceEpoch));
+            actualTimestamps.add(new Date((long)sample.endMsSinceEpoch));
+        }
+
+        assertTimestampEquals(expectedTimestamps, actualTimestamps);
     }
 
     private void assertEventTimestamps(Date ... expectedTimestamps) throws Exception {
-        assertTimestampEquals(expectedTimestamps, new History(testStorage).getEvents());
+        List<Date> actualTimestamps = new ArrayList<>();
+        for (PlotEvent event : new History(testStorage).getEvents()) {
+            actualTimestamps.add(new Date((long)event.msSinceEpoch));
+        }
+
+        assertTimestampEquals(expectedTimestamps, actualTimestamps);
     }
 
     private void assertEventDescriptions(String... expectedDescriptions) throws Exception {
-        EventSeries events = new History(testStorage).getEvents();
+        List<PlotEvent> events = new History(testStorage).getEvents();
         String actualDescriptions[] = new String[events.size()];
         for (int i = 0; i < events.size(); i++) {
-            actualDescriptions[i] = events.getDescription(i);
+            actualDescriptions[i] = events.get(i).description;
         }
         assertEquals(Arrays.toString(expectedDescriptions), Arrays.toString(actualDescriptions));
     }
@@ -110,7 +126,9 @@ public class HistoryTest extends AndroidTestCase {
         assertNoEvents();
 
         // Drain timestamp should be between the sample timestamps
-        assertDrainTimestamps(new Date(now + 2 * History.HOUR_MS));
+        assertDrainTimestamps(
+            new Date(now + 1 * History.HOUR_MS),
+            new Date(now + 3 * History.HOUR_MS));
         // From 100% to 98% in two hours = 1%/h
         assertValues(1.0);
 
@@ -119,7 +137,8 @@ public class HistoryTest extends AndroidTestCase {
         assertNoEvents();
 
         assertDrainTimestamps(
-                new Date(now + 2 * History.HOUR_MS), new Date(now + 4 * History.HOUR_MS));
+            new Date(now + 1 * History.HOUR_MS), new Date(now + 3 * History.HOUR_MS),
+            new Date(now + 3 * History.HOUR_MS), new Date(now + 5 * History.HOUR_MS));
         // From 100% to 98% in two hours = 1%/h
         // From 98% to 94% in two hours = 2%/h
         assertValues(1.0, 2.0);
@@ -145,8 +164,8 @@ public class HistoryTest extends AndroidTestCase {
 
         assertValues(0.5, 1.5);
         assertDrainTimestamps(
-                new Date(now + 2 * History.HOUR_MS),
-                new Date(now + 12 * History.HOUR_MS));
+                new Date(now + 1 * History.HOUR_MS), new Date(now + 3 * History.HOUR_MS),
+                new Date(now + 11 * History.HOUR_MS), new Date(now + 13 * History.HOUR_MS));
 
         assertEventTimestamps(
                 new Date(now + 5 * History.HOUR_MS),
@@ -170,9 +189,9 @@ public class HistoryTest extends AndroidTestCase {
         // Assume unclean shutdown between last known event before the boot event and the boot event
         assertValues(0.5, 0.5, 0.5);
         assertDrainTimestamps(
-                new Date(now + 2 * History.HOUR_MS),
-                new Date(now + 5 * History.HOUR_MS),
-                new Date(now + 12 * History.HOUR_MS));
+            new Date(now + 1 * History.HOUR_MS), new Date(now + 3 * History.HOUR_MS),
+            new Date(now + 3 * History.HOUR_MS), new Date(now + 7 * History.HOUR_MS),
+            new Date(now + 11 * History.HOUR_MS), new Date(now + 13 * History.HOUR_MS));
 
         assertEventDescriptions("Unclean shutdown", "System starting up (not charging)");
         assertEventTimestamps(
@@ -232,44 +251,11 @@ public class HistoryTest extends AndroidTestCase {
         testMe.dropOldHistory();
 
         // Verify that the file has shrunk
-        assertTrue(String.format("Old size=%d, new size=%d", fileSize0, testStorage.length()),
-                testStorage.length() < fileSize0);
+        assertTrue(String.format(Locale.getDefault(), "Old size=%d, new size=%d",
+            fileSize0, testStorage.length()), testStorage.length() < fileSize0);
 
         // Verify that the age of the oldest event in the file is what we expect
         assertEquals(27, testMe.getHistoryAgeDays());
         assertEquals(27, new History(testStorage).getHistoryAgeDays());
-    }
-
-    public void testDateToDouble() {
-        Date now = new Date();
-
-        double dateAsDouble = History.toDouble(now);
-        Date dateFromDouble = History.toDate(dateAsDouble);
-
-        long msDiff = Math.abs(now.getTime() - dateFromDouble.getTime());
-        assertTrue("Ms diff too large: " + msDiff, msDiff < 1000);
-
-        // We want to keep the amount of bits used down in the hope that this will rid us of some
-        // cases of the event labels flickering in and out of visibility.
-        assertTrue("Double representation too large: " + dateAsDouble,
-                dateAsDouble < 1024 * 1024 * 5);
-    }
-
-    public void testDeltaMsToDouble() {
-        final long WANTED_DELTA = 3600 * 1000;
-
-        Date now = new Date();
-        double nowAsDouble = History.toDouble(now);
-        double delta1h = History.deltaMsToDouble(WANTED_DELTA);
-        double beforeAsDouble = nowAsDouble - delta1h;
-        Date before = History.toDate(beforeAsDouble);
-
-        long actualDeltaMs = now.getTime() - before.getTime();
-        assertTrue("Delta ms: " + actualDeltaMs, Math.abs(actualDeltaMs - WANTED_DELTA) < 1000);
-    }
-
-    public void testDoubleToDeltaMs() {
-        double number = 123456789;
-        assertEquals(number, History.deltaMsToDouble(History.doubleToDeltaMs(number)), 500.0);
     }
 }

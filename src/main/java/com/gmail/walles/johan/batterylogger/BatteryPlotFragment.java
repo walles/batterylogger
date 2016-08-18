@@ -23,15 +23,11 @@ import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.RectF;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
-import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.text.Html;
@@ -46,23 +42,14 @@ import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.TextView;
 
-import com.androidplot.xy.BoundaryMode;
-import com.androidplot.xy.LineAndPointFormatter;
-import com.androidplot.xy.PointLabelFormatter;
-import com.androidplot.xy.PointLabeler;
-import com.androidplot.xy.XYPlot;
-import com.androidplot.xy.XYSeries;
-import com.androidplot.xy.XYStepMode;
+import com.gmail.walles.johan.batterylogger.plot.DrainSample;
+import com.gmail.walles.johan.batterylogger.plot.XYPlot;
 import com.nineoldandroids.animation.Animator;
 import com.nineoldandroids.animation.AnimatorListenerAdapter;
 import com.nineoldandroids.animation.PropertyValuesHolder;
 import com.nineoldandroids.animation.ValueAnimator;
 
 import java.io.IOException;
-import java.text.FieldPosition;
-import java.text.Format;
-import java.text.ParsePosition;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
@@ -73,8 +60,6 @@ import java.util.Set;
 import timber.log.Timber;
 
 public class BatteryPlotFragment extends Fragment {
-    private static final int IN_GRAPH_TEXT_SIZE_SP = 12;
-
     private static final long ONE_DAY_MS = 86400 * 1000;
     private static final int LEGEND_WIDTH_LANDSCAPE_SP = 300;
     private static final int ANIMATION_DURATION_MS = 1000;
@@ -85,9 +70,6 @@ public class BatteryPlotFragment extends Fragment {
 
     private double originalMinX;
     private double originalMaxX;
-    private EventFormatter eventFormatter;
-
-    private XYSeries drainDots;
 
     private CharSequence legendHtml;
 
@@ -144,7 +126,7 @@ public class BatteryPlotFragment extends Fragment {
      * @return True if we should show text events, false otherwise.
      */
     private boolean isShowingEvents() {
-        long visibleMs = History.toDate(maxX).getTime() - History.toDate(minX).getTime();
+        long visibleMs = (long)(maxX - minX);
         return visibleMs <= 3 * ONE_DAY_MS;
     }
 
@@ -155,8 +137,8 @@ public class BatteryPlotFragment extends Fragment {
             showAlertDialogOnce("Events Hidden", "Zoom in with two fingers to see hidden events");
         }
 
-        eventFormatter.setVisible(isShowingEvents());
-        plot.redraw();
+        plot.setShowEvents(isShowingEvents());
+        plot.invalidate();
     }
 
     private static final DialogInterface.OnClickListener DIALOG_DISMISSER = new DialogInterface.OnClickListener() {
@@ -326,7 +308,7 @@ public class BatteryPlotFragment extends Fragment {
         setUpPlotLayout(plot);
 
         // Animate to max zoomed out
-        minX = maxX - History.deltaMsToDouble(86400 * 1000);
+        minX = maxX - 86400 * 1000;
         if (minX < originalMinX) {
             minX = originalMinX;
         }
@@ -354,110 +336,23 @@ public class BatteryPlotFragment extends Fragment {
                 r.getDisplayMetrics());
     }
 
-    private float dpToPixels(float dp) {
-        Resources r = getResources();
-        return TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP,
-                dp,
-                r.getDisplayMetrics());
-    }
-
     private void setUpPlotLayout(final XYPlot plot) {
-        final float labelHeightPixels = spToPixels(15);
+        plot.setYLabel("Battery Drain (%/h)");
 
-        // Note that we have to set text size before label text, otherwise the label gets clipped,
-        // with AndroidPlot 0.6.2-SNAPSHOT on 2014sep12 /Johan
-        plot.getRangeLabelWidget().getLabelPaint().setTextSize(labelHeightPixels);
-        plot.setRangeLabel("Battery Drain (%/h)");
-
-        plot.getTitleWidget().setVisible(false);
-        plot.getDomainLabelWidget().setVisible(false);
-        plot.getLegendWidget().setVisible(false);
-
-        plot.getGraphWidget().getRangeLabelPaint().setTextSize(labelHeightPixels);
-        plot.getGraphWidget().getRangeOriginLabelPaint().setTextSize(labelHeightPixels);
-        plot.getGraphWidget().getDomainLabelPaint().setTextSize(labelHeightPixels);
-        plot.getGraphWidget().getDomainOriginLabelPaint().setTextSize(labelHeightPixels);
-
-        // Tell the widget about how much space we should reserve for the range label widgets
-        final float maxRangeLabelWidth = plot.getGraphWidget().getRangeLabelPaint().measureText("25.0");
-        plot.getGraphWidget().setRangeLabelWidth(maxRangeLabelWidth);
-
-        // Need room for top scale label
-        plot.getGraphWidget().setMarginTop(labelHeightPixels);
-
-        // Need room for domain labels
-        plot.getGraphWidget().setMarginBottom(labelHeightPixels);
-
-        // Need room for the range label
-        //noinspection SuspiciousNameCombination
-        plot.getGraphWidget().setMarginLeft(labelHeightPixels);
-
-        // Prevent the leftmost part of the range labels from being clipped
-        // FIXME: I don't know where the clipping comes from, fixing it properly would be better
-        plot.getGraphWidget().setClippingEnabled(false);
-
-        // Symmetry with upper and bottom
-        //noinspection SuspiciousNameCombination
-        plot.getGraphWidget().setMarginRight(labelHeightPixels);
-
-        plot.setRangeStep(XYStepMode.INCREMENT_BY_VAL, 1);
-        plot.setTicksPerRangeLabel(5);
-
-        plot.setTicksPerDomainLabel(1);
-        plot.setDomainStep(XYStepMode.SUBDIVIDE, 4);
-        plot.setDomainValueFormat(new Format() {
-            @Override
-            public StringBuffer format(Object o, @NonNull StringBuffer toAppendTo, @NonNull FieldPosition position) {
-                Date timestamp = History.toDate((Number) o);
-                long domainWidthSeconds = History.doubleToDeltaMs(maxX - minX) / 1000;
-                SimpleDateFormat format;
-                if (domainWidthSeconds < 5 * 60) {
-                    format = new SimpleDateFormat("HH:mm:ss");
-                } else if (domainWidthSeconds < 86400) {
-                    format = new SimpleDateFormat("HH:mm");
-                } else if (domainWidthSeconds < 86400 * 7) {
-                    format = new SimpleDateFormat("EEE HH:mm");
-                } else {
-                    format = new SimpleDateFormat("MMM d");
-                }
-                return format.format(timestamp, toAppendTo, position);
-            }
-
-            @Override
-            @Nullable
-            public Object parseObject(String s, @NonNull ParsePosition parsePosition) {
-                return null;
-            }
-        });
-
-        plot.calculateMinMaxVals();
-        minX = plot.getCalculatedMinX().doubleValue();
-        maxX = plot.getCalculatedMaxX().doubleValue();
         Date now = new Date();
-        if (maxX < History.toDouble(now)) {
-            maxX = History.toDouble(now);
-        }
+        maxX = now.getTime();
+
         Date fiveMinutesAgo = new Date(now.getTime() - History.FIVE_MINUTES_MS);
-        if (minX > History.toDouble(fiveMinutesAgo)) {
-            minX = History.toDouble(fiveMinutesAgo);
+        minX = fiveMinutesAgo.getTime();
+        if (!plot.isEmpty()) {
+            minX = Math.min(plot.getLeftmostX(), fiveMinutesAgo.getTime());
         }
 
         originalMinX = minX;
         originalMaxX = maxX;
 
-        plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
-
-        double maxY = plot.getCalculatedMaxY().doubleValue();
-        if (maxY < 5) {
-            maxY = 5;
-        }
-        if (maxY > 25) {
-            // We sometimes get unreasonable outliers, clamp them so they don't make the graph unreadable
-            maxY = 25;
-        }
-
-        plot.setRangeBoundaries(0, maxY, BoundaryMode.FIXED);
+        plot.setXRange(minX, maxX);
+        plot.setYRange(0, 20);
     }
 
     public static boolean isRunningOnEmulator() {
@@ -482,18 +377,7 @@ public class BatteryPlotFragment extends Fragment {
         return parts.size() == 0;
     }
 
-    private void enableDrainDots(XYPlot plot) {
-        plot.removeSeries(drainDots);
-        plot.addSeries(drainDots, getDrainFormatter());
-    }
-
-    private void disableDrainDots(XYPlot plot) {
-        plot.removeSeries(drainDots);
-    }
-
     private void addPlotData(final XYPlot plot) {
-        LineAndPointFormatter medianFormatter = getMedianFormatter();
-
         try {
             // Add battery drain series to the plot
             History history = new History(getActivity());
@@ -501,35 +385,16 @@ public class BatteryPlotFragment extends Fragment {
                 history = History.createFakeHistory();
             }
 
-            drainDots = history.getBatteryDrain();
-            enableDrainDots(plot);
-
-            final List<XYSeries> medians = history.getDrainLines();
-            for (XYSeries median : medians) {
-                plot.addSeries(median, medianFormatter);
-            }
-
-            // Add red restart lines to the plot
-            Paint restartPaint = new Paint();
-            restartPaint.setAntiAlias(true);
-            restartPaint.setColor(Color.RED);
-            restartPaint.setStrokeWidth(dpToPixels(0.5f));
-            plot.addSeries(history.getEvents(), new RestartFormatter(restartPaint));
-
-            // Add events to the plot
-            Paint labelPaint = new Paint();
-            labelPaint.setAntiAlias(true);
-            labelPaint.setColor(Color.WHITE);
-            labelPaint.setTextSize(spToPixels(IN_GRAPH_TEXT_SIZE_SP));
-
-            eventFormatter = new EventFormatter(labelPaint);
-            plot.addSeries(history.getEvents(), eventFormatter);
+            plot.setDrainDots(history.getBatteryDrain());
+            final List<DrainSample> drainLines = history.getDrainLines();
+            plot.setDrainLines(drainLines);
+            plot.setEvents(history.getEvents());
 
             if (history.isEmpty()) {
                 showAlertDialogOnce(
                         "No Battery History Recorded",
                         "Come back in a few hours to get a graph, or in a week to be able to see patterns.");
-            } else if (medians.size() < 5) {
+            } else if (drainLines.size() < 5) {
                 showAlertDialogOnce(
                         "Very Short Battery History Recorded",
                         "If you come back in a week you'll be able to see patterns much better.");
@@ -538,40 +403,6 @@ public class BatteryPlotFragment extends Fragment {
             Timber.e(e, "Reading battery history failed");
             showAlertDialog("Reading Battery History Failed", e.getMessage(), DIALOG_DISMISSER);
         }
-    }
-
-    private LineAndPointFormatter getMedianFormatter() {
-        LineAndPointFormatter medianFormatter = new LineAndPointFormatter();
-        medianFormatter.setPointLabelFormatter(new PointLabelFormatter());
-        medianFormatter.setPointLabeler(new PointLabeler() {
-            @Override
-            public String getLabel(XYSeries xySeries, int i) {
-                return "";
-            }
-        });
-        medianFormatter.getLinePaint().setStrokeWidth(7);
-        medianFormatter.getLinePaint().setColor(Color.GREEN);
-        medianFormatter.getVertexPaint().setColor(Color.TRANSPARENT);
-        medianFormatter.getFillPaint().setColor(Color.TRANSPARENT);
-        return medianFormatter;
-    }
-
-    private LineAndPointFormatter getDrainFormatter() {
-        LineAndPointFormatter drainFormatter = new LineAndPointFormatter();
-        drainFormatter.setPointLabelFormatter(new PointLabelFormatter());
-        drainFormatter.setPointLabeler(new PointLabeler() {
-            @Override
-            public String getLabel(XYSeries xySeries, int i) {
-                return "";
-            }
-        });
-        drainFormatter.getLinePaint().setStrokeWidth(0);
-        drainFormatter.getLinePaint().setColor(Color.TRANSPARENT);
-        drainFormatter.getVertexPaint().setColor(Color.rgb(0x00, 0x44, 0x00));
-        drainFormatter.getVertexPaint().setStrokeWidth(4);
-        drainFormatter.getFillPaint().setColor(Color.TRANSPARENT);
-        drainFormatter.getPointLabelFormatter().getTextPaint().setColor(Color.WHITE);
-        return drainFormatter;
     }
 
     private View.OnTouchListener getOnTouchListener(final XYPlot plot) {
@@ -640,7 +471,7 @@ public class BatteryPlotFragment extends Fragment {
                 //noinspection RedundantCast
                 maxX = (double)(Float)animation.getAnimatedValue("maxX");
 
-                plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
+                plot.setXRange(minX, maxX);
                 redrawPlot(plot);
             }
         });
@@ -658,12 +489,12 @@ public class BatteryPlotFragment extends Fragment {
             @Override
             public void onAnimationStart(Animator animation) {
                 t0 = SystemClock.elapsedRealtime();
-                disableDrainDots(plot);
+                plot.setShowDrainDots(false);
             }
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                enableDrainDots(plot);
+                plot.setShowDrainDots(true);
                 if (cancelled) {
                     return;
                 }
@@ -713,7 +544,7 @@ public class BatteryPlotFragment extends Fragment {
                         if (minX == originalMinX && maxX == originalMaxX) {
                             // Reset zoom to two most recent days
                             targetMaxX = originalMaxX;
-                            targetMinX = targetMaxX - History.deltaMsToDouble(86400 * 1000 * 2);
+                            targetMinX = targetMaxX - 86400 * 1000 * 2;
                         } else {
                             // Reset zoom to max out
                             targetMinX = originalMinX;
@@ -729,7 +560,7 @@ public class BatteryPlotFragment extends Fragment {
                     public boolean onScroll(MotionEvent motionEvent, MotionEvent motionEvent2, float dx, float dy) {
                         scrollSideways(plot, dx);
 
-                        plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
+                        plot.setXRange(minX, maxX);
                         redrawPlot(plot);
                         return true;
                     }
@@ -750,14 +581,11 @@ public class BatteryPlotFragment extends Fragment {
                     public boolean onScale(ScaleGestureDetector detector) {
                         float factor = detector.getPreviousSpan() / detector.getCurrentSpan();
                         float pixelX = detector.getFocusX();
-                        RectF gridRect = plot.getGraphWidget().getGridRect();
-                        // getXVal throws IAE if the X value is outside of the rectangle
-                        if (gridRect.contains(pixelX, gridRect.top)) {
-                            double pivot = plot.getGraphWidget().getXVal(pixelX);
-                            zoom(factor, pivot);
-                        }
 
-                        plot.setDomainBoundaries(minX, maxX, BoundaryMode.FIXED);
+                        double pivot = plot.getXValue(pixelX);
+                        zoom(factor, pivot);
+
+                        plot.setXRange(minX, maxX);
                         redrawPlot(plot);
                         return true;
                     }

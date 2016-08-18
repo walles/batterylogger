@@ -18,8 +18,7 @@ package com.gmail.walles.johan.batterylogger;
 
 import android.support.annotation.Nullable;
 
-import com.androidplot.xy.SimpleXYSeries;
-import com.androidplot.xy.XYSeries;
+import com.gmail.walles.johan.batterylogger.plot.DrainSample;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +31,7 @@ import timber.log.Timber;
 
 public class DrainLinesCreator {
     private final List<HistoryEvent> history;
-    private List<XYSeries> drainLines;
+    private List<DrainSample> drainLines;
 
     @Nullable
     private Date lineStart;
@@ -124,7 +123,7 @@ public class DrainLinesCreator {
     }
 
     @Nullable
-    private XYSeries createDrainLine(Date lineEnd) {
+    private DrainSample createDrainLine(Date lineEnd) {
         if (charging == null) {
             // Don't know whether we're charging, don't draw anything
             Timber.v("No charging state => no line");
@@ -140,10 +139,7 @@ public class DrainLinesCreator {
         if (charging) {
             // Draw a line at y=0
             Timber.v("Charging => line at y=0");
-            SimpleXYSeries line = new SimpleXYSeries("don't show this string");
-            line.addLast(History.toDouble(lineStart), 0);
-            line.addLast(History.toDouble(lineEnd), 0);
-            drainLines.add(line);
+            drainLines.add(new DrainSample(lineStart, lineEnd, 0));
         }
 
         if (currentDrainEvents == null) {
@@ -166,14 +162,11 @@ public class DrainLinesCreator {
         }
 
         Timber.v("Drawing drain line at %s", y);
-        SimpleXYSeries line = new SimpleXYSeries("don't show this string");
-        line.addLast(History.toDouble(lineStart), y);
-        line.addLast(History.toDouble(lineEnd), y);
-        return line;
+        return new DrainSample(lineStart, lineEnd, y);
     }
 
     private void finishLine(Date lineEnd) {
-        XYSeries drainLine = createDrainLine(lineEnd);
+        DrainSample drainLine = createDrainLine(lineEnd);
         if (drainLine != null) {
             drainLines.add(drainLine);
         }
@@ -217,18 +210,22 @@ public class DrainLinesCreator {
         }
     }
 
-    public List<XYSeries> getDrainLines() {
+    public List<DrainSample> getDrainLines() {
         if (drainLines != null) {
             return drainLines;
         }
-        drainLines = new LinkedList<>();
+        drainLines = new ArrayList<>();
 
         if (history.isEmpty()) {
             return drainLines;
         }
 
         for (HistoryEvent event : history) {
-            handleEvent(event);
+            try {
+                handleEvent(event);
+            } catch (IllegalArgumentException e) {
+                Timber.e(e, "Error handling history event, ignoring this one: %s", event);
+            }
         }
         finishLine(history.get(history.size() - 1).getTimestamp());
 

@@ -27,7 +27,7 @@
         android:background="@android:color/black"
         android:textColor="@android:color/white" />
 
-    <com.androidplot.xy.XYPlot
+    <com.gmail.walles.johan.batterylogger.plot.XYPlot
         android:id="@+id/mySimpleXYPlot"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"/>

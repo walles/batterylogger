@@ -51,11 +51,6 @@ over the time each app has been installed (much like the built-in
 battery app). Clicking on an app should expand that line and show
 per-app-version stats, as well as not-installed stats if available.
 
-* Hide individual samples if we're zoomed out enough. Otherwise, when
-samples are plotted really close together they form lines that stand
-out more than the averages that people are supposed to look at
-primarily.
-
 * Add a .travis.yml to run the unit tests on pull requests and pushes.
 
 * If we change the system clock, think about how that would affect
@@ -65,16 +60,10 @@ logging in general, and the drawing of median lines.
 * See if we can detect enabling / disabling of Google Now and log
 that. Or maybe when services start / stop in general?
 
-* Make sure there's room for displaying a text event at the far left of
-the graph. Right now, any leftmost event is printed mostly outside of the
-visible area.
-
 * Collect application-data-cleared events if possible.
 
 * When drawing the drain lines, try to guess the initial charging state by
 counting backwards from the first change in charging state.
-
-* Make the Y axis labels look good.
 
 
 DONE
@@ -243,3 +232,5 @@ zoom performance.
 * Auto generate version code and version number from git describe.
 
 * Enable making debug builds without Crashlytics keys.
+
+* Replace AndroidPlot with roll-my-own

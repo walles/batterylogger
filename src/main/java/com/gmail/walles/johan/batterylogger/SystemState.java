@@ -151,10 +151,17 @@ public class SystemState {
     }
 
     private String toDescriptionString() {
+        InstalledApp batterylogger = installedApps.get("com.gmail.walles.johan.batterylogger");
+        String batteryLoggerVersion;
+        if (batterylogger != null) {
+            batteryLoggerVersion = batterylogger.versionName;
+        } else {
+            batteryLoggerVersion = "<Not installed>";
+        }
         return String.format(Locale.ENGLISH, "Timestamp: %s, Boot: %s, Version: %s",
             toIsoString(timestamp),
             toIsoString(bootTimestamp),
-            BuildConfig.VERSION_NAME);
+            batteryLoggerVersion);
     }
 
     private void logSamplingGap(SystemState before) {

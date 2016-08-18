@@ -154,7 +154,7 @@ public class SystemState {
         return String.format(Locale.ENGLISH, "Timestamp: %s, Boot: %s, Version: %s",
             toIsoString(timestamp),
             toIsoString(bootTimestamp),
-            installedApps.get("com.gmail.walles.johan.batterylogger").versionName);
+            BuildConfig.VERSION_NAME);
     }
 
     private void logSamplingGap(SystemState before) {

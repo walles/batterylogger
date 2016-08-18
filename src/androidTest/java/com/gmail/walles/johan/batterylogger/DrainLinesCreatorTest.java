@@ -16,6 +16,8 @@
 
 package com.gmail.walles.johan.batterylogger;
 
+import com.gmail.walles.johan.batterylogger.plot.DrainSample;
+
 import junit.framework.TestCase;
 
 import java.util.Arrays;
@@ -27,6 +29,11 @@ import java.util.List;
 public class DrainLinesCreatorTest extends TestCase {
     private static final Date BEFORE = new Date(System.currentTimeMillis() - 86400 * 1000);
     private static final Date NOW = new Date();
+
+    /**
+     * How close do dates need to be for us to be satisfied?
+     */
+    private static final double DELTA_MS = 1000.0;
 
     public void testMedianLine() {
         try {
@@ -78,16 +85,13 @@ public class DrainLinesCreatorTest extends TestCase {
         ));
         assertEquals(1, testMe.getDrainLines().size());
 
-        XYSeries drainLine = testMe.getDrainLines().get(0);
-        assertEquals(2, drainLine.size());
+        DrainSample drainLine = testMe.getDrainLines().get(0);
 
-        Number y = drainLine.getY(0);
-        assertTrue(y.doubleValue() > 0.0);
-        assertFalse(Double.isInfinite(y.doubleValue()));
+        assertTrue(drainLine.drainSpeed > 0.0);
+        assertFalse(Double.isInfinite(drainLine.drainSpeed));
 
-        assertEquals(y, drainLine.getY(1));
-        assertEquals(drainLine.getX(0).doubleValue(), History.toDouble(dates[0]));
-        assertEquals(drainLine.getX(1).doubleValue(), History.toDouble(dates[2]));
+        assertEquals(drainLine.startMsSinceEpoch, dates[0].getTime(), DELTA_MS);
+        assertEquals(drainLine.endMsSinceEpoch, dates[2].getTime(), DELTA_MS);
     }
 
     public void testZeroPercentDischarge() {
@@ -134,10 +138,8 @@ public class DrainLinesCreatorTest extends TestCase {
 
         // Expect one draining line; the charging parts should just be ignored
         assertEquals(1, testMe.getDrainLines().size());
-        final XYSeries drainLine = testMe.getDrainLines().get(0);
-        assertEquals(drainLine.getY(0), drainLine.getY(1));
-        assertTrue(drainLine.getY(0).doubleValue() > 0.0);
-        assertTrue(drainLine.getY(1).doubleValue() > 0.0);
+        final DrainSample drainLine = testMe.getDrainLines().get(0);
+        assertTrue(drainLine.drainSpeed > 0.0);
     }
 
     /**
@@ -174,14 +176,11 @@ public class DrainLinesCreatorTest extends TestCase {
 
         assertEquals(1, testMe.getDrainLines().size());
 
-        XYSeries drainLine = testMe.getDrainLines().get(0);
-        assertEquals(2, drainLine.size());
+        DrainSample drainLine = testMe.getDrainLines().get(0);
 
-        Number y = drainLine.getY(0);
-        assertEquals(0.0, y.doubleValue());
-        assertEquals(y, drainLine.getY(1));
-        assertEquals(drainLine.getX(0).doubleValue(), History.toDouble(BEFORE));
-        assertEquals(drainLine.getX(1).doubleValue(), History.toDouble(NOW));
+        assertEquals(0.0, drainLine.drainSpeed);
+        assertEquals(drainLine.startMsSinceEpoch, BEFORE.getTime(), DELTA_MS);
+        assertEquals(drainLine.endMsSinceEpoch, NOW.getTime(), DELTA_MS);
     }
 
     public void testAverage() {

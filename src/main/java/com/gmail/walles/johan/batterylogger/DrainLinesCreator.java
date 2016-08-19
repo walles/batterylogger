@@ -227,7 +227,15 @@ public class DrainLinesCreator {
                 Timber.e(e, "Error handling history event, ignoring this one: %s", event);
             }
         }
-        finishLine(history.get(history.size() - 1).getTimestamp());
+
+        if (history.size() >= 2) {
+            HistoryEvent lastEvent = history.get(history.size() - 1);
+            try {
+                finishLine(lastEvent.getTimestamp());
+            } catch (IllegalArgumentException e) {
+                Timber.e(e, "Error finishing history recreation, ignoring last event: %s", lastEvent);
+            }
+        }
 
         return drainLines;
     }

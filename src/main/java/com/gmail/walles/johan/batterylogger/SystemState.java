@@ -178,7 +178,9 @@ public class SystemState {
                     before.timestamp.toString(), timestamp.toString()));
         }
 
-        if (timestamp.getTime() - before.timestamp.getTime() > TWO_HOURS_MS) {
+        if (timestamp.getTime() - before.timestamp.getTime() > TWO_HOURS_MS &&
+            SystemClock.elapsedRealtime() > TWO_HOURS_MS)
+        {
             logSamplingGap(before);
         }
 

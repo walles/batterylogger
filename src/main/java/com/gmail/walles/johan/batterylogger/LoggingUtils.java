@@ -106,9 +106,8 @@ public class LoggingUtils {
                 tag = "BatteryLogger";
             }
 
-            if (t != null) {
-                message += "\n" + Log.getStackTraceString(t);
-            }
+            // Empirical evidence shows any exception stack trace is already part of the message, so
+            // no need to print the exception explicitly here.
             Log.println(priority, tag, message);
         }
     }

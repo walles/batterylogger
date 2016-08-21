@@ -33,7 +33,11 @@ import timber.log.Timber;
  * Sample the system state at regular intervals.
  */
 public class SystemSamplingService extends IntentService {
-    private static final String SAMPLE_ACTION = "history event sample action";
+    /**
+     * Must match .EventReceiver intent-filter in AndroidManifest.xml.
+     */
+    public static final String SAMPLE_ACTION = "com.gmail.walles.johan.batterylogger.SAMPLE_ACTION";
+
     private static final String SYSTEM_STATE_FILE_NAME = "system-state.txt";
     private long lastSamplingEndTimestamp = 0;
 
@@ -47,18 +51,16 @@ public class SystemSamplingService extends IntentService {
     public static void enable(Context context) {
         Timber.v("Setting repeating system state sampling alarm...");
 
-        Intent intent = new Intent(context, SystemSamplingService.class);
+        Intent intent = new Intent(context, EventReceiver.class);
         intent.setAction(SAMPLE_ACTION);
-        PendingIntent pendingIntent = PendingIntent.getService(context, 0, intent, 0);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
         if (pendingIntent == null) {
             // This shouldn't happen without passing FLAG_NO_CREATE to the getService() call
             throw new RuntimeException("Pending intent was null");
         }
+        Timber.v("Pending intent: %s", intent);
 
         AlarmManager alarmManager = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
-
-        // Prevent duplicate alarms
-        alarmManager.cancel(pendingIntent);
 
         alarmManager.setInexactRepeating(
                 AlarmManager.ELAPSED_REALTIME,
@@ -67,6 +69,12 @@ public class SystemSamplingService extends IntentService {
                 SystemClock.elapsedRealtime() + 30 * 1000,
                 AlarmManager.INTERVAL_FIFTEEN_MINUTES,
                 pendingIntent);
+    }
+
+    public static void requestSample(Context context) {
+        Intent intent = new Intent(context, SystemSamplingService.class);
+        intent.setAction(SAMPLE_ACTION);
+        context.startService(intent);
     }
 
     @Override
@@ -78,7 +86,7 @@ public class SystemSamplingService extends IntentService {
 
     private void handleIntent(Intent intent) throws IOException {
         if (!SAMPLE_ACTION.equals(intent.getAction())) {
-            Timber.w("Ignoring unknown action %s", intent.getAction());
+            Timber.w("Ignoring unknown sampling action: %s", intent.getAction());
             return;
         }
 

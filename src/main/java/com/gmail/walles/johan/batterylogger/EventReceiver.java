@@ -26,13 +26,16 @@ public class EventReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (isSystemBoot(intent)) {
-            Timber.i("System is booting, got intent action %s", intent.getAction());
+            Timber.i("System is booting, got intent action: %s", intent.getAction());
             SystemSamplingService.enable(context);
         } else if (Intent.ACTION_MY_PACKAGE_REPLACED.equals(intent.getAction())) {
-            Timber.i("I was upgraded, got intent action %s", intent.getAction());
+            Timber.i("I was upgraded, got intent action: %s", intent.getAction());
             SystemSamplingService.enable(context);
+        } else if (SystemSamplingService.SAMPLE_ACTION.equals(intent.getAction())) {
+            Timber.i("System sampling broadcast received, got intent action: %s", intent.getAction());
+            SystemSamplingService.requestSample(context);
         } else {
-            Timber.w("Ignoring unknown intent action %s", intent.getAction());
+            Timber.w("Ignoring unknown intent action: %s", intent.getAction());
         }
     }
 

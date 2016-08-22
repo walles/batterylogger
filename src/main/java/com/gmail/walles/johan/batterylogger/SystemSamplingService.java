@@ -90,19 +90,43 @@ public class SystemSamplingService extends IntentService {
             return;
         }
 
-        final File stateFile = new File(getFilesDir(), SYSTEM_STATE_FILE_NAME);
-
         SystemState state = SystemState.readFromSystem(this);
 
-        if (stateFile.isFile()) {
-            SystemState previousState = SystemState.readFromFile(stateFile);
-            History history = new History(this);
-            for (HistoryEvent event : state.getEventsSince(previousState)) {
-                history.addEvent(event);
-            }
-        }
+        final File stateFile = new File(getFilesDir(), SYSTEM_STATE_FILE_NAME);
+        addHistoryEventsSince(state, stateFile);
 
         state.writeToFile(stateFile);
+    }
+
+    private void addHistoryEventsSince(SystemState currentState, File stateFile) {
+        if (!stateFile.isFile()) {
+            return;
+        }
+
+        SystemState previousState;
+        try {
+            previousState = SystemState.readFromFile(stateFile);
+        } catch (IOException e) {
+            Timber.e(e, "Error reading system state from: %s", stateFile);
+            return;
+        }
+
+        if (!previousState.getTimestamp().before(currentState.getTimestamp())) {
+            Timber.w(new RuntimeException(),
+                "Current state older than previous state:\nprev: %s\ncurr: %s",
+                previousState, currentState);
+            return;
+        }
+
+        History history = new History(this);
+        try {
+            for (HistoryEvent event : currentState.getEventsSince(previousState)) {
+                history.addEvent(event);
+            }
+        } catch (IllegalArgumentException | IOException e) {
+            Timber.e(e, "Adding history events since last system state failed");
+            return;
+        }
     }
 
     @Override

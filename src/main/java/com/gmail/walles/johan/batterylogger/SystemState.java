@@ -519,4 +519,8 @@ public class SystemState {
     public int getAppCount() {
         return installedApps.size();
     }
+
+    public Date getTimestamp() {
+        return timestamp;
+    }
 }

@@ -16,10 +16,10 @@
 
 package com.gmail.walles.johan.batterylogger;
 
-import android.test.AndroidTestCase;
-
 import com.gmail.walles.johan.batterylogger.plot.DrainSample;
 import com.gmail.walles.johan.batterylogger.plot.PlotEvent;
+
+import junit.framework.TestCase;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class HistoryTest extends AndroidTestCase {
+public class HistoryTest extends TestCase {
     private File testStorage;
     private long now;
     private History testMe;

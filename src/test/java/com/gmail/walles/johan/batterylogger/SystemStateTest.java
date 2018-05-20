@@ -235,16 +235,4 @@ public class SystemStateTest extends TestCase {
         SystemState c = new SystemState(now, 27, false, new Date(100 * 1000));
         assertFalse(a.equals(c));
     }
-
-    public void testGetBootTimestamp() throws Exception {
-        SystemState.getBootTimestamp();
-        Date b0 = SystemState.getBootTimestamp();
-        Thread.sleep(1000, 0);
-        Date b1 = SystemState.getBootTimestamp();
-
-        long dt = Math.abs(b1.getTime() - b0.getTime());
-        assertTrue("Too much drift over one second: " + dt + "ms", dt < 200);
-
-        assertTrue("Boot timestamp can't be in the future", b0.before(new Date()));
-    }
 }

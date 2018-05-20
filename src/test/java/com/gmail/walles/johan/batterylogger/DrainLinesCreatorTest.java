@@ -27,7 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class DrainLinesCreatorTest extends TestCase {
-    private static final Date BEFORE = new Date(System.currentTimeMillis() - 86400 * 1000);
+    private static final Date BEFORE = new Date(System.currentTimeMillis() - 3600 * 1000);
     private static final Date NOW = new Date();
 
     /**

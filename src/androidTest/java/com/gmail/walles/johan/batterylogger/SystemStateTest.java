@@ -22,10 +22,6 @@ import java.io.File;
 import java.util.Date;
 
 public class SystemStateTest extends AndroidTestCase {
-    private final Date now = new Date();
-    private final Date then = new Date(now.getTime() - History.FIVE_MINUTES_MS);
-    private final Date bootTimestamp = new Date(then.getTime() - History.FIVE_MINUTES_MS);
-
     /**
      * Sanity check the current system state.
      */
@@ -50,5 +46,17 @@ public class SystemStateTest extends AndroidTestCase {
                 tempFile.delete();
             }
         }
+    }
+
+    public void testGetBootTimestamp() throws Exception {
+        SystemState.getBootTimestamp();
+        Date b0 = SystemState.getBootTimestamp();
+        Thread.sleep(1000, 0);
+        Date b1 = SystemState.getBootTimestamp();
+
+        long dt = Math.abs(b1.getTime() - b0.getTime());
+        assertTrue("Too much drift over one second: " + dt + "ms", dt < 200);
+
+        assertTrue("Boot timestamp can't be in the future", b0.before(new Date()));
     }
 }

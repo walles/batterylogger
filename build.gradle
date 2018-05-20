@@ -117,5 +117,5 @@ dependencies {
         transitive = true
     }
 
-    testImplementation 'junit:junit:3.8.2'
+    testImplementation 'junit:junit:4.12'
 }

@@ -32,7 +32,7 @@ public class InstalledAppTest extends AndroidTestCase {
         printWriter.close();
 
         InstalledApp recycled = InstalledApp.readLines(new BufferedReader(new StringReader(disk.toString())));
-        assertEquals(testMe, recycled);
+        Assert.assertEquals(testMe, recycled);
     }
 
     public void testPersistence() throws Exception {

@@ -18,6 +18,8 @@ package com.gmail.walles.johan.batterylogger;
 
 import junit.framework.TestCase;
 
+import org.junit.Assert;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
@@ -31,37 +33,37 @@ public class SystemStateTest extends TestCase {
     public void testConstructor() {
         try {
             new SystemState(then, 27, false, now);
-            fail("Expected IAE when boot is in the future");
+            Assert.fail("Expected IAE when boot is in the future");
         } catch (IllegalArgumentException ignored) {
             // Expected exception intentionally ignored
         }
     }
 
     public void testEquals() {
-        assertTrue(new SystemState(now, 27, true, bootTimestamp).equals(new SystemState(now, 27, true, bootTimestamp)));
-        assertFalse(new SystemState(now, 27, true, bootTimestamp).equals(new SystemState(then, 27, true, bootTimestamp)));
-        assertFalse(new SystemState(now, 27, true, bootTimestamp).equals(new SystemState(now, 36, true, bootTimestamp)));
-        assertFalse(new SystemState(now, 27, true, bootTimestamp).equals(new SystemState(now, 27, false, bootTimestamp)));
-        assertFalse(new SystemState(now, 27, true, bootTimestamp).equals(new SystemState(now, 27, false, then)));
+        Assert.assertTrue(new SystemState(now, 27, true, bootTimestamp).equals(new SystemState(now, 27, true, bootTimestamp)));
+        Assert.assertFalse(new SystemState(now, 27, true, bootTimestamp).equals(new SystemState(then, 27, true, bootTimestamp)));
+        Assert.assertFalse(new SystemState(now, 27, true, bootTimestamp).equals(new SystemState(now, 36, true, bootTimestamp)));
+        Assert.assertFalse(new SystemState(now, 27, true, bootTimestamp).equals(new SystemState(now, 27, false, bootTimestamp)));
+        Assert.assertFalse(new SystemState(now, 27, true, bootTimestamp).equals(new SystemState(now, 27, false, then)));
 
         SystemState a = new SystemState(now, 27, false, bootTimestamp);
         a.addInstalledApp("a.b.c", "Griseknoa", "1.2.3");
 
         SystemState b = new SystemState(now, 27, false, bootTimestamp);
         b.addInstalledApp("a.b.c", "Griseknoa", "1.2.3");
-        assertEquals(a, b);
+        Assert.assertEquals(a, b);
 
         SystemState c = new SystemState(now, 27, false, bootTimestamp);
         c.addInstalledApp("x.y.z", "Griseknoa", "1.2.3");
-        assertFalse(a.equals(c));
+        Assert.assertFalse(a.equals(c));
 
         SystemState d = new SystemState(now, 27, false, bootTimestamp);
         d.addInstalledApp("a.b.c", "Charles-Ingvar", "1.2.3");
-        assertFalse(a.equals(d));
+        Assert.assertFalse(a.equals(d));
 
         SystemState e = new SystemState(now, 27, false, bootTimestamp);
         e.addInstalledApp("a.b.c", "Griseknoa", "4.5.6");
-        assertFalse(a.equals(e));
+        Assert.assertFalse(a.equals(e));
     }
 
     public void testUnorderedEquals() {
@@ -73,14 +75,14 @@ public class SystemStateTest extends TestCase {
         b.addInstalledApp("d.e.f", "Snickarboa", "4.5.6");
         b.addInstalledApp("a.b.c", "Griseknoa", "1.2.3");
 
-        assertEquals(a, b);
+        Assert.assertEquals(a, b);
     }
 
     private void assertEvents(Collection<HistoryEvent> testMe, HistoryEvent ... expected) {
-        assertNotNull("Events must be non-null, were null", testMe);
+        Assert.assertNotNull("Events must be non-null, were null", testMe);
         String expectedString = Arrays.toString(expected);
         String actualString = Arrays.toString(testMe.toArray());
-        assertEquals(expectedString, actualString);
+        Assert.assertEquals(expectedString, actualString);
     }
 
     private void assertNoEvents(Collection<HistoryEvent> testMe) {
@@ -157,7 +159,7 @@ public class SystemStateTest extends TestCase {
             a.writeToFile(tempFile);
             SystemState b = SystemState.readFromFile(tempFile);
 
-            assertEquals(a, b);
+            Assert.assertEquals(a, b);
         } finally {
             //noinspection ConstantConditions
             if (tempFile != null) {
@@ -219,8 +221,8 @@ public class SystemStateTest extends TestCase {
 
     public void testBetween() {
         Date dates[] = SystemState.between(then, now, 1);
-        assertEquals(1, dates.length);
-        assertEquals(between(then, now), dates[0]);
+        Assert.assertEquals(1, dates.length);
+        Assert.assertEquals(between(then, now), dates[0]);
     }
 
     /**
@@ -230,9 +232,9 @@ public class SystemStateTest extends TestCase {
     public void testBootTimeLeniency() {
         SystemState a = new SystemState(now, 27, false, new Date(0));
         SystemState b = new SystemState(now, 27, false, new Date(10 * 1000));
-        assertEquals(a, b);
+        Assert.assertEquals(a, b);
 
         SystemState c = new SystemState(now, 27, false, new Date(100 * 1000));
-        assertFalse(a.equals(c));
+        Assert.assertFalse(a.equals(c));
     }
 }

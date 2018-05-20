@@ -30,15 +30,15 @@ public class SystemStateTest extends AndroidTestCase {
         SystemState testMe = SystemState.readFromSystem(getContext());
 
         int appCount = testMe.getAppCount();
-        assertTrue("App count is " + appCount, testMe.getAppCount() > 10);
+        Assert.assertTrue("App count is " + appCount, testMe.getAppCount() > 10);
 
         int batteryPercentage = testMe.getBatteryPercentage();
-        assertTrue("Battery percentage is " + batteryPercentage + "%", testMe.getBatteryPercentage() >= 0);
+        Assert.assertTrue("Battery percentage is " + batteryPercentage + "%", testMe.getBatteryPercentage() >= 0);
 
         File tempFile = File.createTempFile("systemstate-", ".txt");
         try {
             testMe.writeToFile(tempFile);
-            assertEquals(testMe, SystemState.readFromFile(tempFile));
+            Assert.assertEquals(testMe, SystemState.readFromFile(tempFile));
         } finally {
             //noinspection ConstantConditions
             if (tempFile != null) {
@@ -55,8 +55,8 @@ public class SystemStateTest extends AndroidTestCase {
         Date b1 = SystemState.getBootTimestamp();
 
         long dt = Math.abs(b1.getTime() - b0.getTime());
-        assertTrue("Too much drift over one second: " + dt + "ms", dt < 200);
+        Assert.assertTrue("Too much drift over one second: " + dt + "ms", dt < 200);
 
-        assertTrue("Boot timestamp can't be in the future", b0.before(new Date()));
+        Assert.assertTrue("Boot timestamp can't be in the future", b0.before(new Date()));
     }
 }

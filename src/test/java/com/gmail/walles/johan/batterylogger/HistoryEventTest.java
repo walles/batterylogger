@@ -18,12 +18,14 @@ package com.gmail.walles.johan.batterylogger;
 
 import junit.framework.TestCase;
 
+import org.junit.Assert;
+
 import java.util.Date;
 
 public class HistoryEventTest extends TestCase {
     private void assertRecycling(HistoryEvent event) throws Exception {
         HistoryEvent recycled = HistoryEvent.deserializeFromString(event.serializeToString());
-        assertEquals(event, recycled);
+        Assert.assertEquals(event, recycled);
     }
 
     public void testCreateBatteryLevelEvent() throws Exception {

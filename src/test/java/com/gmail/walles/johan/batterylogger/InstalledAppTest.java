@@ -18,6 +18,8 @@ package com.gmail.walles.johan.batterylogger;
 
 import junit.framework.TestCase;
 
+import org.junit.Assert;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -32,7 +34,7 @@ public class InstalledAppTest extends TestCase {
         printWriter.close();
 
         InstalledApp recycled = InstalledApp.readLines(new BufferedReader(new StringReader(disk.toString())));
-        assertEquals(testMe, recycled);
+        Assert.assertEquals(testMe, recycled);
     }
 
     public void testNewlines() throws Exception {

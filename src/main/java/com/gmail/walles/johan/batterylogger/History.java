@@ -81,15 +81,13 @@ public class History {
             return;
         }
 
-        PrintWriter printWriter = null;
+        File tmp = File.createTempFile("history-", ".txt", storage.getParentFile());
+        PrintWriter printWriter = new PrintWriter(new FileWriter(tmp));
         try {
-            File tmp = File.createTempFile("history-", ".txt", storage.getParentFile());
-            printWriter = new PrintWriter(new FileWriter(tmp));
             for (HistoryEvent event : truncated) {
                 printWriter.println(event.serializeToString());
             }
             printWriter.close();
-            printWriter = null;
 
             if (!tmp.renameTo(storage)) {
                 throw new IOException(
@@ -99,9 +97,7 @@ public class History {
             }
             eventsFromStorage = truncated;
         } finally {
-            if (printWriter != null) {
-                printWriter.close();
-            }
+            printWriter.close();
         }
     }
 
@@ -115,14 +111,11 @@ public class History {
             return;
         }
 
-        PrintWriter printWriter = null;
+        PrintWriter printWriter = new PrintWriter(new FileWriter(storage, true));
         try {
-            printWriter = new PrintWriter(new FileWriter(storage, true));
             printWriter.println(event.serializeToString());
         } finally {
-            if (printWriter != null) {
-                printWriter.close();
-            }
+            printWriter.close();
         }
 
         if (storage.length() > MAX_HISTORY_FILE_SIZE) {
@@ -210,11 +203,10 @@ public class History {
             return returnMe;
         }
 
-        BufferedReader reader = null;
-        int lineNumber = 1;
+        BufferedReader reader = new BufferedReader(new FileReader(storage));
         try {
-            reader = new BufferedReader(new FileReader(storage));
             String line;
+            int lineNumber = 1;
             while ((line = reader.readLine()) != null) {
                 try {
                     returnMe.add(HistoryEvent.deserializeFromString(line));
@@ -225,9 +217,7 @@ public class History {
                 lineNumber++;
             }
         } finally {
-            if (reader != null) {
-                reader.close();
-            }
+            reader.close();
         }
 
         Timber.i("%d events read from %s", returnMe.size(), storage.getAbsolutePath());
@@ -266,12 +256,11 @@ public class History {
             return null;
         }
 
-        BufferedReader reader = null;
-        int lineNumber = 1;
+        BufferedReader reader = new BufferedReader(new FileReader(storage), 200);
         try {
-            reader = new BufferedReader(new FileReader(storage), 200);
             String line;
 
+            int lineNumber = 1;
             while ((line = reader.readLine()) != null) {
                 try {
                     return HistoryEvent.deserializeFromString(line);
@@ -282,9 +271,7 @@ public class History {
                 lineNumber++;
             }
         } finally {
-            if (reader != null) {
-                reader.close();
-            }
+            reader.close();
         }
 
         return null;

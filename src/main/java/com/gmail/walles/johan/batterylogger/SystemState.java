@@ -369,9 +369,7 @@ public class SystemState {
 
             return returnMe;
         } catch (NumberFormatException e) {
-            IOException throwMe = new IOException("Number parsing failed");
-            throwMe.initCause(e);
-            throw throwMe;
+            throw new IOException("Number parsing failed", e);
         } finally {
             if (reader != null) {
                 reader.close();

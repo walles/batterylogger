@@ -43,6 +43,7 @@ public class DrainLinesCreatorTest extends TestCase {
             // Expected exception intentionally ignored
         }
 
+        //noinspection ArraysAsListWithZeroOrOneArgument
         assertEquals(5.0, DrainLinesCreator.median(Arrays.asList(5.0)));
         assertEquals(5.5, DrainLinesCreator.median(Arrays.asList(5.0, 6.0)));
         assertEquals(6.0, DrainLinesCreator.median(Arrays.asList(5.0, 6.0, 7.0)));
@@ -55,15 +56,15 @@ public class DrainLinesCreatorTest extends TestCase {
     }
 
     public void testWithOneEvent() {
-        DrainLinesCreator testMe = new DrainLinesCreator(Arrays.asList(
-                HistoryEvent.createBatteryLevelEvent(NOW, 50)
+        DrainLinesCreator testMe = new DrainLinesCreator(Collections.singletonList(
+            HistoryEvent.createBatteryLevelEvent(NOW, 50)
         ));
         assertEquals(0, testMe.getDrainLines().size());
     }
 
     public void testDischargeLineWithZeroEvents() {
-        DrainLinesCreator testMe = new DrainLinesCreator(Arrays.asList(
-                HistoryEvent.createStopChargingEvent(NOW)
+        DrainLinesCreator testMe = new DrainLinesCreator(Collections.singletonList(
+            HistoryEvent.createStopChargingEvent(NOW)
         ));
         assertEquals(0, testMe.getDrainLines().size());
     }
@@ -184,6 +185,7 @@ public class DrainLinesCreatorTest extends TestCase {
     }
 
     public void testAverage() {
+        //noinspection ArraysAsListWithZeroOrOneArgument
         assertEquals(4.0, DrainLinesCreator.average(Arrays.asList(4.0)));
         assertEquals(4.5, DrainLinesCreator.average(Arrays.asList(4.0, 5.0)));
         assertEquals(5.0, DrainLinesCreator.average(Arrays.asList(4.0, 4.0, 7.0)));

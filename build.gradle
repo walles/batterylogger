@@ -19,17 +19,22 @@ buildscript {
         mavenCentral()
         jcenter()
         maven { url 'https://maven.fabric.io/public' }
+        google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:2.1.3'
+        classpath 'com.android.tools.build:gradle:3.1.2'
 
         // Having a dynamic version here is explicitly recommended by the Crashlytics docs
         //noinspection GradleDynamicVersion
         classpath 'io.fabric.tools:gradle:1.+'
+
+        // Mutation testing!
+        classpath 'pl.droidsonroids.gradle:gradle-pitest-plugin:0.1.4'
     }
 }
 apply plugin: 'com.android.application'
 apply plugin: 'io.fabric'
+apply plugin: 'pl.droidsonroids.pitest'
 
 repositories {
     mavenCentral()
@@ -52,7 +57,7 @@ def getVersionCode = { ->
         return code.toString().split("\n").size()
     }
     catch (ignored) {
-        return -1;
+        return -1
     }
 }
 
@@ -67,13 +72,16 @@ def getVersionName = { ->
         return stdout.toString().trim()
     }
     catch (ignored) {
-        return null;
+        return null
     }
+}
+
+pitest {
+    targetClasses = ['com.gmail.walles.johan.*']  //by default "${project.group}.*"
 }
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.3"
 
     defaultConfig {
         minSdkVersion 15
@@ -101,11 +109,13 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:23.4.0'
-    compile 'com.nineoldandroids:library:2.4.0'
-    compile 'com.jakewharton.timber:timber:4.1.2'
-    compile('com.crashlytics.sdk.android:crashlytics:2.5.5@aar') {
-        transitive = true;
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:23.4.0'
+    implementation 'com.nineoldandroids:library:2.4.0'
+    implementation 'com.jakewharton.timber:timber:4.1.2'
+    implementation('com.crashlytics.sdk.android:crashlytics:2.5.5@aar') {
+        transitive = true
     }
+
+    testImplementation 'junit:junit:4.12'
 }

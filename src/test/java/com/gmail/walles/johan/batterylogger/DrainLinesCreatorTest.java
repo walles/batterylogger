@@ -20,6 +20,8 @@ import com.gmail.walles.johan.batterylogger.plot.DrainSample;
 
 import junit.framework.TestCase;
 
+import org.junit.Assert;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -27,7 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class DrainLinesCreatorTest extends TestCase {
-    private static final Date BEFORE = new Date(System.currentTimeMillis() - 86400 * 1000);
+    private static final Date BEFORE = new Date(System.currentTimeMillis() - 3600 * 1000);
     private static final Date NOW = new Date();
 
     /**
@@ -38,34 +40,35 @@ public class DrainLinesCreatorTest extends TestCase {
     public void testMedianLine() {
         try {
             DrainLinesCreator.median(Collections.<Double>emptyList());
-            fail("Computing median of one number should fail");
+            Assert.fail("Computing median of one number should fail");
         } catch (IllegalArgumentException e) {
             // Expected exception intentionally ignored
         }
 
-        assertEquals(5.0, DrainLinesCreator.median(Arrays.asList(5.0)));
-        assertEquals(5.5, DrainLinesCreator.median(Arrays.asList(5.0, 6.0)));
-        assertEquals(6.0, DrainLinesCreator.median(Arrays.asList(5.0, 6.0, 7.0)));
-        assertEquals(6.5, DrainLinesCreator.median(Arrays.asList(5.0, 6.0, 7.0, 7.5)));
+        //noinspection ArraysAsListWithZeroOrOneArgument
+        Assert.assertEquals(5.0, DrainLinesCreator.median(Arrays.asList(5.0)), 0.0);
+        Assert.assertEquals(5.5, DrainLinesCreator.median(Arrays.asList(5.0, 6.0)), 0.0);
+        Assert.assertEquals(6.0, DrainLinesCreator.median(Arrays.asList(5.0, 6.0, 7.0)), 0.0);
+        Assert.assertEquals(6.5, DrainLinesCreator.median(Arrays.asList(5.0, 6.0, 7.0, 7.5)), 0.0);
     }
 
     public void testWithZeroEvents() {
         DrainLinesCreator testMe = new DrainLinesCreator(Collections.<HistoryEvent>emptyList());
-        assertEquals(0, testMe.getDrainLines().size());
+        Assert.assertEquals(0, testMe.getDrainLines().size());
     }
 
     public void testWithOneEvent() {
-        DrainLinesCreator testMe = new DrainLinesCreator(Arrays.asList(
-                HistoryEvent.createBatteryLevelEvent(NOW, 50)
+        DrainLinesCreator testMe = new DrainLinesCreator(Collections.singletonList(
+            HistoryEvent.createBatteryLevelEvent(NOW, 50)
         ));
-        assertEquals(0, testMe.getDrainLines().size());
+        Assert.assertEquals(0, testMe.getDrainLines().size());
     }
 
     public void testDischargeLineWithZeroEvents() {
-        DrainLinesCreator testMe = new DrainLinesCreator(Arrays.asList(
-                HistoryEvent.createStopChargingEvent(NOW)
+        DrainLinesCreator testMe = new DrainLinesCreator(Collections.singletonList(
+            HistoryEvent.createStopChargingEvent(NOW)
         ));
-        assertEquals(0, testMe.getDrainLines().size());
+        Assert.assertEquals(0, testMe.getDrainLines().size());
     }
 
     public void testDischargeLineWithOneEvent() {
@@ -73,7 +76,7 @@ public class DrainLinesCreatorTest extends TestCase {
                 HistoryEvent.createStopChargingEvent(NOW),
                 HistoryEvent.createBatteryLevelEvent(BEFORE, 50)
         ));
-        assertEquals(0, testMe.getDrainLines().size());
+        Assert.assertEquals(0, testMe.getDrainLines().size());
     }
 
     public void testDischargeLineWithTwoEvents() {
@@ -83,15 +86,15 @@ public class DrainLinesCreatorTest extends TestCase {
                 HistoryEvent.createBatteryLevelEvent(dates[1], 50),
                 HistoryEvent.createBatteryLevelEvent(dates[2], 40)
         ));
-        assertEquals(1, testMe.getDrainLines().size());
+        Assert.assertEquals(1, testMe.getDrainLines().size());
 
         DrainSample drainLine = testMe.getDrainLines().get(0);
 
-        assertTrue(drainLine.drainSpeed > 0.0);
-        assertFalse(Double.isInfinite(drainLine.drainSpeed));
+        Assert.assertTrue(drainLine.drainSpeed > 0.0);
+        Assert.assertFalse(Double.isInfinite(drainLine.drainSpeed));
 
-        assertEquals(drainLine.startMsSinceEpoch, dates[0].getTime(), DELTA_MS);
-        assertEquals(drainLine.endMsSinceEpoch, dates[2].getTime(), DELTA_MS);
+        Assert.assertEquals(drainLine.startMsSinceEpoch, dates[0].getTime(), DELTA_MS);
+        Assert.assertEquals(drainLine.endMsSinceEpoch, dates[2].getTime(), DELTA_MS);
     }
 
     public void testZeroPercentDischarge() {
@@ -110,7 +113,7 @@ public class DrainLinesCreatorTest extends TestCase {
         events.addAll(e.getEventsSince(d));
 
         DrainLinesCreator testMe = new DrainLinesCreator(events);
-        assertEquals(0, testMe.getDrainLines().size());
+        Assert.assertEquals(0, testMe.getDrainLines().size());
     }
 
     /**
@@ -137,9 +140,9 @@ public class DrainLinesCreatorTest extends TestCase {
         DrainLinesCreator testMe = new DrainLinesCreator(events);
 
         // Expect one draining line; the charging parts should just be ignored
-        assertEquals(1, testMe.getDrainLines().size());
+        Assert.assertEquals(1, testMe.getDrainLines().size());
         final DrainSample drainLine = testMe.getDrainLines().get(0);
-        assertTrue(drainLine.drainSpeed > 0.0);
+        Assert.assertTrue(drainLine.drainSpeed > 0.0);
     }
 
     /**
@@ -165,7 +168,7 @@ public class DrainLinesCreatorTest extends TestCase {
         DrainLinesCreator testMe = new DrainLinesCreator(events);
 
         // Expect zero draining lines; we're mostly discharging here
-        assertEquals(0, testMe.getDrainLines().size());
+        Assert.assertEquals(0, testMe.getDrainLines().size());
     }
 
     public void testCharging() {
@@ -174,18 +177,20 @@ public class DrainLinesCreatorTest extends TestCase {
                 HistoryEvent.createBatteryLevelEvent(NOW, 50)
         ));
 
-        assertEquals(1, testMe.getDrainLines().size());
+        Assert.assertEquals(1, testMe.getDrainLines().size());
 
         DrainSample drainLine = testMe.getDrainLines().get(0);
 
-        assertEquals(0.0, drainLine.drainSpeed);
-        assertEquals(drainLine.startMsSinceEpoch, BEFORE.getTime(), DELTA_MS);
-        assertEquals(drainLine.endMsSinceEpoch, NOW.getTime(), DELTA_MS);
+        Assert.assertEquals(0.0, drainLine.drainSpeed, 0.0);
+        Assert.assertEquals(drainLine.startMsSinceEpoch, BEFORE.getTime(), DELTA_MS);
+        Assert.assertEquals(drainLine.endMsSinceEpoch, NOW.getTime(), DELTA_MS);
     }
 
+    @SuppressWarnings("ConstantConditions")
     public void testAverage() {
-        assertEquals(4.0, DrainLinesCreator.average(Arrays.asList(4.0)));
-        assertEquals(4.5, DrainLinesCreator.average(Arrays.asList(4.0, 5.0)));
-        assertEquals(5.0, DrainLinesCreator.average(Arrays.asList(4.0, 4.0, 7.0)));
+        //noinspection ArraysAsListWithZeroOrOneArgument
+        Assert.assertEquals(4.0, DrainLinesCreator.average(Arrays.asList(4.0)), 0.0);
+        Assert.assertEquals(4.5, DrainLinesCreator.average(Arrays.asList(4.0, 5.0)), 0.0);
+        Assert.assertEquals(5.0, DrainLinesCreator.average(Arrays.asList(4.0, 4.0, 7.0)), 0.0);
     }
 }

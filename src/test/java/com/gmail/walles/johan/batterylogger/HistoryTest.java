@@ -16,10 +16,12 @@
 
 package com.gmail.walles.johan.batterylogger;
 
-import android.test.AndroidTestCase;
-
 import com.gmail.walles.johan.batterylogger.plot.DrainSample;
 import com.gmail.walles.johan.batterylogger.plot.PlotEvent;
+
+import junit.framework.TestCase;
+
+import org.junit.Assert;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -28,7 +30,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
-public class HistoryTest extends AndroidTestCase {
+public class HistoryTest extends TestCase {
     private File testStorage;
     private long now;
     private History testMe;
@@ -44,9 +46,11 @@ public class HistoryTest extends AndroidTestCase {
 
     @Override
     protected void tearDown() throws Exception {
-        super.tearDown();
-
-        assertTrue(testStorage.delete());
+        try {
+            Assert.assertTrue(testStorage.delete());
+        } finally {
+            super.tearDown();
+        }
     }
 
     private void assertValues(double ... expectedValues) throws Exception {
@@ -55,7 +59,7 @@ public class HistoryTest extends AndroidTestCase {
         for (int i = 0; i < batteryDrain.size(); i++) {
             actualValues[i] = batteryDrain.get(i).drainSpeed;
         }
-        assertEquals(Arrays.toString(expectedValues), Arrays.toString(actualValues));
+        Assert.assertEquals(Arrays.toString(expectedValues), Arrays.toString(actualValues));
     }
 
     private void assertTimestampEquals(Date expectedTimestamps[], List<Date> actualTimestamps) {
@@ -69,13 +73,13 @@ public class HistoryTest extends AndroidTestCase {
                 "Actual  : " + Arrays.toString(actualTimestampsArray);
 
         // Fuzzy compare the arrays, accepting some time diff
-        assertEquals(diff, expectedTimestamps.length, actualTimestampsArray.length);
+        Assert.assertEquals(diff, expectedTimestamps.length, actualTimestampsArray.length);
         for (int i = 0; i < expectedTimestamps.length; i++) {
             Date expected = expectedTimestamps[i];
             Date actual = actualTimestampsArray[i];
             long diffMs = Math.abs(expected.getTime() - actual.getTime());
 
-            assertTrue("\n" + diff, diffMs < 1000L);
+            Assert.assertTrue("\n" + diff, diffMs < 1000L);
         }
     }
 
@@ -104,7 +108,7 @@ public class HistoryTest extends AndroidTestCase {
         for (int i = 0; i < events.size(); i++) {
             actualDescriptions[i] = events.get(i).description;
         }
-        assertEquals(Arrays.toString(expectedDescriptions), Arrays.toString(actualDescriptions));
+        Assert.assertEquals(Arrays.toString(expectedDescriptions), Arrays.toString(actualDescriptions));
     }
 
     private void assertNoEvents() throws Exception {
@@ -211,14 +215,14 @@ public class HistoryTest extends AndroidTestCase {
             testMe.addEvent(HistoryEvent.createInfoEvent(now, longEventDescription));
 
             long fileSize = testStorage.length();
-            assertTrue("File should have been truncated before 500kb: " + fileSize,
+            Assert.assertTrue("File should have been truncated before 500kb: " + fileSize,
                     fileSize < 500 * 1024);
 
             if (fileSize < lastFileSize) {
                 // It got truncated
-                assertTrue("File should have been allowed to grow to at least 350kb: " + lastFileSize,
+                Assert.assertTrue("File should have been allowed to grow to at least 350kb: " + lastFileSize,
                         lastFileSize > 350 * 1024);
-                assertTrue("File should have been truncated to 250kb-350kb: " + fileSize,
+                Assert.assertTrue("File should have been truncated to 250kb-350kb: " + fileSize,
                         fileSize > 250 * 1024 && fileSize < 350 * 1024);
                 return;
             }
@@ -231,7 +235,7 @@ public class HistoryTest extends AndroidTestCase {
      * Verify history file truncation by event age.
      */
     public void testMaintainHistoryAge() throws Exception {
-        assertEquals(0, testMe.getHistoryAgeDays());
+        Assert.assertEquals(0, testMe.getHistoryAgeDays());
 
         Date now = new Date();
 
@@ -241,8 +245,8 @@ public class HistoryTest extends AndroidTestCase {
             testMe.addEvent(HistoryEvent.createInfoEvent(then, "Something happened"));
         }
 
-        assertEquals(34, testMe.getHistoryAgeDays());
-        assertEquals(34, new History(testStorage).getHistoryAgeDays());
+        Assert.assertEquals(34, testMe.getHistoryAgeDays());
+        Assert.assertEquals(34, new History(testStorage).getHistoryAgeDays());
 
         // Record the size of the history file
         long fileSize0 = testStorage.length();
@@ -251,11 +255,11 @@ public class HistoryTest extends AndroidTestCase {
         testMe.dropOldHistory();
 
         // Verify that the file has shrunk
-        assertTrue(String.format(Locale.getDefault(), "Old size=%d, new size=%d",
+        Assert.assertTrue(String.format(Locale.getDefault(), "Old size=%d, new size=%d",
             fileSize0, testStorage.length()), testStorage.length() < fileSize0);
 
         // Verify that the age of the oldest event in the file is what we expect
-        assertEquals(27, testMe.getHistoryAgeDays());
-        assertEquals(27, new History(testStorage).getHistoryAgeDays());
+        Assert.assertEquals(27, testMe.getHistoryAgeDays());
+        Assert.assertEquals(27, new History(testStorage).getHistoryAgeDays());
     }
 }
